@@ -466,7 +466,7 @@
 
   .lender-top {
     display: grid;
-    grid-template-columns: 18px 1fr auto;
+    grid-template-columns: 18px 1fr;
     gap: 10px;
     align-items: flex-start;
   }
@@ -540,24 +540,31 @@
     border: 1px solid var(--amber-bd);
   }
 
-  .expand-toggle {
-    width: 26px;
-    height: 26px;
-    border: 1px solid var(--border-2);
+  .expand-strip {
+    margin: -2px -16px -14px;
+    padding: 9px 16px;
+    border-top: 1px solid var(--border);
     background: var(--bg-2);
     color: var(--text-3);
-    border-radius: 50%;
-    display: inline-flex;
+    font-size: 11.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
+    gap: 7px;
     transition: all 0.15s;
-    padding: 0;
-    flex-shrink: 0;
+    user-select: none;
   }
-  .expand-toggle:hover { background: var(--bg-3); color: var(--accent); border-color: var(--accent); }
-  .expand-toggle svg { transition: transform 0.2s; }
-  .lender-row.expanded .expand-toggle svg { transform: rotate(180deg); }
+  .expand-strip:hover {
+    background: var(--bg-3);
+    color: var(--accent);
+  }
+  .expand-strip svg { transition: transform 0.2s; }
+  .lender-row.expanded .expand-strip svg { transform: rotate(180deg); }
+  .lender-row.expanded .expand-strip { background: var(--bg-3); color: var(--accent); }
 
   /* CONSISTENT CRITERIA GRID — 5 columns always present */
   .crit-grid {
@@ -588,12 +595,36 @@
   /* EXPAND PANEL — consistent structure for every lender */
   .lender-expand {
     border-top: 1px solid var(--border);
-    padding-top: 12px;
+    margin: -2px -16px -14px;
+    padding: 14px 16px;
+    background: var(--bg);
     display: none;
     gap: 12px;
     flex-direction: column;
   }
   .lender-row.expanded .lender-expand { display: flex; }
+  /* When expanded, hide the strip and show panel instead — toggle lives on strip click */
+  .lender-row.expanded .expand-strip { display: none; }
+  .expand-strip-collapse {
+    margin: 6px -16px -14px;
+    padding: 9px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--bg-3);
+    color: var(--accent);
+    font-size: 11.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .lender-row.expanded .expand-strip-collapse { display: flex; }
+  .expand-strip-collapse:hover { background: var(--bg-4); }
   .detail-section { }
   .detail-k {
     font-size: 9.5px;
@@ -1776,11 +1807,6 @@ function renderLender(x, rejected) {
             ${x.warnings.map(w => `<span class="warning-pill">${esc(w)}</span>`).join('')}
           </div>
         </div>
-        <button class="expand-toggle" data-toggle-expand title="Show details">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-            <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
       </div>
       <div class="crit-grid">
         ${crit('Revenue', L.depositsRaw ? '$' + L.depositsRaw : '')}
@@ -1800,6 +1826,18 @@ function renderLender(x, rejected) {
         ${sectionRow('Submission Emails', emailsHtml, !emailsHtml)}
         ${sectionRow('Notes', notesHtml, !notesHtml)}
       </div>
+      <div class="expand-strip" data-toggle-expand>
+        Show details
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+          <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="expand-strip-collapse" data-toggle-expand>
+        Hide details
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="transform: rotate(180deg);">
+          <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
     </div>`;
 }
 
@@ -1807,6 +1845,7 @@ function bindLenderRows() {
   document.querySelectorAll('.lender-row').forEach(row => {
     row.addEventListener('click', e => {
       if (e.target.closest('.lender-checkbox')) return;
+      if (e.target.closest('[data-toggle-expand]')) return;
       if (e.target.closest('button')) return;
       if (e.target.closest('a')) return;
       const id = row.dataset.id;
