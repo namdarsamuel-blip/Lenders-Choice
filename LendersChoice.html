@@ -1,0 +1,2340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lenders Choice · Deal Routing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0A0A0B;
+    --bg-1:      #111114;
+    --bg-2:      #17171C;
+    --bg-3:      #1E1E25;
+    --bg-4:      #2A2A33;
+
+    --border:    rgba(255,255,255,0.06);
+    --border-2:  rgba(255,255,255,0.10);
+    --border-3:  rgba(255,255,255,0.16);
+
+    --text:      #F4F4F5;
+    --text-2:    #A1A1AA;
+    --text-3:    #71717A;
+    --text-4:    #52525B;
+
+    --accent:    #FFE08A;
+    --accent-d:  #E5C46B;
+
+    --green:     #22D88F;
+    --green-bg:  rgba(34, 216, 143, 0.10);
+    --green-bd:  rgba(34, 216, 143, 0.28);
+
+    --blue:      #5DA9FF;
+    --blue-bg:   rgba(93, 169, 255, 0.10);
+    --blue-bd:   rgba(93, 169, 255, 0.28);
+
+    --purple:    #B8A0FF;
+    --purple-bg: rgba(184, 160, 255, 0.10);
+    --purple-bd: rgba(184, 160, 255, 0.28);
+
+    --amber:     #FBBF24;
+    --amber-bg:  rgba(251, 191, 36, 0.10);
+    --amber-bd:  rgba(251, 191, 36, 0.28);
+
+    --coral:     #F87171;
+    --coral-bg:  rgba(248, 113, 113, 0.08);
+    --coral-bd:  rgba(248, 113, 113, 0.25);
+
+    --rad-pill:  999px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    letter-spacing: -0.005em;
+  }
+  button { font-family: inherit; cursor: pointer; border: none; }
+  input, select, textarea { font-family: inherit; font-size: 14px; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* TOP BAR */
+  .topbar {
+    display: flex;
+    align-items: center;
+    padding: 14px 28px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10, 10, 11, 0.85);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    gap: 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: -0.025em;
+    color: var(--text);
+  }
+  .brand-logo {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent) 0%, #FFC76A 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    color: #1A1408;
+    font-size: 12px;
+    letter-spacing: -0.04em;
+  }
+  .nav-tabs { display: flex; gap: 2px; margin-left: 8px; }
+  .nav-tab {
+    padding: 8px 14px;
+    font-size: 13px;
+    color: var(--text-3);
+    background: transparent;
+    border-radius: var(--rad-pill);
+    transition: all 0.15s;
+    font-weight: 500;
+  }
+  .nav-tab:hover { color: var(--text); background: var(--bg-2); }
+  .nav-tab.active { color: var(--text); background: var(--bg-2); }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid var(--border-2);
+    border-radius: var(--rad-pill);
+    font-size: 12px;
+    color: var(--text-2);
+    background: var(--bg-1);
+    font-weight: 500;
+  }
+  .meta-pill span { color: var(--accent); font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+
+  /* FILTER BAR */
+  .filter-bar {
+    background: rgba(17, 17, 20, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 28px;
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    position: sticky;
+    top: 60px;
+    z-index: 50;
+    flex-wrap: wrap;
+  }
+  .filter-field {
+    flex: 1 1 110px;
+    min-width: 100px;
+    max-width: 200px;
+    display: flex;
+    flex-direction: column;
+  }
+  .filter-field.wide { max-width: 220px; flex-basis: 180px; }
+  .filter-field label {
+    font-size: 10px;
+    color: var(--text-3);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 5px;
+    margin-left: 2px;
+  }
+  .filter-field input,
+  .filter-field select {
+    width: 100%;
+    background: var(--bg-1);
+    border: 1px solid var(--border-2);
+    color: var(--text);
+    padding: 8px 11px;
+    border-radius: 8px;
+    outline: none;
+    transition: all 0.15s;
+    font-size: 13.5px;
+    font-weight: 500;
+    height: 34px;
+  }
+  .filter-field input:hover,
+  .filter-field select:hover { border-color: var(--border-3); }
+  .filter-field input:focus,
+  .filter-field select:focus {
+    border-color: var(--accent);
+    background: var(--bg-2);
+    box-shadow: 0 0 0 3px rgba(255, 224, 138, 0.10);
+  }
+  .filter-field select {
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--text-3) 50%),
+                      linear-gradient(135deg, var(--text-3) 50%, transparent 50%);
+    background-position: calc(100% - 13px) 50%, calc(100% - 9px) 50%;
+    background-size: 4px 4px, 4px 4px;
+    background-repeat: no-repeat;
+    padding-right: 26px;
+  }
+  .dollar-input { position: relative; width: 100%; }
+  .dollar-prefix {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-3);
+    pointer-events: none;
+    font-weight: 600;
+    font-size: 13.5px;
+    z-index: 1;
+  }
+  .dollar-input input { padding-left: 22px !important; }
+  .dollar-input:focus-within .dollar-prefix { color: var(--accent); }
+  .combobox { position: relative; }
+  .combobox-list {
+    position: absolute;
+    top: 100%; left: 0; right: 0;
+    background: var(--bg-2);
+    border: 1px solid var(--border-3);
+    border-radius: 8px;
+    margin-top: 4px;
+    max-height: 240px;
+    overflow-y: auto;
+    z-index: 80;
+    display: none;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+  }
+  .combobox-list.show { display: block; }
+  .combobox-item {
+    padding: 9px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: all 0.1s;
+  }
+  .combobox-item:hover, .combobox-item.highlight { background: var(--bg-3); color: var(--accent); }
+  .combobox-item:last-child { border-bottom: none; }
+  .filter-spacer { flex: 1 1 8px; min-width: 8px; }
+
+  /* BUTTONS */
+  .btn {
+    padding: 8px 14px;
+    background: var(--bg-1);
+    color: var(--text);
+    border: 1px solid var(--border-2);
+    border-radius: var(--rad-pill);
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .btn:hover {
+    background: var(--bg-2);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary {
+    background: linear-gradient(180deg, #FFE89E, var(--accent));
+    color: #1A1408;
+    border: 1px solid var(--accent);
+    font-weight: 700;
+    box-shadow: 0 0 24px -6px rgba(255, 224, 138, 0.45),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+  .btn-primary:hover {
+    background: linear-gradient(180deg, #FFEFB6, #FFE89E);
+    color: #1A1408;
+  }
+  .btn-ghost { background: transparent; border-color: transparent; color: var(--text-3); }
+  .btn-ghost:hover { background: var(--bg-2); border-color: var(--border-2); color: var(--text); }
+  .btn-danger { color: var(--coral); border-color: var(--coral-bd); }
+  .btn-danger:hover { background: var(--coral-bg); border-color: var(--coral); color: var(--coral); }
+  .btn-sm { padding: 6px 11px; font-size: 12px; }
+  .btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+  .main-content { padding: 22px 28px 130px; }
+
+  /* RESULTS HEADER */
+  .results-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .res-stats { display: flex; gap: 8px; }
+  .stat-chip {
+    padding: 7px 13px;
+    border-radius: var(--rad-pill);
+    background: var(--bg-1);
+    border: 1px solid var(--border-2);
+    color: var(--text-2);
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .stat-chip .num {
+    color: var(--text);
+    font-weight: 700;
+    font-size: 14px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .stat-chip .lbl {
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .stat-chip.match { color: var(--green); border-color: var(--green-bd); background: var(--green-bg); }
+  .stat-chip.match .num { color: var(--green); }
+  .stat-chip.fail { color: var(--coral); border-color: var(--coral-bd); background: var(--coral-bg); }
+  .stat-chip.fail .num { color: var(--coral); }
+  .stat-chip.sel { color: var(--accent); border-color: rgba(255,224,138,0.3); background: rgba(255,224,138,0.08); }
+  .stat-chip.sel .num { color: var(--accent); }
+
+  .pos-legend {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+  .pos-legend .lbl {
+    font-size: 10px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    margin-right: 4px;
+  }
+
+  /* POSITION PILL */
+  .position-pill {
+    display: inline-flex;
+    align-items: center;
+    font-weight: 600;
+    font-size: 11.5px;
+    padding: 3px 10px;
+    border-radius: var(--rad-pill);
+    line-height: 1.4;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .position-pill.sm { font-size: 11px; padding: 2px 8px; }
+  .position-pill.green  { background: var(--green-bg);  color: var(--green);  border: 1px solid var(--green-bd); }
+  .position-pill.blue   { background: var(--blue-bg);   color: var(--blue);   border: 1px solid var(--blue-bd); }
+  .position-pill.purple { background: var(--purple-bg); color: var(--purple); border: 1px solid var(--purple-bd); }
+  .position-pill.amber  { background: var(--amber-bg);  color: var(--amber);  border: 1px solid var(--amber-bd); }
+  .position-pill.coral  { background: var(--coral-bg);  color: var(--coral);  border: 1px solid var(--coral-bd); }
+  .position-pill.gray   { background: var(--bg-3); color: var(--text-3); border: 1px solid var(--border-2); }
+
+  /* SECTION HEADERS */
+  .section-head {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin: 22px 0 12px;
+    font-size: 14.5px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    flex-wrap: wrap;
+  }
+  .section-head .ico {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .section-head .ico.green { background: var(--green); box-shadow: 0 0 9px var(--green); }
+  .section-head .ico.coral { background: var(--coral); box-shadow: 0 0 9px rgba(248,113,113,0.5); }
+  .section-head .count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-3);
+    font-weight: 500;
+    padding: 2px 8px;
+    border: 1px solid var(--border-2);
+    border-radius: var(--rad-pill);
+  }
+  .section-head-spacer { flex: 1; min-width: 8px; }
+
+  /* SORT DROPDOWN */
+  .sort-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-3);
+    background: var(--bg-1);
+    border: 1px solid var(--border-2);
+    padding: 4px 10px 4px 12px;
+    border-radius: var(--rad-pill);
+  }
+  .sort-control label {
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    font-size: 10px;
+  }
+  .sort-control select {
+    appearance: none;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    padding-right: 14px;
+    background-image: linear-gradient(45deg, transparent 50%, var(--text-3) 50%),
+                      linear-gradient(135deg, var(--text-3) 50%, transparent 50%);
+    background-position: calc(100% - 4px) 50%, calc(100% - 1px) 50%;
+    background-size: 4px 4px, 4px 4px;
+    background-repeat: no-repeat;
+    outline: none;
+  }
+  .sort-control select option { background: var(--bg-2); color: var(--text); }
+
+  /* LENDER GRID */
+  .lender-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 10px;
+  }
+  .lender-row {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    user-select: none;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .lender-row::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: transparent;
+    transition: background 0.2s;
+  }
+  .lender-row.match:hover {
+    border-color: rgba(255, 224, 138, 0.30);
+    background: var(--bg-2);
+  }
+  .lender-row.match::before    { background: var(--green); }
+  .lender-row.preferred::before { background: var(--accent); }
+  .lender-row.rejected { opacity: 0.7; }
+  .lender-row.rejected::before { background: rgba(248,113,113,0.35); }
+  .lender-row.rejected:hover { opacity: 1; }
+  .lender-row.selected {
+    background: rgba(255, 224, 138, 0.05);
+    border-color: rgba(255, 224, 138, 0.35);
+  }
+  .lender-row.selected::before {
+    background: var(--accent);
+    box-shadow: 0 0 14px var(--accent);
+  }
+
+  .lender-top {
+    display: grid;
+    grid-template-columns: 18px 1fr auto;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .lender-checkbox {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    border: 1.5px solid var(--border-3);
+    background: var(--bg);
+    border-radius: 5px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .lender-checkbox:hover { border-color: var(--accent); }
+  .lender-checkbox:checked { background: var(--accent); border-color: var(--accent); }
+  .lender-checkbox:checked::after {
+    content: '';
+    position: absolute;
+    left: 5px; top: 1px;
+    width: 5px; height: 10px;
+    border: solid #1A1408;
+    border-width: 0 2.5px 2.5px 0;
+    transform: rotate(45deg);
+  }
+  .lender-checkbox:disabled { cursor: not-allowed; opacity: 0.2; }
+
+  .lender-header-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+  .lender-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .lender-name {
+    font-size: 15.5px;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .lender-row.preferred .lender-name::after {
+    content: '★';
+    color: var(--accent);
+    margin-left: 5px;
+    font-size: 12px;
+    vertical-align: 1px;
+  }
+  .preferred-pill, .warning-pill {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: var(--rad-pill);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .preferred-pill {
+    background: rgba(255, 224, 138, 0.10);
+    color: var(--accent);
+    border: 1px solid rgba(255, 224, 138, 0.30);
+  }
+  .warning-pill {
+    background: var(--amber-bg);
+    color: var(--amber);
+    border: 1px solid var(--amber-bd);
+  }
+
+  .expand-toggle {
+    width: 26px;
+    height: 26px;
+    border: 1px solid var(--border-2);
+    background: var(--bg-2);
+    color: var(--text-3);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  .expand-toggle:hover { background: var(--bg-3); color: var(--accent); border-color: var(--accent); }
+  .expand-toggle svg { transition: transform 0.2s; }
+  .lender-row.expanded .expand-toggle svg { transform: rotate(180deg); }
+
+  /* CONSISTENT CRITERIA GRID — 5 columns always present */
+  .crit-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px 12px;
+  }
+  .crit { min-width: 0; }
+  .crit-label {
+    font-size: 9.5px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .crit-value {
+    font-size: 12.5px;
+    color: var(--text);
+    font-weight: 600;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .crit-value.muted { color: var(--text-4); font-weight: 400; }
+
+  /* EXPAND PANEL — consistent structure for every lender */
+  .lender-expand {
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    display: none;
+    gap: 12px;
+    flex-direction: column;
+  }
+  .lender-row.expanded .lender-expand { display: flex; }
+  .detail-section { }
+  .detail-k {
+    font-size: 9.5px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .detail-v {
+    font-size: 12.5px;
+    color: var(--text);
+    line-height: 1.5;
+    font-weight: 500;
+    word-wrap: break-word;
+  }
+  .detail-v.muted { color: var(--text-4); font-style: italic; font-weight: 400; }
+  .detail-v.mono { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; }
+  .detail-v.email-list { display: flex; flex-direction: column; gap: 2px; }
+
+  /* REJECTION REASONS */
+  .rejection-reasons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .reason-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    padding: 2px 9px 2px 8px;
+    background: var(--coral-bg);
+    color: var(--coral);
+    border: 1px solid var(--coral-bd);
+    border-radius: var(--rad-pill);
+    font-weight: 500;
+  }
+  .reason-badge::before {
+    content: '×';
+    font-weight: 700;
+    font-size: 13px;
+    line-height: 1;
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    padding: 60px 24px;
+    text-align: center;
+    color: var(--text-3);
+    background: var(--bg-1);
+    border: 1px dashed var(--border-2);
+    border-radius: 14px;
+    grid-column: 1 / -1;
+  }
+  .empty-state h3 {
+    color: var(--text);
+    margin: 0 0 6px;
+    font-weight: 600;
+    font-size: 16px;
+    letter-spacing: -0.015em;
+  }
+  .empty-state p { margin: 4px 0; font-size: 13px; }
+
+  /* SELECTION BAR */
+  .selection-bar {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(180%);
+    background: rgba(23, 23, 28, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-3);
+    border-radius: var(--rad-pill);
+    padding: 10px 12px 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 90;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.6),
+                0 0 50px -10px rgba(255, 224, 138, 0.25);
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .selection-bar.show { transform: translateX(-50%) translateY(0); }
+  .selection-info {
+    font-size: 13px;
+    color: var(--text-2);
+    font-weight: 500;
+  }
+  .selection-info strong {
+    color: var(--accent);
+    font-size: 17px;
+    font-family: 'JetBrains Mono', monospace;
+    margin-right: 4px;
+  }
+
+  /* MODAL */
+  .modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 5, 7, 0.82);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    z-index: 1000;
+    overflow-y: auto;
+    padding: 48px 20px;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: var(--bg-1);
+    border: 1px solid var(--border-3);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 920px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.7);
+  }
+  .modal-head {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .modal-title {
+    font-size: 19px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.025em;
+  }
+  .modal-close {
+    margin-left: auto;
+    background: transparent;
+    border: 1px solid var(--border-2);
+    color: var(--text-2);
+    width: 30px; height: 30px;
+    border-radius: var(--rad-pill);
+    font-size: 16px;
+  }
+  .modal-close:hover { background: var(--bg-2); color: var(--coral); border-color: var(--coral); }
+  .modal-body { padding: 22px 24px; }
+
+  /* EMAIL MODAL */
+  .email-template-card {
+    background: var(--bg-2);
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 18px;
+    border: 1px solid var(--border);
+  }
+  .email-recipients {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .email-recipient {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-1);
+    transition: background 0.15s;
+  }
+  .email-recipient:hover { background: var(--bg-2); }
+  .email-recipient:last-child { border-bottom: none; }
+  .email-recipient-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 14px;
+    align-items: center;
+  }
+  .email-recipient .lname {
+    font-weight: 700;
+    font-size: 14.5px;
+    letter-spacing: -0.015em;
+    color: var(--text);
+  }
+  .email-recipient .lemail {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-3);
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .email-recipient.no-email .lemail { color: var(--coral); }
+  .email-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+  .preview-panel {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-top: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-2);
+    white-space: pre-wrap;
+    max-height: 280px;
+    overflow-y: auto;
+    line-height: 1.6;
+    display: none;
+  }
+  .preview-panel.show { display: block; }
+  .preview-panel .key {
+    color: var(--text-3);
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+  }
+
+  /* SETTINGS / FIELDS */
+  .container-narrow { max-width: 760px; }
+  .page-title {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin: 0 0 8px;
+  }
+  .page-sub {
+    color: var(--text-3);
+    margin: 0 0 28px;
+    font-size: 14px;
+  }
+  .settings-section {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin-bottom: 16px;
+  }
+  .settings-section h3 {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0 0 4px;
+    letter-spacing: -0.02em;
+  }
+  .settings-section .sub {
+    color: var(--text-3);
+    font-size: 13px;
+    margin: 0 0 18px;
+  }
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-size: 11px;
+    color: var(--text-2);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 6px;
+  }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border-2);
+    color: var(--text);
+    padding: 10px 13px;
+    border-radius: 8px;
+    outline: none;
+    font-size: 13.5px;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(255, 224, 138, 0.10);
+  }
+  .field textarea { resize: vertical; min-height: 80px; font-family: 'Inter', sans-serif; }
+
+  /* DB TABLE */
+  .db-toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .db-search {
+    flex: 0 1 380px;
+    background: var(--bg-1);
+    border: 1px solid var(--border-2);
+    color: var(--text);
+    padding: 9px 14px;
+    border-radius: var(--rad-pill);
+    outline: none;
+    transition: all 0.15s;
+    font-size: 13.5px;
+  }
+  .db-search:focus { border-color: var(--accent); background: var(--bg-2); }
+  .db-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-3);
+    padding: 6px 12px;
+    border: 1px solid var(--border-2);
+    border-radius: var(--rad-pill);
+  }
+  .db-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .db-table th {
+    text-align: left;
+    padding: 13px 16px;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--border);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    white-space: nowrap;
+  }
+  .db-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .db-table tbody tr:last-child td { border-bottom: none; }
+  .db-table tbody tr:hover { background: var(--bg-2); }
+  .db-table .name {
+    font-weight: 600;
+    font-size: 13.5px;
+    letter-spacing: -0.01em;
+  }
+  .db-table .mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-2);
+  }
+  .db-table .trunc {
+    max-width: 280px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-3);
+  }
+
+  /* JOTFORM TAB */
+  .jotform-empty {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 36px 28px;
+    text-align: center;
+    color: var(--text-3);
+  }
+  .jotform-empty h3 {
+    color: var(--text);
+    margin: 0 0 8px;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .jotform-empty p {
+    margin: 0 auto 6px;
+    max-width: 520px;
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+  .jotform-callout {
+    background: rgba(93, 169, 255, 0.05);
+    border: 1px solid var(--blue-bd);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin: 20px auto;
+    max-width: 620px;
+    text-align: left;
+  }
+  .jotform-callout h4 {
+    margin: 0 0 6px;
+    color: var(--blue);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    font-weight: 700;
+  }
+  .jotform-callout p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-2);
+    line-height: 1.6;
+    max-width: none;
+    text-align: left;
+  }
+  .app-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 12px;
+  }
+  .app-card {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .app-card:hover { border-color: var(--border-3); background: var(--bg-2); }
+  .app-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .app-card-title {
+    font-size: 15.5px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.015em;
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+  }
+  .app-card-sub {
+    font-size: 12px;
+    color: var(--text-3);
+    margin-top: 2px;
+  }
+  .app-card-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px 14px;
+    margin-bottom: 12px;
+  }
+  .app-card-meta-item .k {
+    font-size: 9.5px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    font-weight: 600;
+  }
+  .app-card-meta-item .v {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .app-card-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--bg-2);
+    border: 1px solid var(--green);
+    color: var(--green);
+    padding: 11px 22px;
+    border-radius: var(--rad-pill);
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 2000;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 5px; border: 2px solid var(--bg); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--bg-4); }
+
+  /* RESPONSIVE */
+  @media (max-width: 800px) {
+    .topbar, .filter-bar { padding-left: 16px; padding-right: 16px; }
+    .main-content { padding-left: 16px; padding-right: 16px; }
+    .pos-legend { display: none; }
+    .crit-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-logo">LC</div>
+    <span>Lenders<span style="color:var(--accent); margin-left:5px;">Choice</span></span>
+  </div>
+  <nav class="nav-tabs">
+    <button class="nav-tab active" data-page="deal">Match Deal</button>
+    <button class="nav-tab" data-page="lenders">Database</button>
+    <button class="nav-tab" data-page="jotform">JotForm</button>
+    <button class="nav-tab" data-page="settings">Settings</button>
+  </nav>
+  <div class="topbar-right">
+    <span class="meta-pill"><span id="meta-count">0</span> lenders</span>
+  </div>
+</header>
+
+<!-- ==================== MATCH DEAL PAGE ==================== -->
+<main class="page active" id="page-deal">
+  <div class="filter-bar">
+    <div class="filter-field">
+      <label>State</label>
+      <select id="f-state"><option value="">— any —</option></select>
+    </div>
+    <div class="filter-field" style="min-width:88px;">
+      <label>Position</label>
+      <select id="f-position">
+        <option value="">—</option>
+        <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+        <option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
+      </select>
+    </div>
+    <div class="filter-field wide combobox">
+      <label>Industry</label>
+      <input type="text" id="f-industry" placeholder="Type to search…" autocomplete="off">
+      <div class="combobox-list" id="industry-list"></div>
+    </div>
+    <div class="filter-field">
+      <label>Revenue</label>
+      <div class="dollar-input">
+        <span class="dollar-prefix">$</span>
+        <input type="text" inputmode="numeric" id="f-revenue" placeholder="25,000" autocomplete="off">
+      </div>
+    </div>
+    <div class="filter-field" style="min-width:88px;">
+      <label>FICO</label>
+      <input type="number" id="f-fico" placeholder="650" min="300" max="850">
+    </div>
+    <div class="filter-field" style="min-width:96px;">
+      <label>TIB (mo)</label>
+      <input type="number" id="f-tib" placeholder="24" min="0">
+    </div>
+    <div class="filter-field" style="min-width:96px;">
+      <label>Neg Days</label>
+      <input type="number" id="f-negdays" placeholder="3" min="0">
+    </div>
+    <div class="filter-field" style="min-width:130px;">
+      <label>Defaults</label>
+      <select id="f-defaults">
+        <option value="">—</option>
+        <option value="no">None / clean</option>
+        <option value="satisfied">Satisfied</option>
+        <option value="yes">Open default</option>
+      </select>
+    </div>
+    <div class="filter-spacer"></div>
+    <button class="btn btn-ghost btn-sm" id="btn-clear" title="Clear all filters">Clear</button>
+  </div>
+
+  <div class="main-content">
+    <div class="results-header">
+      <div class="res-stats">
+        <span class="stat-chip match"><span class="num" id="s-match">0</span><span class="lbl">match</span></span>
+        <span class="stat-chip fail"><span class="num" id="s-fail">0</span><span class="lbl">rejected</span></span>
+        <span class="stat-chip sel"><span class="num" id="s-sel">0</span><span class="lbl">selected</span></span>
+      </div>
+      <div class="pos-legend">
+        <span class="lbl">Positions</span>
+        <span class="position-pill green sm">1st only</span>
+        <span class="position-pill blue sm">1st – Nth</span>
+        <span class="position-pill purple sm">2nd+</span>
+        <span class="position-pill amber sm">3rd+</span>
+        <span class="position-pill coral sm">4th+</span>
+      </div>
+    </div>
+
+    <div id="section-matches">
+      <div class="section-head">
+        <span class="ico green"></span>
+        Qualifying Lenders
+        <span class="count" id="cnt-match">0</span>
+        <span class="section-head-spacer"></span>
+        <div class="sort-control">
+          <label for="sort-by">Sort</label>
+          <select id="sort-by">
+            <option value="recommended">Recommended</option>
+            <option value="alpha">Name (A→Z)</option>
+            <option value="alpha-desc">Name (Z→A)</option>
+            <option value="position">Position (low to high)</option>
+            <option value="revenue-asc">Revenue Min (low to high)</option>
+            <option value="revenue-desc">Revenue Min (high to low)</option>
+            <option value="fico-asc">FICO Min (low to high)</option>
+            <option value="fico-desc">FICO Min (high to low)</option>
+            <option value="defaults">Default Status</option>
+          </select>
+        </div>
+        <button class="btn btn-sm" id="btn-select-all">Select all</button>
+        <button class="btn btn-sm btn-ghost" id="btn-deselect-all">Clear</button>
+      </div>
+      <div id="matches-list" class="lender-grid"></div>
+    </div>
+
+    <div id="section-rejected">
+      <div class="section-head">
+        <span class="ico coral"></span>
+        Will Not Qualify
+        <span class="count" id="cnt-fail">0</span>
+      </div>
+      <div id="rejected-list" class="lender-grid"></div>
+    </div>
+  </div>
+
+  <div class="selection-bar" id="sel-bar">
+    <div class="selection-info"><strong id="sel-count">0</strong> selected</div>
+    <button class="btn btn-sm btn-ghost" id="btn-clear-sel">Clear</button>
+    <button class="btn btn-primary" id="btn-emails">Generate Emails →</button>
+  </div>
+</main>
+
+<!-- ==================== LENDERS DB PAGE ==================== -->
+<main class="page" id="page-lenders">
+  <div class="main-content">
+    <h1 class="page-title">Lender Database</h1>
+    <p class="page-sub">All lenders currently loaded. To update lender data, send an updated CSV and I'll rebuild the app.</p>
+    <div class="db-toolbar">
+      <input type="text" class="db-search" id="db-search" placeholder="Search lenders, industries, states…">
+      <span class="db-count" id="db-count"></span>
+    </div>
+    <table class="db-table">
+      <thead>
+        <tr>
+          <th>Lender</th>
+          <th>Position</th>
+          <th>Min Rev</th>
+          <th>FICO</th>
+          <th>TIB</th>
+          <th>Neg</th>
+          <th>Default</th>
+          <th>States Excluded</th>
+          <th>Email</th>
+        </tr>
+      </thead>
+      <tbody id="db-body"></tbody>
+    </table>
+  </div>
+</main>
+
+<!-- ==================== JOTFORM PAGE ==================== -->
+<main class="page" id="page-jotform">
+  <div class="main-content">
+    <div style="display:flex; align-items:center; gap:14px; margin-bottom: 8px; flex-wrap: wrap;">
+      <h1 class="page-title" style="margin:0;">JotForm Applications</h1>
+      <span style="flex:1;"></span>
+      <button class="btn btn-primary btn-sm" id="btn-add-app">+ Add Application</button>
+    </div>
+    <p class="page-sub">Incoming merchant applications. Click <strong>Find Lenders</strong> on any application to populate the filter on the Match Deal tab.</p>
+
+    <div id="app-list-container">
+      <!-- Either empty state or app grid renders here -->
+    </div>
+  </div>
+</main>
+
+<!-- ==================== SETTINGS PAGE ==================== -->
+<main class="page" id="page-settings">
+  <div class="main-content container-narrow">
+    <h1 class="page-title">Settings</h1>
+    <p class="page-sub">Your sender info and email template.</p>
+
+    <div class="settings-section">
+      <h3>Your Info</h3>
+      <p class="sub">Used to sign emails and fill template variables.</p>
+      <div class="field"><label>Your Name</label><input type="text" id="set-name" placeholder="Mark Smith"></div>
+      <div class="field"><label>Your Company</label><input type="text" id="set-company" placeholder="ABC Funding"></div>
+      <div class="field"><label>Your Phone</label><input type="text" id="set-phone" placeholder="(555) 555-5555"></div>
+      <div class="field"><label>Your Email</label><input type="text" id="set-email" placeholder="you@yourcompany.com"></div>
+    </div>
+
+    <div class="settings-section">
+      <h3>Email Template</h3>
+      <p class="sub">
+        Variables: <code style="background:var(--bg-3); padding:1px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--accent);">{merchant}</code>
+        {industry} {state} {position} {revenue} {fico} {tib} {negdays} {defaults} {amount} {notes} {lender} {yourname} {yourcompany} {yourphone} {youremail}
+      </p>
+      <div class="field"><label>Subject Line</label><input type="text" id="set-subject"></div>
+      <div class="field">
+        <label>Body</label>
+        <textarea id="set-body" rows="14" style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px;"></textarea>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:10px; margin-bottom: 24px;">
+      <button class="btn btn-primary" id="btn-save-settings">Save Settings</button>
+      <button class="btn btn-ghost" id="btn-reset-template">Reset template to default</button>
+    </div>
+  </div>
+</main>
+
+<!-- ==================== EMAIL MODAL ==================== -->
+<div class="modal-bg" id="modal-email">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 class="modal-title">Generate Submission Emails</h2>
+      <button class="modal-close" data-close>×</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text-3); margin:0 0 16px; font-size:13px;">
+        Optional deal details below get inserted into the email template. Skip them if you'll edit the body before sending.
+      </p>
+      <div class="email-template-card">
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap: 14px;">
+          <div class="field" style="margin:0;">
+            <label>Merchant Name</label>
+            <input type="text" id="em-merchant" placeholder="ABC Restaurant LLC">
+          </div>
+          <div class="field" style="margin:0;">
+            <label>Amount Requested</label>
+            <div class="dollar-input">
+              <span class="dollar-prefix">$</span>
+              <input type="text" inputmode="numeric" id="em-amount" placeholder="50,000">
+            </div>
+          </div>
+        </div>
+        <div class="field" style="margin: 14px 0 0;">
+          <label>Notes for Lender</label>
+          <textarea id="em-notes" rows="2" placeholder="Anything else worth including in the email body"></textarea>
+        </div>
+      </div>
+      <div id="email-list" class="email-recipients"></div>
+      <div style="margin-top:18px; display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn" id="btn-copy-all-addrs">
+          <svg viewBox="0 0 16 16" fill="none"><rect x="4" y="4" width="9" height="9" stroke="currentColor" stroke-width="1.5" rx="1.5"/><path d="M11 4V3a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Copy all addresses
+        </button>
+        <button class="btn" id="btn-copy-all-emails">Copy all email bodies</button>
+        <span style="flex:1"></span>
+        <button class="btn btn-ghost" data-close>Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== APPLICATION MODAL ==================== -->
+<div class="modal-bg" id="modal-app">
+  <div class="modal" style="max-width: 720px;">
+    <div class="modal-head">
+      <h2 class="modal-title" id="app-modal-title">New Application</h2>
+      <button class="modal-close" data-close>×</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        <div class="field" style="grid-column: 1 / -1;">
+          <label>Merchant Name (DBA) *</label>
+          <input type="text" id="a-merchant" placeholder="ABC Restaurant LLC">
+        </div>
+        <div class="field" style="grid-column: 1 / -1;">
+          <label>Legal Business Name</label>
+          <input type="text" id="a-business">
+        </div>
+        <div class="field"><label>Contact Name</label><input type="text" id="a-contact"></div>
+        <div class="field"><label>Phone</label><input type="text" id="a-phone"></div>
+        <div class="field" style="grid-column: 1 / -1;"><label>Email</label><input type="text" id="a-email"></div>
+        <div class="field"><label>State</label><select id="a-state"><option value="">—</option></select></div>
+        <div class="field"><label>Industry</label><input type="text" id="a-industry"></div>
+        <div class="field">
+          <label>Amount Requested</label>
+          <div class="dollar-input"><span class="dollar-prefix">$</span><input type="text" inputmode="numeric" id="a-amount"></div>
+        </div>
+        <div class="field" style="grid-column: 1 / -1;">
+          <label>Notes</label>
+          <textarea id="a-notes" rows="3" placeholder="Anything else worth noting"></textarea>
+        </div>
+      </div>
+    </div>
+    <div style="padding: 14px 24px; border-top: 1px solid var(--border); display: flex; gap: 10px;">
+      <button class="btn btn-danger" id="btn-delete-app" style="margin-right:auto; display:none;">Delete</button>
+      <button class="btn btn-ghost" data-close>Cancel</button>
+      <button class="btn btn-primary" id="btn-save-app">Save Application</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>/* ============================================================
+   DATA
+   ============================================================ */
+const DEFAULT_LENDERS = [{"name":"Rapid","positionRaw":"1st ONLY","positionMin":1,"positionMax":1,"depositsRaw":"20K+","depositsMin":20000,"ficoRaw":"600+","ficoMin":600,"tibRaw":"2+ YEAR","tibMinMonths":24,"negDaysRaw":"< 3","negDaysMax":3,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":["XXX","Taxi Driver","Religion","Attorney / Law","Cannabis / Vape","Non-Profit","Real Estate"],"emails":["mookienassir@rapidfinance.com","submissions@rapidfinance.com"],"notes":"MCA / LOC","sortRank":1.01,"paperGrade":"","maxFunding":500000,"maxTerm":"18 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"45","website":"www.rapidfinance.com"},{"name":"Mulligan","positionRaw":"1st ONLY","positionMin":1,"positionMax":1,"depositsRaw":"25K+","depositsMin":25000,"ficoRaw":"625+","ficoMin":625,"tibRaw":"6+ MONTHS","tibMinMonths":6,"negDaysRaw":"< 3","negDaysMax":3,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":["Attorney / Law","Cannabis / Vape","Transportation"],"emails":[],"notes":"annual rev 1m+\n4m-5m in rev \n\nget 6 months of statements + 2 years of taxes","sortRank":1.2,"paperGrade":"A Paper","maxFunding":3000000,"maxTerm":"24 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"45","website":"https://www.mulliganfunding.com/"},{"name":"Pirs","positionRaw":"1st ONLY","positionMin":1,"positionMax":1,"depositsRaw":"12K+","depositsMin":12000,"ficoRaw":"500+","ficoMin":500,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 3","negDaysMax":3,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Construction","Manufacturing / Wholesale","Healthcare","E-Commerce","Dental"],"industriesNo":["Counseling","Flowers","Recycling","Insurance","Casinos / gambling","Adult related business","Taxidermy","Supermarkets / grocery","Real estate brokerage","Boat sales","Travel agent"],"emails":["Mitchell@pirscapital.com","Submissions@pirscapital.com"],"notes":"","sortRank":1.2,"paperGrade":"","maxFunding":1000000,"maxTerm":"15 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"0","website":"https://pirscapital.com/"},{"name":"Credibly","positionRaw":"1st ONLY","positionMin":1,"positionMax":1,"depositsRaw":"25K+","depositsMin":25000,"ficoRaw":"550+","ficoMin":550,"tibRaw":"6+ MONTHS","tibMinMonths":6,"negDaysRaw":"< 6","negDaysMax":6,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Healthcare","Restaurant","Retail sales"],"industriesNo":["XXX","Airlines","Bail Bond Services","Cannabis / Vape","Casino","Credit Repair","Financial Services","Movie and Video Production","Auto Sales","Solar / Energy","Oil","Real Estate Fix and Flip"],"emails":["manderson@credibly.com"],"notes":"","sortRank":1.3,"paperGrade":"A Paper","maxFunding":60000,"maxTerm":"24 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"40","website":"https://www.credibly.com/"},{"name":"IOU","positionRaw":"1st - 2nd","positionMin":1,"positionMax":2,"depositsRaw":"50K+","depositsMin":50000,"ficoRaw":"650+","ficoMin":650,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 3","negDaysMax":3,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["Montana","South Dakota","Hawaii","Nevada","Vermont","North Dakota"],"industriesYes":["Healthcare","Dentists","Plumbing","Electrician","Lodging hotel / motel","Veterinarian","HVAC / heating / air","Liquor stores","Health spa"],"industriesNo":["Adult related business","Transportation (medical)","Attorney / law firm","Bail bonds","Real estate brokerage","Concierge services","Education","Debt consolidation","Energy supplier","Farming","Retail sales","Transportation (trucking)","Psychics / astrologers","Casinos / gambling","Specialty goods delivery","Marketing / advertising","Manufacturing","Multi-level marketing","Professional services","Payroll processing","Printing / publishing","Roofing","Solar panels","Transportation (limousine / taxi)","Title company","Travel agent","Assisted living / rehabilitation facility","ATM rentals","Business opportunity / franchise","Banking","Healthcare","Collection agencies","Construction (general contractor)","Tax services","Financial services","Fitness clubs / gym","Homeopathic remedies / drugs","Hookah bar","Investment firm","Media","Marijuana / cannabis","Mining","Check cashing services","Non profit / charity","Oil / fuel","Jewelry","Real estate investment","Automotive sales (used)","Stock broker / advice","Telecommunications","Automotive towing","Vape shop"],"emails":["info@fundingucapital.com"],"notes":"Alaska 25K+ DEPOSITS\nArkansas 25K+ DEPOSITS\nKentucky 15k+ DEPOSITS\nMaryland 15k+ DEPOSITS\nNew Jersey 50K+ DEPOSITS\nOregon 50K+ DEPOSITS\nWest Virginia 50K+ DEPOSITS\nWyoming 50K+ DEPOSITS","sortRank":1.35,"paperGrade":"A Paper","maxFunding":1500000,"maxTerm":"18 Months","payment":"Daily, Weekly, Bi-Weekly","origFee":"0","renewalPct":"40","website":"http://www.ioufinancial.com/"},{"name":"On Deck","positionRaw":"1st - 3rd","positionMin":1,"positionMax":3,"depositsRaw":"10K+","depositsMin":10000,"ficoRaw":"625+","ficoMin":625,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 3","negDaysMax":3,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["Nevada","South Dakota","North Dakota"],"industriesYes":["Transportation (trucking)","Construction (general contractor)"],"industriesNo":[],"emails":[],"notes":"MCA / LOC Weekly/Monthly\n\nTOP TIER CLEAN FILES ONLY Credit based financing","sortRank":1.37,"paperGrade":"","maxFunding":250000,"maxTerm":"24 Months","payment":"Daily, Weekly, Monthly","origFee":"0","renewalPct":"45","website":"http://www.ondeck.com/"},{"name":"Kapitus","positionRaw":"1st - 5th","positionMin":1,"positionMax":5,"depositsRaw":"10K+","depositsMin":10000,"ficoRaw":"640+","ficoMin":640,"tibRaw":"2+ YEAR","tibMinMonths":24,"negDaysRaw":"< 3","negDaysMax":3,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Healthcare","Manufacturing / Wholesale","Auto Repair","Construction","Restaurant","Retail","Insurance"],"industriesNo":["Property management"],"emails":["Teamlarsen@kapitus.com","NewContracts@kapitus.com"],"notes":"Weekly / Monthly","sortRank":1.38,"paperGrade":"","maxFunding":0,"maxTerm":"36 Months","payment":"Daily, Weekly, Bi-Weekly, Monthly","origFee":"0","renewalPct":"0","website":"https://kapitus.com/"},{"name":"Can Capital","positionRaw":"1st ONLY","positionMin":1,"positionMax":1,"depositsRaw":"25K+","depositsMin":25000,"ficoRaw":"600+","ficoMin":600,"tibRaw":"3+ YEAR","tibMinMonths":36,"negDaysRaw":"< 3","negDaysMax":3,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Healthcare"],"industriesNo":["Non profit / charity","Financial services","Real estate brokerage","Construction (new home)","Real estate investment","Insurance","Adult related business","Automotive sales (new/used)","Firearms / gun dealers","Transportation (trucking)","Oil / fuel","Assisted living / rehab","Attorney / law firm","Social services","Staffing / HR","Property management","Church / temple","Collection agencies","Bail bonds","Government","Management company"],"emails":[],"notes":"Lines of Credit: CAN can coexist with lines of credit (proof required in some cases). Competitor Loan Payoff: CAN can pay off only one competitor loan. If the business has more than two competitor loans, CAN cannot provide funding. First Position Loans: CAN only funds first position loans. UCC Filings: CAN files UCCs on loans of $150K or more. Net Requirement: When paying off a competitor loan, the customer must net at least 50%.","sortRank":1.5,"paperGrade":"A Paper","maxFunding":250000,"maxTerm":"18 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"40","website":"https://www.cancapital.com/"},{"name":"Pearl Capital","positionRaw":"1st - 3rd","positionMin":1,"positionMax":3,"depositsRaw":"40K+","depositsMin":40000,"ficoRaw":"450+","ficoMin":450,"tibRaw":"6+ MONTHS","tibMinMonths":6,"negDaysRaw":"< 4","negDaysMax":4,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Healthcare","Manufacturing","Ecommerce / online sales","Professional services","Restaurant","Technology"],"industriesNo":["Transportation (trucking)","Automotive sales (new)","Automotive sales (used)","Attorney / law firm","Solar panels","Equipment financing","Credit protection / consolidation","Vape shop","Marijuana / cannabis","Collection agencies","Financial services","Multi-level marketing"],"emails":[],"notes":"","sortRank":1.9,"paperGrade":"A Paper","maxFunding":1300000,"maxTerm":"12 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"45","website":"https://pearlcapital.com/"},{"name":"Arf Financial","positionRaw":"1st - 2nd","positionMin":1,"positionMax":2,"depositsRaw":"15K+","depositsMin":15000,"ficoRaw":"551+","ficoMin":551,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 15","negDaysMax":15,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["North Dakota","South Dakota"],"industriesYes":["Restaurant","Hospitality"],"industriesNo":["Construction","Transportation","Staffing","HVAC"],"emails":["strategicpartnerships@arffinancial.com","gsheppard@arffinancial.com","stella@arffinancial.com"],"notes":"MCA / LOC\n\nstella@arffinancial.com","sortRank":2.0,"paperGrade":"","maxFunding":500000,"maxTerm":"36 Months","payment":"Weekly","origFee":"0","renewalPct":"100","website":"https://www.arffinancial.com/"},{"name":"Everest","positionRaw":"1st+","positionMin":1,"positionMax":99,"depositsRaw":"10K+","depositsMin":10000,"ficoRaw":"550+","ficoMin":550,"tibRaw":"3+ MONTHS","tibMinMonths":3,"negDaysRaw":"< 10","negDaysMax":10,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Restaurant"],"industriesNo":["Financial Services","Attorney / Law","Auto Sales"],"emails":["newdeals@ev-bf.com","Iso.support@ev-bf.com"],"notes":"Stipulations for Files $85K and Over 8821 Tax Form: Must be signed with a wet signature. Business Tax Return: Most recent tax return required. Decision Logic: Or manual verification. Truepic: Merchant must provide as many relevant pictures as possible, including: Documents Signage Inventory Materials Tools Projects\n\nSEND EVERYTHING\n\nUnder 16k it becomes Vader","sortRank":2.1,"paperGrade":"A Paper, B Paper, C Paper, D Paper","maxFunding":1000000,"maxTerm":"14 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"40","website":"https://everestbusinessfunding.com/"},{"name":"Fratello Capital","positionRaw":"1st - 6th","positionMin":1,"positionMax":6,"depositsRaw":"20K+","depositsMin":20000,"ficoRaw":"500+","ficoMin":500,"tibRaw":"6+ MONTHS","tibMinMonths":6,"negDaysRaw":"< 5","negDaysMax":5,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["Hawaii"],"industriesYes":["Healthcare","Medical Professional","Dental","Retail","E-Commerce","Nail / Hair Salon"],"industriesNo":["Transportation (trucking)","Adult related business","Casinos / gambling"],"emails":[],"notes":"","sortRank":2.1,"paperGrade":"","maxFunding":250000,"maxTerm":"12 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"70","website":"https://fratellocapital.com/"},{"name":"Fundworks","positionRaw":"1st - 2nd","positionMin":1,"positionMax":2,"depositsRaw":"10K+","depositsMin":0,"ficoRaw":"550+","ficoMin":0,"tibRaw":"No Min","tibMinMonths":0,"negDaysRaw":"< 0","negDaysMax":0,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Nail / Hair Salon","Non-Profit","Healthcare","Dental","Plumbing","HVAC","Electrician","Medical Professional","Property Management","Auto Repair","Gym / Trainer","Restaurant","Landscaping"],"industriesNo":["Transportation","Real Estate","Construction","Attorney / Law","Manufacturing / Wholesale","Casino","Cannabis / Vape","Financial Services"],"emails":["newdeals@thefundworks.com","amozafari@thefundworks.com"],"notes":"","sortRank":2.1,"paperGrade":"","maxFunding":0,"maxTerm":"","payment":"","origFee":"0","renewalPct":"0","website":"https://thefundworks.com/"},{"name":"Lionheart Funding","positionRaw":"1st - 8th","positionMin":1,"positionMax":8,"depositsRaw":"40k+","depositsMin":null,"ficoRaw":"500+","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 4","negDaysMax":null,"defaultsRaw":"Satisfied","defaultsAccepts":"satisfied","statesOut":[],"industriesYes":["Healthcare","Medical Professional","Dental","Restaurant","Property Management","Auto Repair","HVAC","Retail","E-Commerce"],"industriesNo":["Transportation","Cannabis / Vape","Attorney / Law","Farming / Livestock","Solar / Energy","Auto Sales","Non-Profit"],"emails":[],"notes":"Max Term 36 Weeks","sortRank":2.1,"paperGrade":"A Paper","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":"https://lhfundgroup.com/"},{"name":"Forward","positionRaw":"1st+","positionMin":1,"positionMax":99,"depositsRaw":"50K+","depositsMin":50000,"ficoRaw":"500+","ficoMin":500,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 5","negDaysMax":5,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Retail sales","Tax services","Child care","Assisted living / rehabilitation facility","Medical doctor","Liquor stores","Electrician","HVAC / heating / air","Accounting","Education","Healthcare","Attorney / law firm","Pharmacies","Restaurant","Plumbing"],"industriesNo":["Adult related business","Automotive sales (new)","Automotive sales (used)","Auction houses","Bail bonds","Cannabis","Church","Commodities broker","Collection agencies","Digital assets / crypto","Equipment financing","Financial services","Firearms / gun dealers","Gaming","Homeopathic remedies / drugs","Multi-level marketing","Non profit / charity","Oil / fuel","Pawn shops","Real estate investment","Stock broker / advice","Attorney / law firm","Check cashing services"],"emails":["mjacobson@forwardfinancing.com","submissions@forwardfinancing.com"],"notes":"DO NOT send apps with 10-11 months TIB. Will not round up and will decline.\n\nA bank account switch within the last 3\nmonths is a hard decline.","sortRank":2.12,"paperGrade":"B Paper, C Paper","maxFunding":300000,"maxTerm":"12 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"45","website":"https://www.forwardfinancing.com/"},{"name":"LEGEND","positionRaw":"1st - 3rd","positionMin":1,"positionMax":3,"depositsRaw":"20K+","depositsMin":null,"ficoRaw":"525+","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 3","negDaysMax":null,"defaultsRaw":"","defaultsAccepts":"","statesOut":[],"industriesYes":["Restaurant","Construction","HVAC","Sole Prop","Medical Professional","Healthcare","School / Education","Dental","Retail","E-Commerce","Gym / Trainer","Manufacturing / Wholesale","Veterinian","Nail / Hair Salon","Solar / Energy","Auto Repair","Jewelry","Cannabis / Vape","Real Estate","Consulting"],"industriesNo":["XXX","Auto Sales","Financial Services","Bail Bond Services","Collection Agency","Casino","Attorney / Law","Travel Agency","Pawn Shop","Religion"],"emails":["apps@legendfunding.com","evigdorov@legendfunding.com","cbogman@legendfunding.com"],"notes":"Fund nonprofits\nunder 350k= no financials required\nMax Term is 12 months.\nFund all 50 states\nTrucking: Requires 5 years in business, 600 FICO, and 50k in rev per month - *Max offer is 50k and 4-month term*\n\nConstruction: Requires 3 years in business, 600 Fico, and 50k in rev per month - *Max offer is 200k and 10-month term*\n\nReal Estate: Requires 3 years in business (except for Brokerages which requires 5 years), 600 min Fico and 50k in rev per month","sortRank":2.12,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":"https://legendadvancefunding.com/"},{"name":"EFINANCIAL","positionRaw":"1st - 3rd","positionMin":1,"positionMax":3,"depositsRaw":"15k+","depositsMin":null,"ficoRaw":"600+","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 5","negDaysMax":null,"defaultsRaw":"No","defaultsAccepts":"no","statesOut":[],"industriesYes":["Attorney / Law","Healthcare","Restaurant","Non-Profit","Grocery / Convenience Stores","Cannabis / Vape","Landscaping","Insurance","Property Management","Liquor Store","Manufacturing / Wholesale","Construction","Auto Repair","HVAC","Plumbing","Pharmacies","Garbage / Waste Management"],"industriesNo":["Transportation","Auto Sales","Real Estate","Farming / Livestock","Gas Station","Pawn Shop","Jewelry","Cell Phone Services","Guns / Weapons"],"emails":[],"notes":"Construction - 25k+ deposits, 600 fico, 1 yr TIB\n\n2nd position: they will fund SAME DAY as an A list lender (kapitus, ondeck, iou, credibly, rapid) also forward sometimes\n\nB LIST FUNDER \ndefaults - only if corrected within 60 days\nmax 5 negative days per month\n\nWill pay off up to 2 advances\n\n(Day 1 - 30): Factor = 1.19 paying 10 (26 pt discount) \n(Day 31 - 60): Factor = 1.25 paying 10 (20 pt discount)\n (Day 61 - 90): Factor = 1.31 paying 10 (14 pt discount)","sortRank":2.125,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":""},{"name":"Lendr","positionRaw":"1st - 3rd","positionMin":1,"positionMax":3,"depositsRaw":"10K+","depositsMin":10000,"ficoRaw":"450+","ficoMin":450,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 7","negDaysMax":7,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["Hawaii","Alaska"],"industriesYes":[],"industriesNo":["Non profit / charity","Gas stations (with convenience store)","Credit protection / consolidation","Marijuana / cannabis","Automotive sales (used)","Church / temple","Gas stations (no convenience store)","Financial services","Automotive sales (new)","Real estate investment"],"emails":["oapolo@lendr.online"],"notes":"Will pay off up to 2 other fundings ($40k max) Net 60% Rule","sortRank":2.13,"paperGrade":"A Paper","maxFunding":100000,"maxTerm":"12 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"45","website":"https://lendr.online/"},{"name":"VOX","positionRaw":"1st - 3rd","positionMin":1,"positionMax":3,"depositsRaw":"10K+","depositsMin":null,"ficoRaw":"","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 5","negDaysMax":null,"defaultsRaw":"No","defaultsAccepts":"no","statesOut":[],"industriesYes":[],"industriesNo":["XXX","Cannabis / Vape","Sole Prop","Financial Services","Auto Sales","Cleaning","State / Government"],"emails":["wdorsey@voxfunding.com","submissions@voxfunding.com"],"notes":"Will pay off up to 2 positions with 50% net to merchant","sortRank":2.131,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":"www.voxfunding.com"},{"name":"THE SMARTER MERCHANT","positionRaw":"1st - 4th","positionMin":1,"positionMax":4,"depositsRaw":"10K+","depositsMin":null,"ficoRaw":"600+","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 5","negDaysMax":null,"defaultsRaw":"No","defaultsAccepts":"no","statesOut":[],"industriesYes":["Healthcare","Healthcare Equipment","Restaurant","Hotel"],"industriesNo":["XXX","Attorney / Law","Real Estate","Farming / Livestock","Gas Station","Cannabis / Vape","Auto Sales","Staffing","Transportation"],"emails":["submissions@thesmartermerchant.com","lena@thesmartermerchant.com"],"notes":"","sortRank":2.14,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":""},{"name":"VCG","positionRaw":"1st - 4th","positionMin":1,"positionMax":4,"depositsRaw":"20K+","depositsMin":null,"ficoRaw":"500+","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 3","negDaysMax":null,"defaultsRaw":"","defaultsAccepts":"","statesOut":[],"industriesYes":["Restaurant","Pharmacies","Construction","Electronics","Healthcare","Garbage / Waste Management","Rehab Center","Liquor Store","Bar / Night Club","Electrician","Security Services","Retail","Plumbing","Manufacturing / Wholesale","Medical Professional","School / Education","Gym / Trainer","Solar / Energy","HVAC","E-Commerce","Auto Repair","Accounting / CPA","Consulting","Grocery / Convenience Stores","Technology/Software"],"industriesNo":["Pawn Shop","Cannabis / Vape","Staffing","Real Estate","Auto Sales","Financial Services","Nail / Hair Salon","Transportation","Moving","Religion","Travel Agency","Attorney / Law","Gas Station","Bail Bond Services"],"emails":[],"notes":"3 deopists min\nCONSTRUCTION ONLY 2nd+ position","sortRank":2.141,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":""},{"name":"GFE","positionRaw":"1st - 6th","positionMin":1,"positionMax":6,"depositsRaw":"25K+","depositsMin":25000,"ficoRaw":"600+","ficoMin":600,"tibRaw":"6+ MONTHS","tibMinMonths":6,"negDaysRaw":"< 5","negDaysMax":5,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["California"],"industriesYes":["Marinas"],"industriesNo":["Marijuana / cannabis","Real estate brokerage"],"emails":["underwriting@globalfundingexperts.com","iso@globalfundingexperts.com","linda@globalfundingexperts.com"],"notes":"","sortRank":2.22,"paperGrade":"","maxFunding":800000,"maxTerm":"12 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"0","website":"https://www.globalfundingexperts.com/"},{"name":"Spartan Capital","positionRaw":"1st - 4th","positionMin":1,"positionMax":4,"depositsRaw":"15K+","depositsMin":15000,"ficoRaw":"500+","ficoMin":500,"tibRaw":"2+ YEAR","tibMinMonths":24,"negDaysRaw":"< 5","negDaysMax":5,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["Utah"],"industriesYes":["Restaurant","Healthcare","Manufacturing"],"industriesNo":["Automotive sales (new)","Automotive sales (used)","Financial services"],"emails":["funding@spartancapitalgroup.com","kmcmahon@spartancapitalgroup.com"],"notes":"","sortRank":2.3,"paperGrade":"B Paper","maxFunding":500000,"maxTerm":"12 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"45","website":"https://www.spartancapitalgroup.com/"},{"name":"Arsenal","positionRaw":"1st - 5th","positionMin":1,"positionMax":5,"depositsRaw":"40k+","depositsMin":null,"ficoRaw":"500+","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 5","negDaysMax":null,"defaultsRaw":"Satisfied","defaultsAccepts":"satisfied","statesOut":[],"industriesYes":["Construction","Healthcare","Medical Professional","Auto Repair","Dental","Specialty Contractors","Restaurant","Nail / Hair Salon"],"industriesNo":["Cannabis / Vape","Auto Sales","Attorney / Law"],"emails":[],"notes":"","sortRank":2.4,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":"https://arsenalfunding.com/"},{"name":"Falcon Capital Group","positionRaw":"1st - 10th","positionMin":1,"positionMax":10,"depositsRaw":"20K+","depositsMin":null,"ficoRaw":"No Min","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 6","negDaysMax":null,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":["Cannabis / Vape","Attorney / Law"],"emails":[],"notes":"","sortRank":2.4,"paperGrade":"C Paper, D Paper","maxFunding":null,"maxTerm":"","payment":"","origFee":"0","renewalPct":"0","website":"https://falconfundingusa.com/"},{"name":"Family Funding Group","positionRaw":"1st - 10th","positionMin":1,"positionMax":10,"depositsRaw":"40k+","depositsMin":null,"ficoRaw":"No Min","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 5","negDaysMax":null,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":["Cannabis / Vape"],"emails":["subs@familyfundinggroup.com"],"notes":"","sortRank":2.4,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":"https://familyfundinggroup.com"},{"name":"PDM Capital","positionRaw":"1st - 4th","positionMin":1,"positionMax":4,"depositsRaw":"30K+","depositsMin":30000,"ficoRaw":"520+","ficoMin":520,"tibRaw":"8+ MONTHS","tibMinMonths":8,"negDaysRaw":"< 6","negDaysMax":6,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["New York","California"],"industriesYes":["Restaurant","Healthcare","Retail sales"],"industriesNo":["Transportation (trucking)","Attorney / law firm"],"emails":[],"notes":"","sortRank":2.4,"paperGrade":"B Paper","maxFunding":200000,"maxTerm":"11 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"45","website":"https://www.pdmcapital.com/"},{"name":"Pinnacle Business Funding","positionRaw":"1st - 4th","positionMin":1,"positionMax":4,"depositsRaw":"30k+","depositsMin":null,"ficoRaw":"525+","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 5","negDaysMax":null,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Restaurant","Retail","Healthcare"],"industriesNo":["Transportation","Attorney / Law"],"emails":["submissions@pbffunding.com","gabriel@pbffunding.com"],"notes":"","sortRank":2.4,"paperGrade":"B Paper, C Paper, D Paper","maxFunding":null,"maxTerm":"","payment":"","origFee":"0","renewalPct":"","website":"https://www.pbffunding.com/"},{"name":"TVT Capital","positionRaw":"1st - 2nd","positionMin":1,"positionMax":2,"depositsRaw":"50K+","depositsMin":50000,"ficoRaw":"450+","ficoMin":450,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 3","negDaysMax":3,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Cannabis / Vape"],"industriesNo":["Auto Sales","Property Management","Attorney / Law"],"emails":["afelus@tvtcapital.com","mkarow@tvtcapital.com"],"notes":"","sortRank":2.4,"paperGrade":"","maxFunding":25000000,"maxTerm":"24 Months","payment":"Daily, Weekly, Bi-Weekly, Monthly","origFee":"0","renewalPct":"45","website":"https://tvt-capital.com/"},{"name":"2M7","positionRaw":"1st - 5th","positionMin":1,"positionMax":5,"depositsRaw":"30K+","depositsMin":30000,"ficoRaw":"450+","ficoMin":450,"tibRaw":"6+ MONTHS","tibMinMonths":6,"negDaysRaw":"< 8","negDaysMax":8,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":["Boat sales","Investment firm","Insurance","Commodities broker","Vape shop","Farming","Aviation","Energy supplier","Moving companies","Casinos/gambling","Airlines","Produce/fruit"],"emails":["Leibel.b@2m7.ca"],"notes":"","sortRank":2.5,"paperGrade":"","maxFunding":0,"maxTerm":"","payment":"","origFee":"0","renewalPct":"0","website":"https://www.2m7.ca/"},{"name":"Arena","positionRaw":"1st - 4th","positionMin":1,"positionMax":4,"depositsRaw":"20K+","depositsMin":20000,"ficoRaw":"500+","ficoMin":500,"tibRaw":"9+ MONTHS","tibMinMonths":9,"negDaysRaw":"< 4","negDaysMax":4,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["Hawaii"],"industriesYes":["Medical doctor","Attorney/law firm","Plumbing","HVAC","Electrician","Healthcare"],"industriesNo":["Transportation (trucking)","Automotive sales (new/used)","Marijuana/cannabis","Check cashing services","Credit protection","Collection agencies","ATM rentals","Construction"],"emails":["info@arenafundingsource.com","processing@arenafundingsource.com"],"notes":"$250k & below\n\nConstruction with limited AR\nTrucking and Auto Sales 30K Min Rev","sortRank":2.5,"paperGrade":"B Paper, C Paper","maxFunding":250000,"maxTerm":"12 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"100","website":"https://arenafundingsource.com/"},{"name":"Backd","positionRaw":"1st - 2nd","positionMin":1,"positionMax":2,"depositsRaw":"100K+","depositsMin":100000,"ficoRaw":"650+","ficoMin":650,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 3","negDaysMax":3,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Manufacturing"],"industriesNo":["Financial services"],"emails":["maria@backd.com","submissions@backd.com","vy@backd.com"],"notes":"MCA / LOC\n\nMostly Term Loans and Line of Credits","sortRank":2.5,"paperGrade":"A Paper","maxFunding":3000000,"maxTerm":"18 Months","payment":"Weekly","origFee":"0","renewalPct":"45","website":"https://www.backd.com/"},{"name":"Bitty","positionRaw":"1st - 3rd","positionMin":1,"positionMax":3,"depositsRaw":"5K+","depositsMin":5000,"ficoRaw":"500+","ficoMin":500,"tibRaw":"6+ MONTHS","tibMinMonths":6,"negDaysRaw":"< 5","negDaysMax":5,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Extensive preferred list (see screenshot","abbreviated here for clarity)"],"industriesNo":["Adult","Auto sales","Collection agencies","Credit repair","Financial services","Insurance","Marijuana/cannabis","Pawn","Telemarketing","Weapons","Trucking","Bail bonds","Gambling","Money services","Property rentals","Construction"],"emails":["partners@bittyadvance.com","guadalupe@bitty.com"],"notes":"Settled Defaults","sortRank":2.5,"paperGrade":"","maxFunding":25000,"maxTerm":"12 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"0","website":"https://bittyadvance.com/"},{"name":"Bizfund","positionRaw":"1st - 5th","positionMin":1,"positionMax":5,"depositsRaw":"20K+","depositsMin":20000,"ficoRaw":"500+","ficoMin":500,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 5","negDaysMax":5,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":["Transportation (trucking)"],"emails":["info@bizfund.com","steven.g@bizadvancenow.com"],"notes":"Trucking only with history 500K+ monthly deposits\nDo Buyouts","sortRank":2.5,"paperGrade":"","maxFunding":1000000,"maxTerm":"18 Months","payment":"Daily, Weekly, Bi-Weekly","origFee":"0","renewalPct":"40","website":"https://bizfund.com/"},{"name":"Bizfund CA","positionRaw":"1st - 5th","positionMin":1,"positionMax":5,"depositsRaw":"20K+","depositsMin":20000,"ficoRaw":"500+","ficoMin":500,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 5","negDaysMax":5,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":["Transportation (trucking)","Construction (general contractor)","Real estate investment","Marijuana / cannabis","Staffing / human resources"],"emails":["jodi.l@bizfund.ca","harrison.g@bizfund.ca"],"notes":"Funds everywhere in Canada","sortRank":2.5,"paperGrade":"","maxFunding":200000,"maxTerm":"9 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"65","website":"https://bizfund.ca/"},{"name":"CFG","positionRaw":"1st - 5th","positionMin":1,"positionMax":5,"depositsRaw":"10K+","depositsMin":10000,"ficoRaw":"500+","ficoMin":500,"tibRaw":"6+ MONTHS","tibMinMonths":6,"negDaysRaw":"< 5","negDaysMax":5,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Healthcare","Restaurant","Attorney/law firm"],"industriesNo":["Automotive sales (new/used)","Collection agencies","Church/temple","Non profit/charity"],"emails":["mciprello@cfgms.com","OMcLaughlin@cfgms.com","PASubs@cfgms.com"],"notes":"best relationship","sortRank":2.5,"paperGrade":"","maxFunding":2000000,"maxTerm":"12 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"40","website":"https://cfgmerchantsolutions.com/"},{"name":"Canacap","positionRaw":"1st - 5th","positionMin":1,"positionMax":5,"depositsRaw":"10K+","depositsMin":10000,"ficoRaw":"450+","ficoMin":450,"tibRaw":"6+ MONTHS","tibMinMonths":6,"negDaysRaw":"< 3","negDaysMax":3,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":["Auto Sales","Gas Station","Investment Broker","Energy","Insurance","Tax","Mortgage Brokers","Staffing","Cannabis / Vape","Attorney / Law","Farming / Livestock"],"emails":["funding@canacap.ca","apps@canacap.ca"],"notes":"","sortRank":2.5,"paperGrade":"B Paper, C Paper, D Paper","maxFunding":150000,"maxTerm":"8 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"45","website":"https://www.canacap.ca/"},{"name":"Capital Domain","positionRaw":"1st - 3rd","positionMin":1,"positionMax":3,"depositsRaw":"50k+","depositsMin":null,"ficoRaw":"No Min","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 5","negDaysMax":null,"defaultsRaw":"","defaultsAccepts":"","statesOut":[],"industriesYes":["Dental","Pharmacies","Veterinian","Healthcare Equipment","Construction","HVAC","Electrician","Retail","Restaurant","Landscaping","Manufacturing / Wholesale","Auto Repair"],"industriesNo":["Non-Profit","Collection Agency","Religion","Casino","Insurance","XXX","Credit Repair","Cannabis / Vape"],"emails":[],"notes":"","sortRank":2.5,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":"https://capitaldomain.com/"},{"name":"Channel Partners","positionRaw":"1st - 2nd","positionMin":1,"positionMax":2,"depositsRaw":"25K+","depositsMin":25000,"ficoRaw":"650+","ficoMin":650,"tibRaw":"3+ YEAR","tibMinMonths":36,"negDaysRaw":"< 2","negDaysMax":2,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":["XXX","Farming / Livestock","Bail Bond Services","Cannabis / Vape","Guns / Weapons","Transportation","Attorney / Law","Financial Services","Credit Repair","Real Estate","Tax","Investment Broker","Mortgage Brokers"],"emails":["trishanna.harris@channelpartnersllc.com"],"notes":"Weekly / Monthly 5+ Years in buisness\n\nAverage Daily Balance 10K minimum","sortRank":2.5,"paperGrade":"A Paper","maxFunding":250000,"maxTerm":"18 Months","payment":"Weekly, Monthly","origFee":"0","renewalPct":"40","website":"https://www.channelpartnerscapital.com/"},{"name":"Cobalt Funding","positionRaw":"1st - 10th","positionMin":1,"positionMax":10,"depositsRaw":"40K+","depositsMin":40000,"ficoRaw":"450+","ficoMin":450,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 6","negDaysMax":6,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":["mayer@cobaltfunding.com","deals@cobaltfunding.com","jbok@cobaltfunding.com"],"notes":"Settled defaults","sortRank":2.5,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"0","renewalPct":"0","website":"https://www.cobaltfunding.com/"},{"name":"Fintap","positionRaw":"1st - 3rd","positionMin":1,"positionMax":3,"depositsRaw":"50k+","depositsMin":null,"ficoRaw":"600+","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":["Attorney / Law","Financial Services"],"emails":[],"notes":"likes to fund 500k+","sortRank":2.5,"paperGrade":"B Paper, C Paper","maxFunding":null,"maxTerm":"","payment":"","origFee":"0","renewalPct":"0","website":"https://www.fintap.com/"},{"name":"GCM","positionRaw":"1st - 4th","positionMin":1,"positionMax":4,"depositsRaw":"50k+","depositsMin":null,"ficoRaw":"600+","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 4","negDaysMax":null,"defaultsRaw":"No","defaultsAccepts":"no","statesOut":[],"industriesYes":["Specialty Contractors","Construction","Healthcare","Medical Professional","Dental","E-Commerce","Auto Repair"],"industriesNo":["Food Trucks","Financial Services","Accounting / CPA","Non-Profit","Bail Bond Services","Solar / Energy","Transportation","Property Management","Auto Sales"],"emails":["submissions@gcmcapitalgroup.com","tim@gcmcapitalgroup.com"],"notes":"Accounting needs 1 year of statements","sortRank":2.5,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":"https://gcmcapitalgroup.com/"},{"name":"Greenbox","positionRaw":"1st - 2nd","positionMin":1,"positionMax":2,"depositsRaw":"10K+","depositsMin":10000,"ficoRaw":"500+","ficoMin":500,"tibRaw":"6+ MONTHS","tibMinMonths":6,"negDaysRaw":"< 5","negDaysMax":5,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Legal Sevices","Restaurant","E-Commerce","Medical Professional","Healthcare","Dental"],"industriesNo":["Recycling"],"emails":["info@greenboxcapital.com","submissions@greenboxcapital.com"],"notes":"USA / Canada\n\ndoes canada","sortRank":2.5,"paperGrade":"","maxFunding":0,"maxTerm":"","payment":"","origFee":"0","renewalPct":"0","website":"https://www.greenboxcapital.com/"},{"name":"Headway","positionRaw":"1st - 2nd","positionMin":1,"positionMax":2,"depositsRaw":"50K+","depositsMin":50000,"ficoRaw":"660+","ficoMin":660,"tibRaw":"6+ MONTHS","tibMinMonths":6,"negDaysRaw":"< 3","negDaysMax":3,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["Arkansas","Michigan","North Dakota","Rhode Island","Vermont","Connecticut","Montana","Nevada","South Dakota","California"],"industriesYes":[],"industriesNo":["Adult related business","Church / temple","Marijuana / cannabis","Real estate investment","Transportation (limousine / taxi)","Attorney / law firm","Non profit / charity","Vape shop"],"emails":["info@fundingucapital.com"],"notes":"LOC","sortRank":2.5,"paperGrade":"A Paper, B Paper","maxFunding":250000,"maxTerm":"24 Months","payment":"Weekly, Monthly","origFee":"45","renewalPct":"0","website":"https://www.headwaycapital.com/"},{"name":"Idea Financial","positionRaw":"1st - 2nd","positionMin":1,"positionMax":2,"depositsRaw":"15K+","depositsMin":15000,"ficoRaw":"650+","ficoMin":650,"tibRaw":"3+ YEAR","tibMinMonths":36,"negDaysRaw":"< 6","negDaysMax":6,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["North Dakota","South Dakota","Vermont"],"industriesYes":["Healthcare","Manufacturing","Attorney / law firm","Retail sales","Landscaping","Restaurant"],"industriesNo":["Construction (new home)","Farming","Automotive sales (used)","Media","Government","Marijuana / cannabis","Transportation (trucking)","Energy supplier","Telecommunications","Real estate investment","Firearms / gun dealers"],"emails":["SLehnhard@IdeaFinancial.com"],"notes":"MCA / LOC\n\nNo financials needed for offers under $150k with up to 18 month terms\n\nNo sole proprietorships or non-profits","sortRank":2.5,"paperGrade":"A Paper","maxFunding":275000,"maxTerm":"36 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"0","website":"http://www.ideafinancial.com/"},{"name":"Kalamata Capital Group","positionRaw":"1st - 3rd","positionMin":1,"positionMax":3,"depositsRaw":"20K+","depositsMin":20000,"ficoRaw":"600+","ficoMin":600,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 3","negDaysMax":3,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":["Automotive sales (new)","Vape shop","Construction (new home)","Automotive sales (used)","Bail bonds"],"emails":["amy.erlich@kalamatacapitalgroup.com","Deals@kalamatacapitalgroup.com","ateam@kalamatacapitalgroup.com","KalamataCapitalGroup@kalamatacapitalgroup.com"],"notes":"","sortRank":2.5,"paperGrade":"","maxFunding":500000,"maxTerm":"15 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"45","website":"https://www.kalamatacapitalgroup.com/"},{"name":"Lendini","positionRaw":"1st - 5th","positionMin":1,"positionMax":5,"depositsRaw":"5K+","depositsMin":5000,"ficoRaw":"475+","ficoMin":475,"tibRaw":"8+ MONTHS","tibMinMonths":8,"negDaysRaw":"< 6","negDaysMax":6,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["Utah"],"industriesYes":["Specialty goods delivery","Restaurant","Hvac / heating / air","Retail sales","Dentists"],"industriesNo":["Attorney / Law","Accounting / CPA","Tax","Auto Sales","Cannabis / Vape","Casino","Bail Bond Services","Real Estate","Transportation"],"emails":["Erin.dignam@lendini.com","Submissions@lendini.com"],"notes":"contruction no 1st position and 5 year tib","sortRank":2.5,"paperGrade":"B Paper, C Paper","maxFunding":300000,"maxTerm":"10 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"45","website":"https://lendini.com/"},{"name":"Merchant Growth","positionRaw":"1st - 2nd","positionMin":1,"positionMax":2,"depositsRaw":"10K+","depositsMin":10000,"ficoRaw":"600+","ficoMin":600,"tibRaw":"6+ MONTHS","tibMinMonths":6,"negDaysRaw":"< 3","negDaysMax":3,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Auto Repair"],"industriesNo":["Real estate investment","Financial services","Solar panels"],"emails":["ppark@merchantgrowth.com","partners@merchantgrowth.com"],"notes":"Funds only in Canada","sortRank":2.5,"paperGrade":"","maxFunding":800000,"maxTerm":"18 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"30","website":"https://new.merchantgrowth.com/welcome"},{"name":"Signature","positionRaw":"1st - 4th","positionMin":1,"positionMax":4,"depositsRaw":"50k+","depositsMin":0,"ficoRaw":"550+","ficoMin":0,"tibRaw":"No Min","tibMinMonths":0,"negDaysRaw":"< 0","negDaysMax":0,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Retail","Restaurant","Attorney / Law","Cannabis / Vape"],"industriesNo":["Transportation","Real Estate","Financial Services","Construction","Consulting"],"emails":["admin@fund4.biz"],"notes":"","sortRank":2.5,"paperGrade":"","maxFunding":0,"maxTerm":"","payment":"","origFee":"0","renewalPct":"0","website":"https://fund4.biz/"},{"name":"Simply Funding","positionRaw":"1st - 3rd","positionMin":1,"positionMax":3,"depositsRaw":"25k+","depositsMin":null,"ficoRaw":"500+","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 5","negDaysMax":null,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Restaurant","Manufacturing / Wholesale","Retail","Guns / Weapons","Nail / Hair Salon","Veterinian","Healthcare","Staffing","Medical Professional","Liquor Store","Auto Repair"],"industriesNo":["Attorney / Law","Non-Profit","Transportation","Solar / Energy","Insurance","Farming / Livestock","Real Estate","Gas Station"],"emails":[],"notes":"","sortRank":2.5,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"0","renewalPct":"","website":"https://simplyfunding.com/"},{"name":"Liberty Funding Source","positionRaw":"1st - 10th","positionMin":1,"positionMax":10,"depositsRaw":"50k+","depositsMin":null,"ficoRaw":"No Min","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 3","negDaysMax":null,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Healthcare","Medical Professional","Dental"],"industriesNo":["Solar / Energy"],"emails":[],"notes":"","sortRank":2.7,"paperGrade":"C Paper, D Paper","maxFunding":null,"maxTerm":"","payment":"","origFee":"0","renewalPct":"0","website":"https://libertyfundingsource.com/"},{"name":"Nexi","positionRaw":"1st - 9th","positionMin":1,"positionMax":9,"depositsRaw":"25K+","depositsMin":25000,"ficoRaw":"550+","ficoMin":550,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 15","negDaysMax":15,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Technology","Restaurant","Healthcare"],"industriesNo":["Marijuana / cannabis","Debt consolidation"],"emails":["Dean@gonexi.com","submissions@gonexi.com"],"notes":"Transportation 50k+ DEPOSITS\n(3+ year TIB, 3 positions max)\n \nConstruction 50k+ DEPOSITS\n(2+ year TIB)","sortRank":2.91,"paperGrade":"A Paper, B Paper, C Paper","maxFunding":5000000,"maxTerm":"15 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"50","website":"https://gonexi.com/"},{"name":"ESSENTIAL","positionRaw":"1st - 6th","positionMin":1,"positionMax":6,"depositsRaw":"40k+","depositsMin":null,"ficoRaw":"500+","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 4","negDaysMax":null,"defaultsRaw":"No","defaultsAccepts":"no","statesOut":[],"industriesYes":["Healthcare","Restaurant","Retail","Auto Repair","Veterinian","Architecture"],"industriesNo":["Casino","Guns / Weapons","Attorney / Law","Travel Agency","XXX","Cannabis / Vape","Real Estate","Non-Profit"],"emails":["submissions@myessentialfunding.com","rkim@myessentialfunding.com"],"notes":"Auto Sales 500k+ DEPOSITS\n1st Positions: 5+ years TIB","sortRank":2.92,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":""},{"name":"Superfast","positionRaw":"1st - 3rd","positionMin":1,"positionMax":3,"depositsRaw":"40K+","depositsMin":40000,"ficoRaw":"650+","ficoMin":650,"tibRaw":"2+ YEAR","tibMinMonths":24,"negDaysRaw":"< 4","negDaysMax":4,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Retail sales","Media","Restaurant","Plumbing","Tanning salon"],"industriesNo":["Boat sales","Recycling","Construction (general contractor)","Real estate brokerage","Wholesale","Non profit / charity"],"emails":["ertjon@superfastcap.com","joe@superfastcap.com","submissions@superfastcap.com"],"notes":"4% origination fee\nbuy rates as low as 1.18\n\nImmigration Laweyrs okay to send","sortRank":2.92,"paperGrade":"","maxFunding":150000,"maxTerm":"12 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"0","website":"https://www.superfastcap.com/"},{"name":"Byzfunder","positionRaw":"1st - 4th","positionMin":1,"positionMax":4,"depositsRaw":"20K+","depositsMin":null,"ficoRaw":"550+","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 5","negDaysMax":null,"defaultsRaw":"","defaultsAccepts":"","statesOut":[],"industriesYes":["Non-Profit","Gas Station","Attorney / Law","Insurance","Staffing","Travel Agency","Cell Phone Services","Accounting / CPA","Religion"],"industriesNo":["Auto Sales","XXX","Collection Agency","Casino","Financial Services","Pawn Shop","Nail / Hair Salon","Real Estate"],"emails":[],"notes":"min 1k ending balance\nmin 3 deposits/mo\n \nTRUCKING - 60k min\nNON PROFITS -","sortRank":2.95,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":"https://byzfunder.com/"},{"name":"OLYMPUS","positionRaw":"1st - 5th","positionMin":1,"positionMax":5,"depositsRaw":"30k+","depositsMin":null,"ficoRaw":"500+","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 3","negDaysMax":null,"defaultsRaw":"Satisfied","defaultsAccepts":"satisfied","statesOut":[],"industriesYes":["Healthcare","Restaurant","Cannabis / Vape","Bar / Night Club","Consulting","Nail / Hair Salon","Pharmacies","Marketing / Media","Landscaping","Retail","Gas Station","Dental","Attorney / Law"],"industriesNo":["Auto Sales","Real Estate","Transportation","Staffing","Property Management"],"emails":["processing@olympusbusinesscapital.com","matthew@olympusbusinesscapital.com"],"notes":"Construction as 2nd position and on","sortRank":2.96,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":""},{"name":"UFS","positionRaw":"1st - 5th","positionMin":1,"positionMax":5,"depositsRaw":"50K+","depositsMin":50000,"ficoRaw":"500+","ficoMin":500,"tibRaw":"3+ MONTHS","tibMinMonths":3,"negDaysRaw":"< 5","negDaysMax":5,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["California"],"industriesYes":["Restaurant","Construction","Attorney / Law","Nail / Hair Salon"],"industriesNo":["Auto Sales","Financial Services"],"emails":["barry@ufsfunding.com","Marcus@ufsfunding.com"],"notes":"No NY, CT, CA (only 500k+)\nlike construction, lawyers\ntrucking only 200k+\nno mortgage, bail, no auto sales\nReal Estate- needs P&L\n4-10 month terms\ncompetes w fyncap, legend, fwd, ebf\nloves Restaurants, daily deposits\n\nwill look at a default if theres a zbl, a story","sortRank":2.97,"paperGrade":"","maxFunding":1600000,"maxTerm":"8 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"0","website":"https://www.ufsfunding.com/"},{"name":"Cromwell Capital","positionRaw":"1st - 6th","positionMin":1,"positionMax":6,"depositsRaw":"15K+","depositsMin":15000,"ficoRaw":"500+","ficoMin":500,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 5","negDaysMax":5,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["New York"],"industriesYes":["Restaurant","Wholesale","Retail sales"],"industriesNo":["Transportation (trucking)"],"emails":["submissions@cromwellcapital.com","ryan@cromwellcapital.com"],"notes":"3-4 min deposits/mo\nMANUAL LOGIN, proof of EIN, DLVC\n\n1.399-7 Points\n1.459-10 Points\n1.499- 12 Points","sortRank":2.981,"paperGrade":"","maxFunding":5000000,"maxTerm":"8 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"40","website":"https://www.cromwellcapital.com/"},{"name":"MINT","positionRaw":"1st - 9th","positionMin":1,"positionMax":9,"depositsRaw":"20K+","depositsMin":null,"ficoRaw":"400+","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 6","negDaysMax":null,"defaultsRaw":"No","defaultsAccepts":"no","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":["nick@MintFunding.com","deals@mintfunding.com","john@mintfunding.com"],"notes":"No prohibited industries, restricted industries are on a case by case","sortRank":2.99,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":""},{"name":"LCF","positionRaw":"1st+","positionMin":1,"positionMax":99,"depositsRaw":"10K+","depositsMin":10000,"ficoRaw":"450+","ficoMin":450,"tibRaw":"3+ MONTHS","tibMinMonths":3,"negDaysRaw":"< 20","negDaysMax":20,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Restaurant","Transportation (trucking)","Insurance","Construction (general contractor)","Healthcare"],"industriesNo":[],"emails":["tjameer@thelcfgroup.com","submissions@thelcfgroup.com"],"notes":"Settled defaults\n\nAlso, we can fund: Prior Defaults\nNon-Citizen/ITIN\nSub 500 Credit\nTax Liens are OK\nAny Position","sortRank":2.9999,"paperGrade":"","maxFunding":2000000,"maxTerm":"10 Months","payment":"Daily","origFee":"0","renewalPct":"0","website":"https://thelcfgroup.com/"},{"name":"AVANZA","positionRaw":"2nd+","positionMin":2,"positionMax":99,"depositsRaw":"50k+","depositsMin":null,"ficoRaw":"","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"No","defaultsAccepts":"no","statesOut":[],"industriesYes":["Healthcare","Cannabis / Vape"],"industriesNo":["Attorney / Law","Transportation","Auto Sales"],"emails":[],"notes":"Construction 3 years in business\n\nNo Vape Shops\nYes Marijuana\n\ntried backdooring Mark's deal and got caught","sortRank":3.1,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":""},{"name":"Regal","positionRaw":"2nd - 10th","positionMin":2,"positionMax":10,"depositsRaw":"25K+","depositsMin":25000,"ficoRaw":"500+","ficoMin":500,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 5","negDaysMax":5,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":["Attorney / Law","Debt Collection","Pawn Shop","Credit Repair","Real Estate","Guns / Weapons","Travel Agency","XXX","Boat Sales","Bail Bond Services"],"emails":["jeff@regalcapitalgroup.com"],"notes":"Settled defaults","sortRank":3.1,"paperGrade":"","maxFunding":1000000,"maxTerm":"6 Months","payment":"Daily, Weekly, Bi-Weekly","origFee":"0","renewalPct":"45","website":"https://www.regalcashgroup.com/"},{"name":"Rowan","positionRaw":"2nd - 6th","positionMin":2,"positionMax":6,"depositsRaw":"20K+","depositsMin":20000,"ficoRaw":"580+","ficoMin":580,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 3","negDaysMax":3,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Pharmacies","Bakeries","Manufacturing","Healthcare","Restaurant","Janitorial"],"industriesNo":["Hair / nail / skin care","Automotive sales (new)","Automotive sales (used)","Marijuana / cannabis","Gas stations (with convenience store)","Gas stations (no convenience store)","Vape shop","Casinos / gambling"],"emails":["deals@rowanadvance.com","eli@rowanadvance.com","info@rowanadvance.com"],"notes":"","sortRank":3.1,"paperGrade":"A Paper, B Paper","maxFunding":1000000,"maxTerm":"12 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"45","website":"https://www.rowanadvance.com/"},{"name":"Sheaves","positionRaw":"2nd - 5th","positionMin":2,"positionMax":5,"depositsRaw":"20K+","depositsMin":20000,"ficoRaw":"500+","ficoMin":500,"tibRaw":"3+ MONTHS","tibMinMonths":3,"negDaysRaw":"< 8","negDaysMax":8,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":["judahe@sheavescapital.ca","apps@sheavescapital.ca"],"notes":"","sortRank":3.1,"paperGrade":"","maxFunding":0,"maxTerm":"","payment":"","origFee":"0","renewalPct":"0","website":"https://sheavescapital.ca/"},{"name":"1 STOP CAPITAL","positionRaw":"2nd - 5th","positionMin":2,"positionMax":5,"depositsRaw":"10K+","depositsMin":null,"ficoRaw":"No Min","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 5","negDaysMax":null,"defaultsRaw":"Satisfied","defaultsAccepts":"satisfied","statesOut":[],"industriesYes":["Retail","Restaurant","Auto Repair","Healthcare"],"industriesNo":["Auto Sales"],"emails":[],"notes":"","sortRank":3.2,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":""},{"name":"Highland Hill","positionRaw":"2nd+","positionMin":2,"positionMax":99,"depositsRaw":"25K+","depositsMin":25000,"ficoRaw":"500+","ficoMin":500,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 4","negDaysMax":4,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["Virginia"],"industriesYes":["Healthcare","Restaurant","Construction (general contractor)"],"industriesNo":["Automotive sales (used)","Financial services","Attorney / law firm"],"emails":["Brendan@highlandhillcap.com","submissions@highlandhillcap.com","tristan@highlandhillcap.com"],"notes":"","sortRank":3.2,"paperGrade":"A Paper, B Paper, C Paper, D Paper","maxFunding":2000000,"maxTerm":"14 Months","payment":"Daily, Weekly","origFee":"40","renewalPct":"0","website":"https://www.highlandhillcap.com/"},{"name":"Iruka Capital","positionRaw":"2nd+","positionMin":2,"positionMax":99,"depositsRaw":"75K+","depositsMin":75000,"ficoRaw":"600+","ficoMin":600,"tibRaw":"6+ MONTHS","tibMinMonths":6,"negDaysRaw":"< 0","negDaysMax":0,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["New York","Utah","California","Virginia"],"industriesYes":["Healthcare","Medical Professional"],"industriesNo":["Transportation","Auto Sales"],"emails":[],"notes":"Settled Defaults","sortRank":3.2,"paperGrade":"B Paper, C Paper, D Paper","maxFunding":300000,"maxTerm":"10 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"45","website":"https://www.irukacapital.com/"},{"name":"JRG","positionRaw":"2nd - 8th","positionMin":2,"positionMax":8,"depositsRaw":"25K+","depositsMin":25000,"ficoRaw":"500+","ficoMin":500,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 3","negDaysMax":3,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["Utah","Virginia"],"industriesYes":["Restaurant","Healthcare","Professional services","Retail sales"],"industriesNo":["Automotive sales (new)","Real estate investment","Non profit / charity","Automotive sales (used)","Marijuana / cannabis","Professional services"],"emails":["alyssa@jrgfunding.com","underwriting@jrgfunding.com"],"notes":"","sortRank":3.2,"paperGrade":"","maxFunding":750000,"maxTerm":"9 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"40","website":"https://jrgfunding.com/"},{"name":"MADISON","positionRaw":"2nd+","positionMin":2,"positionMax":99,"depositsRaw":"50k+","depositsMin":null,"ficoRaw":"No Min","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"Satisfied","defaultsAccepts":"satisfied","statesOut":[],"industriesYes":[],"industriesNo":["Transportation","Solar / Energy","Auto Sales"],"emails":[],"notes":"default satisfied and with new position\nCharles said he would give extr points and do dinners if we fund 2136507194","sortRank":3.2,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":""},{"name":"Meged","positionRaw":"2nd+","positionMin":2,"positionMax":99,"depositsRaw":"50K+","depositsMin":50000,"ficoRaw":"450+","ficoMin":450,"tibRaw":"6+ MONTHS","tibMinMonths":6,"negDaysRaw":"< 7","negDaysMax":7,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Construction","Transportation","Restaurant","Retail","Plumbing","Healthcare","Dental","Medical Professional"],"industriesNo":["Automotive sales (new)","Automotive sales (used)"],"emails":["mordy@megedfunding.com","Subs@megedfunding.com","abe@megedfunding.com"],"notes":"Settled Defaults","sortRank":3.2,"paperGrade":"B Paper, C Paper, D Paper","maxFunding":5000000,"maxTerm":"8 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"45","website":"https://www.megedfunding.com/"},{"name":"Newco","positionRaw":"2nd - 4th","positionMin":2,"positionMax":4,"depositsRaw":"10K+","depositsMin":null,"ficoRaw":"","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"","defaultsAccepts":"","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":["bruce@newcocapitalgroup.com","submissions@newcocapitalgroup.com","rebekah@newcocapitalgroup.com"],"notes":"","sortRank":3.2,"paperGrade":"A Paper","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":"https://newcocapitalgroup.com/"},{"name":"Parkside","positionRaw":"2nd - 10th","positionMin":2,"positionMax":10,"depositsRaw":"25K+","depositsMin":25000,"ficoRaw":"500+","ficoMin":500,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 5","negDaysMax":5,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["Utah","Virginia"],"industriesYes":[],"industriesNo":["Automotive sales (new)","Automotive sales (used)","Transportation (trucking)"],"emails":["Maurice@parksidefundinggroup.com"],"notes":"","sortRank":3.2,"paperGrade":"B Paper, C Paper, D Paper","maxFunding":2000000,"maxTerm":"9 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"50","website":"https://www.parksidefundinggroup.com/"},{"name":"RIVERSIDE","positionRaw":"2nd - 10th","positionMin":2,"positionMax":10,"depositsRaw":"100K+","depositsMin":null,"ficoRaw":"500+","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 6","negDaysMax":null,"defaultsRaw":"Satisfied","defaultsAccepts":"satisfied","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":[],"notes":"","sortRank":3.2,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":""},{"name":"Swift","positionRaw":"2nd - 6th","positionMin":2,"positionMax":6,"depositsRaw":"40K+","depositsMin":40000,"ficoRaw":"550+","ficoMin":550,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 5","negDaysMax":5,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["Virginia","New York","Utah"],"industriesYes":["Restaurant","Healthcare","Technology"],"industriesNo":["Transportation","Non-Profit","Real Estate","Cannabis / Vape","Child Care","Auto Sales"],"emails":["Avi@swiftfundingsource.com","submissions@swiftfundingsource.com"],"notes":"","sortRank":3.2,"paperGrade":"B Paper, C Paper","maxFunding":2000000,"maxTerm":"9 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"50","website":"https://www.swiftfundingsource.com/"},{"name":"Barclays Advance","positionRaw":"2nd+","positionMin":2,"positionMax":99,"depositsRaw":"40k+","depositsMin":null,"ficoRaw":"500+","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":["Casino","Financial Services"],"emails":["deals@barclaysadvance.com","alex@barclaysadvance.com"],"notes":"Settled defaults\n\nMTD (Required past the 15th)","sortRank":3.21,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"0","renewalPct":"0","website":""},{"name":"Fyncap","positionRaw":"2nd - 4th","positionMin":2,"positionMax":4,"depositsRaw":"30k+","depositsMin":null,"ficoRaw":"500+","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"No","defaultsAccepts":"no","statesOut":[],"industriesYes":["Healthcare","Construction","Restaurant","Auto Repair","Landscaping"],"industriesNo":["Non-Profit","Attorney / Law","Casino","XXX","Real Estate","Cannabis / Vape","Marketing / Media"],"emails":["submissions@fyncap.com","isaak@fyncap.com"],"notes":"","sortRank":3.31,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":"https://fyncap.com/"},{"name":"MONDAY","positionRaw":"2nd+","positionMin":2,"positionMax":99,"depositsRaw":"40k+","depositsMin":null,"ficoRaw":"No Min","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 3","negDaysMax":null,"defaultsRaw":"Satisfied","defaultsAccepts":"satisfied","statesOut":[],"industriesYes":["Bar / Night Club","Construction","Transportation","Healthcare","Nail / Hair Salon","Restaurant"],"industriesNo":[],"emails":["subs@mondayfunding.com"],"notes":"friday closes at 12","sortRank":3.32,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":""},{"name":"Forever Funding","positionRaw":"2nd+","positionMin":2,"positionMax":99,"depositsRaw":"75K+","depositsMin":null,"ficoRaw":"No Min","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 2","negDaysMax":null,"defaultsRaw":"Satisfied","defaultsAccepts":"satisfied","statesOut":[],"industriesYes":["Healthcare"],"industriesNo":[],"emails":[],"notes":"","sortRank":3.4,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":"https://forever-funding.com/"},{"name":"Square Advance","positionRaw":"2nd+","positionMin":2,"positionMax":99,"depositsRaw":"50k+","depositsMin":null,"ficoRaw":"550+","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 5","negDaysMax":null,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Healthcare","Dental","Medical Professional","Nail / Hair Salon","Construction","Auto Repair"],"industriesNo":["Transportation","Financial Services","Real Estate","Auto Sales","Casino"],"emails":[],"notes":"","sortRank":3.4,"paperGrade":"B Paper","maxFunding":null,"maxTerm":"","payment":"","origFee":"0","renewalPct":"","website":"https://squareadvance.com/"},{"name":"DLP","positionRaw":"2nd - 5th","positionMin":2,"positionMax":5,"depositsRaw":"40K+","depositsMin":40000,"ficoRaw":"550+","ficoMin":550,"tibRaw":"2+ YEAR","tibMinMonths":24,"negDaysRaw":"< 3","negDaysMax":3,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["Utah","New York","Virginia"],"industriesYes":[],"industriesNo":["Recycling","Automotive repair","Boat sales"],"emails":["pinny@dlpfunding.com","submissions@dlpfunding.com"],"notes":"","sortRank":3.5,"paperGrade":"","maxFunding":0,"maxTerm":"","payment":"","origFee":"0","renewalPct":"0","website":"https://dlpfunding.com/"},{"name":"Forest","positionRaw":"2nd+","positionMin":2,"positionMax":99,"depositsRaw":"50K+","depositsMin":50000,"ficoRaw":"450+","ficoMin":450,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 6","negDaysMax":6,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["New York","California","Utah","Virginia"],"industriesYes":["Construction (general contractor)","Insurance","Medical doctor"],"industriesNo":["Attorney / law firm","Transportation (trucking)"],"emails":["steve@forestcapitalgrp.com"],"notes":"Settled defaults\n\nLoves Commercial Construction","sortRank":3.5,"paperGrade":"B Paper, C Paper, D Paper","maxFunding":1000000,"maxTerm":"8 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"50","website":"https://forestcapitalgrp.com"},{"name":"Novac Equities","positionRaw":"2nd - 6th","positionMin":2,"positionMax":6,"depositsRaw":"100K+","depositsMin":null,"ficoRaw":"600+","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 5","negDaysMax":null,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":["Transportation"],"emails":[],"notes":"Construction 1M deposits minimum","sortRank":3.5,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"0","renewalPct":"0","website":"https://novacequities.com/"},{"name":"Power Cap","positionRaw":"2nd+","positionMin":2,"positionMax":99,"depositsRaw":"30k+","depositsMin":null,"ficoRaw":"No Min","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 3","negDaysMax":null,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":[],"notes":"similar to family funding\nAugust isnt't funding, semptember he will be back. But if we have a deal submit it","sortRank":3.5,"paperGrade":"C Paper, D Paper","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":"https://powercap-funding.com/"},{"name":"Parkview Advance","positionRaw":"2nd+","positionMin":2,"positionMax":99,"depositsRaw":"20K+","depositsMin":20000,"ficoRaw":"550+","ficoMin":550,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 8","negDaysMax":8,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Healthcare","Construction","Dental","Medical Professional","Restaurant"],"industriesNo":["Attorney / law firm","Debt consolidation","Credit protection / consolidation","Financial services","Firearms / gun dealers","Real estate investment","Marijuana / cannabis","Automotive sales (used)"],"emails":[],"notes":"","sortRank":3.6,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"0","renewalPct":"0","website":""},{"name":"APEX","positionRaw":"2nd - 5th","positionMin":2,"positionMax":5,"depositsRaw":"75K+","depositsMin":null,"ficoRaw":"500+","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 5","negDaysMax":null,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":["Solar / Energy","Auto Sales"],"emails":[],"notes":"","sortRank":3.7,"paperGrade":"B Paper","maxFunding":null,"maxTerm":"","payment":"","origFee":"0","renewalPct":"0","website":"https://www.apexmca.com/"},{"name":"Logic Advance","positionRaw":"2nd - 3rd","positionMin":2,"positionMax":3,"depositsRaw":"25k+","depositsMin":null,"ficoRaw":"550+","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 4","negDaysMax":null,"defaultsRaw":"No","defaultsAccepts":"no","statesOut":[],"industriesYes":["Restaurant","Medical Professional","Healthcare","Dental","HVAC","Plumbing"],"industriesNo":["Non-Profit","Auto Sales","Financial Services","Real Estate"],"emails":[],"notes":"","sortRank":3.7,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":"https://logicadvancegroup.com/"},{"name":"Silverline","positionRaw":"2nd - 6th","positionMin":2,"positionMax":6,"depositsRaw":"25k+","depositsMin":0,"ficoRaw":"500+","ficoMin":0,"tibRaw":"No Min","tibMinMonths":0,"negDaysRaw":"< 0","negDaysMax":0,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":["Auto Sales","Nail / Hair Salon"],"emails":[],"notes":"","sortRank":3.7,"paperGrade":"","maxFunding":0,"maxTerm":"","payment":"","origFee":"0","renewalPct":"0","website":"https://silverlinefunding.com/"},{"name":"Cucumber Capital","positionRaw":"2nd+","positionMin":2,"positionMax":99,"depositsRaw":"50K+","depositsMin":50000,"ficoRaw":"550+","ficoMin":550,"tibRaw":"2+ YEAR","tibMinMonths":24,"negDaysRaw":"< 2","negDaysMax":2,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Restaurant","Healthcare","Retail sales"],"industriesNo":["Attorney / law firm","Non profit / charity","Investment firm","Bail bonds","Real estate investment","Title company","Accounting","Transportation (trucking)","Travel agent","Consulting","Marijuana / cannabis","Check cashing services","Digital assets / crypto","Property management","Financial services","Real estate brokerage","Adult related business","Vacation / destination retreats"],"emails":["eli@cucumberfunding.com","newdeals@cucumberfunding.com"],"notes":"","sortRank":3.8,"paperGrade":"","maxFunding":3000000,"maxTerm":"6 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"45","website":"https://www.cucumberfunding.com/"},{"name":"QFS","positionRaw":"3rd - 8th","positionMin":3,"positionMax":8,"depositsRaw":"30K+","depositsMin":30000,"ficoRaw":"500+","ficoMin":500,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 2","negDaysMax":2,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Healthcare","Pharmacies","Plumbing","Specialty Contractors","Liquor Store"],"industriesNo":["Attorney / law firm","Automotive sales (new)","Automotive sales (used)","Jewelry","Title company"],"emails":["gabe@qfscapital.com","submissions@qfscapital.com"],"notes":"reverse consolidations\ntrucking needs at least 5 trucks and other limitations","sortRank":4.0,"paperGrade":"","maxFunding":5000000,"maxTerm":"15 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"50","website":"https://www.qfscapital.com/"},{"name":"G&G","positionRaw":"3rd - 10th","positionMin":3,"positionMax":10,"depositsRaw":"50k+","depositsMin":null,"ficoRaw":"","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"","defaultsAccepts":"","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":["mike@gandgfunding.com","newdeals@gandgfunding.com"],"notes":"Very slow. didnt answer phone","sortRank":4.2,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":"https://www.gandgfunding.com/"},{"name":"Kapfi","positionRaw":"3rd - 10th","positionMin":3,"positionMax":10,"depositsRaw":"35K+","depositsMin":35000,"ficoRaw":"200+","ficoMin":200,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"< 3","negDaysMax":3,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Healthcare","Construction","Dental","Auto Repair","Medical Professional","Retail"],"industriesNo":["Cannabis / Vape"],"emails":["subs@kapfi.co","nathan@kapfi.co"],"notes":"Settled defaults","sortRank":9.8,"paperGrade":"C Paper","maxFunding":null,"maxTerm":"","payment":"","origFee":"0","renewalPct":"0","website":"www.kapfi.co"},{"name":"Throttle","positionRaw":"2nd - 11th","positionMin":2,"positionMax":11,"depositsRaw":"40K+","depositsMin":40000,"ficoRaw":"500+","ficoMin":500,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 3","negDaysMax":3,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["Utah","Virginia"],"industriesYes":[],"industriesNo":["Pharmacies","Church / temple","Photography","Party rentals","Prepaid phone cards","Real estate brokerage","Check cashing services","Interior design / decorating","Fence installation","Clothing (men / women)","Farming","Tanning salon","Sporting facility","Marijuana / cannabis","Recycling","Jewelry","Telecommunications","Vacation / destination retreats","Attorney / law firm","Boat sales","Pawn shops","Property management","Property maintenance","Solar panels","Wholesale","Restoration (commercial)","Electrician","Casinos / gambling","Business opportunity / franchise","Construction (general contractor)","Transportation (medical)"],"emails":["submissions@throttlefunding.com","tom@throttlefunding.com"],"notes":"","sortRank":9.9,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"0","renewalPct":"","website":"https://www.throttlefunding.com/"},{"name":"Alpine","positionRaw":"2nd - 11th","positionMin":2,"positionMax":11,"depositsRaw":"75K+","depositsMin":75000,"ficoRaw":"450+","ficoMin":450,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 5","negDaysMax":5,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["Utah","Virginia"],"industriesYes":[],"industriesNo":["Check cashing services"],"emails":["D@alpineadvance.net","Uw@alpineadvance.net"],"notes":"","sortRank":null,"paperGrade":"","maxFunding":2000000,"maxTerm":"7 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"40","website":"https://alpineadvancellc.com/"},{"name":"Arcadia Advance","positionRaw":"2nd - 9th","positionMin":2,"positionMax":9,"depositsRaw":"30K+","depositsMin":30000,"ficoRaw":"520+","ficoMin":520,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":["Automotive sales (used)","Construction","Transportation (trucking)","Attorney/law firm","Real estate brokerage","Travel agent","Oil/fuel","Solar panels"],"emails":[],"notes":"Settled defaults","sortRank":null,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"0","renewalPct":"0","website":""},{"name":"Aspire Funding","positionRaw":"1st - 11th","positionMin":1,"positionMax":11,"depositsRaw":"20K+","depositsMin":20000,"ficoRaw":"450+","ficoMin":450,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 8","negDaysMax":8,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["New York"],"industriesYes":[],"industriesNo":[],"emails":["submissions@aspirefundingplatform.com","elig@aspirefundingplatform.com","info@aspirefundingplatform.com"],"notes":"Settled defaults","sortRank":null,"paperGrade":"","maxFunding":5000000,"maxTerm":"12 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"45","website":"https://avanzacapitalllc.com/"},{"name":"BREEZE","positionRaw":"","positionMin":null,"positionMax":null,"depositsRaw":"","depositsMin":null,"ficoRaw":"","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"","defaultsAccepts":"","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":[],"notes":"","sortRank":null,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":""},{"name":"Blue Ocean Group LLC","positionRaw":"1st ONLY","positionMin":1,"positionMax":1,"depositsRaw":"","depositsMin":0,"ficoRaw":"","ficoMin":0,"tibRaw":"No Min","tibMinMonths":0,"negDaysRaw":"< 0","negDaysMax":0,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":[],"notes":"","sortRank":null,"paperGrade":"","maxFunding":0,"maxTerm":"","payment":"","origFee":"0","renewalPct":"0","website":""},{"name":"Breakout Capital","positionRaw":"1st - 3rd","positionMin":1,"positionMax":3,"depositsRaw":"","depositsMin":0,"ficoRaw":"","ficoMin":0,"tibRaw":"No Min","tibMinMonths":0,"negDaysRaw":"< 0","negDaysMax":0,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":["imaddray@breakoutfinance.com"],"notes":"","sortRank":null,"paperGrade":"","maxFunding":1000000,"maxTerm":"24 Months","payment":"Weekly, Monthly","origFee":"0","renewalPct":"0","website":"www.breakoutfinance.com"},{"name":"Cash Arc","positionRaw":"","positionMin":null,"positionMax":null,"depositsRaw":"","depositsMin":null,"ficoRaw":"","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":[],"notes":"Settled defaults","sortRank":null,"paperGrade":"","maxFunding":100000,"maxTerm":"100","payment":"","origFee":"0","renewalPct":"0","website":""},{"name":"Cedar Funding","positionRaw":"1st - 6th","positionMin":1,"positionMax":6,"depositsRaw":"40K+","depositsMin":40000,"ficoRaw":"550+","ficoMin":550,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 3","negDaysMax":3,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["Alaska","Hawaii"],"industriesYes":["Healthcare","Hospitality","Ecommerce","Retail sales","Manufacturing","Restaurant","Hair/nail/skin care"],"industriesNo":["Automotive sales (new/used)","Automotive rental (no sales)","Lodging","Attorney/law firm","Non profit/charity","Transportation (trucking)","Real estate investment","Marijuana/cannabis"],"emails":[],"notes":"","sortRank":null,"paperGrade":"","maxFunding":750,"maxTerm":"12 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"45","website":""},{"name":"Chase","positionRaw":"1st ONLY","positionMin":1,"positionMax":1,"depositsRaw":"","depositsMin":0,"ficoRaw":"","ficoMin":0,"tibRaw":"No Min","tibMinMonths":0,"negDaysRaw":"< 0","negDaysMax":0,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":[],"notes":"","sortRank":null,"paperGrade":"","maxFunding":0,"maxTerm":"","payment":"","origFee":"0","renewalPct":"0","website":""},{"name":"Endless","positionRaw":"1st ONLY","positionMin":1,"positionMax":1,"depositsRaw":"","depositsMin":0,"ficoRaw":"","ficoMin":0,"tibRaw":"No Min","tibMinMonths":0,"negDaysRaw":"< 0","negDaysMax":0,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":[],"notes":"Settled defaults","sortRank":null,"paperGrade":"","maxFunding":0,"maxTerm":"","payment":"","origFee":"0","renewalPct":"0","website":""},{"name":"Essential Funding","positionRaw":"","positionMin":null,"positionMax":null,"depositsRaw":"","depositsMin":null,"ficoRaw":"","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"","defaultsAccepts":"","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":["submissions@myessentialfunding.com","rkim@myessentialfunding.com"],"notes":"","sortRank":null,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":"https://myessentialfunding.com/"},{"name":"Fintegra","positionRaw":"1st - 3rd","positionMin":1,"positionMax":3,"depositsRaw":"10K+","depositsMin":10000,"ficoRaw":"550+","ficoMin":550,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 2","negDaysMax":2,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":[],"notes":"","sortRank":null,"paperGrade":"","maxFunding":200000,"maxTerm":"15 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"35","website":""},{"name":"Fox","positionRaw":"2nd - 5th","positionMin":2,"positionMax":5,"depositsRaw":"50K+","depositsMin":50000,"ficoRaw":"650+","ficoMin":650,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 8","negDaysMax":8,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["California","New York"],"industriesYes":["Healthcare","Specialty department store","Plumbing"],"industriesNo":["Automotive sales (new)","Automotive sales (used)","Non profit / charity","Transportation (trucking)"],"emails":["Avner@foxbusinessfunding.com","underwriting@foxbusinessfunding.com"],"notes":"","sortRank":null,"paperGrade":"","maxFunding":1500000,"maxTerm":"10 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"50","website":"https://foxbusinessfunding.com"},{"name":"Fundfi","positionRaw":"1st - 4th","positionMin":1,"positionMax":4,"depositsRaw":"35K+","depositsMin":35000,"ficoRaw":"450+","ficoMin":450,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 10","negDaysMax":10,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Healthcare","Restaurant","Hair / nail / skin care"],"industriesNo":["Transportation (trucking)","Equipment financing","Attorney / law firm","Construction (general contractor)","Financial services","Pawn shops"],"emails":["alex@fundfimerchantfunding.com","Alex@fundfimerchantfunding.com"],"notes":"","sortRank":null,"paperGrade":"","maxFunding":200000,"maxTerm":"8 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"40","website":"www.fundfimerchantfunding.com"},{"name":"Fundkite","positionRaw":"1st - 4th","positionMin":1,"positionMax":4,"depositsRaw":"60K+","depositsMin":60000,"ficoRaw":"600+","ficoMin":600,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 5","negDaysMax":5,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Landscaping","Manufacturing","Ecommerce / online sales","Marinas","Concierge services","Business opportunity / franchise","Professional services","Credit card processing","Boat rental","Wholesale","Entertainment","Insulation","Septic management","Software"],"industriesNo":["Banking","Psychics / astrologers","Concierge services","Marketing / advertising","Credit protection / consolidation","Restoration (commercial)","Restoration (home)","Detective services","Ticket agencies"],"emails":["stuart.m@fundkite.com"],"notes":"","sortRank":null,"paperGrade":"","maxFunding":0,"maxTerm":"","payment":"","origFee":"0","renewalPct":"0","website":"https://www.fundkite.com/"},{"name":"Fundomate","positionRaw":"","positionMin":null,"positionMax":null,"depositsRaw":"","depositsMin":null,"ficoRaw":"","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":["Automotive sales (used)","Automotive sales (new)","Marijuana / cannabis","Casinos / gambling","Financial services"],"emails":[],"notes":"","sortRank":null,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"0","renewalPct":"","website":""},{"name":"Inadvance Capital","positionRaw":"1st - 3rd","positionMin":1,"positionMax":3,"depositsRaw":"20K+","depositsMin":20000,"ficoRaw":"550+","ficoMin":550,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 3","negDaysMax":3,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Attorney / law firm","Construction (general contractor)","Dry cleaning / laundry","Landscaping","Marijuana / cannabis","Medical doctor","Medical supplies","Online pharmacies","Pharmacies","Restaurant","Supermarkets / grocery","Technology"],"industriesNo":["Automotive sales (new)","Bail bonds","Collection agencies","Education","Gas stations (no convenience store)","Insurance","Motorcycle sales","Oil / fuel","Real estate brokerage","Staffing / human resources","Transportation (trucking)","Automotive sales (used)","Casinos / gambling","Consulting","Financial services","Hospitality","Marketing / advertising","Multi-level marketing","Online travel services","Real estate investment","Transportation (limousine / taxi)","Travel agent"],"emails":[],"notes":"","sortRank":null,"paperGrade":"","maxFunding":1000000,"maxTerm":"12","payment":"Daily, Weekly","origFee":"40","renewalPct":"0","website":""},{"name":"Jasper Cap","positionRaw":"1st - 11th","positionMin":1,"positionMax":11,"depositsRaw":"50K+","depositsMin":50000,"ficoRaw":"500+","ficoMin":500,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 5","negDaysMax":5,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["Hawaii"],"industriesYes":[],"industriesNo":[],"emails":["amit@jaspercap.com","submissions@jaspercap.com"],"notes":"Settled defaults","sortRank":null,"paperGrade":"","maxFunding":500000,"maxTerm":"7 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"45","website":"https://www.jaspercap.com/"},{"name":"Legend Funding","positionRaw":"","positionMin":null,"positionMax":null,"depositsRaw":"","depositsMin":null,"ficoRaw":"","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"","defaultsAccepts":"","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":[],"notes":"","sortRank":null,"paperGrade":"B Paper","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":"https://legendadvancefunding.com/"},{"name":"Liberty Advance","positionRaw":"","positionMin":null,"positionMax":null,"depositsRaw":"","depositsMin":null,"ficoRaw":"","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":["subs@libertyadvances.com","chana@libertyadvances.com"],"notes":"Settled defaults","sortRank":null,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"0","renewalPct":"0","website":""},{"name":"Lifetime","positionRaw":"2nd - 11th","positionMin":2,"positionMax":11,"depositsRaw":"75K+","depositsMin":75000,"ficoRaw":"550+","ficoMin":550,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 4","negDaysMax":4,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["Hawaii","Alaska"],"industriesYes":["Restaurant","Healthcare","Ecommerce / online sales"],"industriesNo":["Attorney / law firm","Marijuana / cannabis"],"emails":["abe@lifetimefundingllc.com","jason@lifetimefundingllc.com"],"notes":"","sortRank":null,"paperGrade":"","maxFunding":5000000,"maxTerm":"10 Months","payment":"Daily, Weekly, Bi-Weekly","origFee":"0","renewalPct":"45","website":"www.lifetimefundingllc.com"},{"name":"Mint Funding","positionRaw":"","positionMin":null,"positionMax":null,"depositsRaw":"","depositsMin":null,"ficoRaw":"","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"","defaultsAccepts":"","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":["nick@MintFunding.com","deals@mintfunding.com","john@mintfunding.com"],"notes":"","sortRank":null,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":"https://mintfunding.com/"},{"name":"Monday Funding","positionRaw":"","positionMin":null,"positionMax":null,"depositsRaw":"","depositsMin":null,"ficoRaw":"","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"","defaultsAccepts":"","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":["subs@mondayfunding.com"],"notes":"","sortRank":null,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":"https://www.mondayfunding.com"},{"name":"Olympus Business Funding","positionRaw":"","positionMin":null,"positionMax":null,"depositsRaw":"","depositsMin":null,"ficoRaw":"","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"","defaultsAccepts":"","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":[],"notes":"","sortRank":null,"paperGrade":"B Paper","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":"https://www.olympusbusinesscapital.com/"},{"name":"PANTHERS","positionRaw":"","positionMin":null,"positionMax":null,"depositsRaw":"","depositsMin":null,"ficoRaw":"","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":[],"notes":"","sortRank":null,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"0","renewalPct":"","website":""},{"name":"RBLX","positionRaw":"","positionMin":null,"positionMax":null,"depositsRaw":"","depositsMin":null,"ficoRaw":"","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":[],"notes":"","sortRank":null,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"0","renewalPct":"0","website":""},{"name":"Reliance Financial","positionRaw":"","positionMin":null,"positionMax":null,"depositsRaw":"","depositsMin":null,"ficoRaw":"","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"","defaultsAccepts":"","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":[],"notes":"","sortRank":null,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":"https://reliancef.com/"},{"name":"River Advance","positionRaw":"","positionMin":null,"positionMax":null,"depositsRaw":"","depositsMin":null,"ficoRaw":"","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"","defaultsAccepts":"","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":[],"notes":"","sortRank":null,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":""},{"name":"Riverside Capital","positionRaw":"","positionMin":null,"positionMax":null,"depositsRaw":"","depositsMin":null,"ficoRaw":"","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"","defaultsAccepts":"","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":[],"notes":"","sortRank":null,"paperGrade":"B Paper","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":""},{"name":"Seamless","positionRaw":"2nd - 11th","positionMin":2,"positionMax":11,"depositsRaw":"30K+","depositsMin":30000,"ficoRaw":"450+","ficoMin":450,"tibRaw":"3+ MONTHS","tibMinMonths":3,"negDaysRaw":"< 3","negDaysMax":3,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Manufacturing","Restaurant","Convenience / general store","Technology","Healthcare","Ecommerce / online sales","Wholesale"],"industriesNo":["Recycling"],"emails":["avi@seamlesscapitalgroup.com","Subs@seamlesscapitalgroup.com"],"notes":"Settled Defaults","sortRank":null,"paperGrade":"","maxFunding":0,"maxTerm":"18 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"0","website":"seamlesscapitalgroup.com"},{"name":"Smart Step","positionRaw":"1st - 3rd","positionMin":1,"positionMax":3,"depositsRaw":"10K+","depositsMin":10000,"ficoRaw":"450+","ficoMin":450,"tibRaw":"2+ YEAR","tibMinMonths":24,"negDaysRaw":"< 5","negDaysMax":5,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Restaurant","Automotive repair","Food / beverage","Automotive sales (new)","Automotive sales (used)","Clothing (men / women)","Clothing (children)","Furniture stores","Health spa","Education","Home alarm installation","Healthcare","Barber shops","Lounges / bars","Retail sales","Fitness clubs / gym","Repair services","HVAC / heating / air","Hair / nail / skin care","Recreation"],"industriesNo":[],"emails":[],"notes":"","sortRank":null,"paperGrade":"","maxFunding":100000,"maxTerm":"18 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"50","website":""},{"name":"Smarter Merchant","positionRaw":"1st - 4th","positionMin":1,"positionMax":4,"depositsRaw":"25K+","depositsMin":25000,"ficoRaw":"600+","ficoMin":600,"tibRaw":"2+ YEAR","tibMinMonths":24,"negDaysRaw":"< 5","negDaysMax":5,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":["California"],"industriesYes":["Bail bonds","Boat rental","Pharmacies","Medical supplies","Flooring","Flowers","Healthcare","Liquor stores","Media","Party rentals","Bakeries","Hospitality","Fundraising","Restaurant","Ecommerce / online sales","Veterinarian"],"industriesNo":["Sports agent","Bail bonds","Collection agencies","Book store","Real estate brokerage","Livestock / cattle","Investment firm","Prepaid phone cards","Insurance","Online pharmacies","ATM rentals","Tile","Check cashing services","Construction materials","Flowers","Casinos / gambling","Carpet cleaning","Aviation","Marijuana / cannabis","Adoption agency","Boat sales"],"emails":["ari@thesmartermerchant.com","submissions@thesmartermerchant.com"],"notes":"","sortRank":null,"paperGrade":"","maxFunding":300000,"maxTerm":"14 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"0","website":"www.thesmartermerchant.com"},{"name":"Specialty Capital","positionRaw":"","positionMin":null,"positionMax":null,"depositsRaw":"","depositsMin":null,"ficoRaw":"","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"","defaultsAccepts":"","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":[],"notes":"","sortRank":null,"paperGrade":"B Paper","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":"https://www.specialtycapital.com/"},{"name":"TBF","positionRaw":"2nd - 11th","positionMin":2,"positionMax":11,"depositsRaw":"20K+","depositsMin":20000,"ficoRaw":"550+","ficoMin":550,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 5","negDaysMax":5,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":["Miri@tbfgrp.com","underwriting@tbfgrp.com"],"notes":"","sortRank":null,"paperGrade":"","maxFunding":0,"maxTerm":"","payment":"","origFee":"0","renewalPct":"0","website":"https://tbfgrp.com/"},{"name":"The Merchant Marketplace","positionRaw":"","positionMin":null,"positionMax":null,"depositsRaw":"","depositsMin":null,"ficoRaw":"","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"","defaultsAccepts":"","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":[],"notes":"","sortRank":null,"paperGrade":"B Paper, C Paper","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":"https://merchantmarketplace.com/"},{"name":"Velocity Capital Group","positionRaw":"1st - 5th","positionMin":1,"positionMax":5,"depositsRaw":"20K+","depositsMin":20000,"ficoRaw":"500+","ficoMin":500,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 2","negDaysMax":2,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Accounting","Consulting","Electronics sales","Fitness clubs / gym","Healthcare","Education","Machinery","Media","Professional services","Assisted living / rehabilitation facility","Retail sales","Utilities","Automotive repair","Construction (general contractor)","Energy supplier","Supermarkets / grocery","HVAC / heating / air","Liquor stores","Manufacturing","Ecommerce / online sales","Plumbing","Restaurant","Technology"],"industriesNo":["Attorney / law firm","Financial services","Automotive sales (new)","Automotive sales (used)","Church / temple","Real estate investment","Transportation (trucking)","Gas stations (with convenience store)","Gas stations (no convenience store)","Vape shop"],"emails":["kevin@velocitycg.com","Subs@velocitycg.com"],"notes":"","sortRank":null,"paperGrade":"","maxFunding":2000000,"maxTerm":"10 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"45","website":"https://www.velocitycg.com/"},{"name":"Vital Capital","positionRaw":"","positionMin":null,"positionMax":null,"depositsRaw":"","depositsMin":null,"ficoRaw":"","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"","defaultsAccepts":"","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":["Perry@vitalcapfund.com","submissions@vitalcapfund.com"],"notes":"","sortRank":null,"paperGrade":"B Paper","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":"https://vitalcapfund.com/"},{"name":"Vox Funding","positionRaw":"1st - 3rd","positionMin":1,"positionMax":3,"depositsRaw":"15K+","depositsMin":15000,"ficoRaw":"575+","ficoMin":575,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 4","negDaysMax":4,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":["Healthcare","Telecommunications","Construction (general contractor)","Restaurant","Retail sales"],"industriesNo":[],"emails":["wdorsey@voxfunding.com","submissions@voxfunding.com"],"notes":"","sortRank":null,"paperGrade":"","maxFunding":1500000,"maxTerm":"15 Months","payment":"Daily, Weekly, Bi-Weekly","origFee":"0","renewalPct":"45","website":"https://www.voxfunding.com/"},{"name":"Wall Street Funding","positionRaw":"","positionMin":null,"positionMax":null,"depositsRaw":"","depositsMin":null,"ficoRaw":"","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"","defaultsAccepts":"","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":[],"notes":"","sortRank":null,"paperGrade":"","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":""},{"name":"Wynwood","positionRaw":"1st - 11th","positionMin":1,"positionMax":11,"depositsRaw":"30K+","depositsMin":30000,"ficoRaw":"450+","ficoMin":450,"tibRaw":"1+ YEAR","tibMinMonths":12,"negDaysRaw":"< 5","negDaysMax":5,"defaultsRaw":"Yes","defaultsAccepts":"yes","statesOut":[],"industriesYes":[],"industriesNo":["Check cashing services"],"emails":["Josh@wynwoodcapitalgroup.com","submissions@wynwoodcapitalgroup.com"],"notes":"Settled defaults","sortRank":null,"paperGrade":"B Paper, C Paper, D Paper","maxFunding":3000000,"maxTerm":"7 Months","payment":"Daily, Weekly","origFee":"0","renewalPct":"45","website":"https://www.wynwoodcapitalgroup.com/"},{"name":"eFinancial Tree","positionRaw":"","positionMin":null,"positionMax":null,"depositsRaw":"","depositsMin":null,"ficoRaw":"","ficoMin":null,"tibRaw":"","tibMinMonths":null,"negDaysRaw":"","negDaysMax":null,"defaultsRaw":"","defaultsAccepts":"","statesOut":[],"industriesYes":[],"industriesNo":[],"emails":[],"notes":"","sortRank":null,"paperGrade":"B Paper, C Paper, D Paper","maxFunding":null,"maxTerm":"","payment":"","origFee":"","renewalPct":"","website":"https://www.efinancialtree.com/"}];
+const STORAGE_KEYS = {
+  settings: 'lenderschoice_settings',
+  filter:   'lenderschoice_filter',
+  apps:     'lenderschoice_applications',
+  sort:     'lenderschoice_sort'
+};
+
+const US_STATES = [
+  'Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut',
+  'Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa',
+  'Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan',
+  'Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire',
+  'New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio',
+  'Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota',
+  'Tennessee','Texas','Utah','Vermont','Virginia','Washington','Washington DC',
+  'West Virginia','Wisconsin','Wyoming','Puerto Rico','Canada'
+];
+
+const DEFAULT_TEMPLATE = `Hello,
+
+Submitting a new deal for review:
+
+Merchant:        {merchant}
+Industry:        {industry}
+State:           {state}
+Position:        {position}
+Monthly Revenue: \${revenue}
+FICO:            {fico}
+TIB:             {tib} months
+Negative Days:   {negdays}/mo
+Default Status:  {defaults}
+Amount Needed:   \${amount}
+
+Notes: {notes}
+
+Statements and supporting docs are attached. Let me know if you need anything else to render an offer.
+
+Best,
+{yourname}
+{yourcompany}
+{yourphone}
+{youremail}`;
+
+const DEFAULT_SUBJECT = 'Deal Submission — {merchant} — {industry}';
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let lenders = [];
+let settings = {};
+let apps = [];
+let selectedIds = new Set();
+let expandedRow = null;
+let sortBy = 'recommended';
+let editingAppId = null;
+
+/* ============================================================
+   STORAGE
+   ============================================================ */
+async function getStorage(key) {
+  try {
+    if (typeof window !== 'undefined' && window.storage) {
+      const r = await window.storage.get(key);
+      return r ? r.value : null;
+    }
+  } catch {}
+  try { return localStorage.getItem(key); } catch { return null; }
+}
+async function setStorage(key, value) {
+  try {
+    if (typeof window !== 'undefined' && window.storage) {
+      await window.storage.set(key, value);
+      return;
+    }
+  } catch {}
+  try { localStorage.setItem(key, value); } catch {}
+}
+
+async function loadAll() {
+  const sr = await getStorage(STORAGE_KEYS.settings);
+  try { settings = sr ? JSON.parse(sr) : {}; } catch { settings = {}; }
+  if (!settings.subject) settings.subject = DEFAULT_SUBJECT;
+  if (!settings.body) settings.body = DEFAULT_TEMPLATE;
+
+  const ar = await getStorage(STORAGE_KEYS.apps);
+  try { apps = ar ? JSON.parse(ar) : []; } catch { apps = []; }
+  if (!Array.isArray(apps)) apps = [];
+
+  const sb = await getStorage(STORAGE_KEYS.sort);
+  if (sb) sortBy = sb;
+}
+
+let _appsSaveTimer = null;
+function persistApps() {
+  clearTimeout(_appsSaveTimer);
+  _appsSaveTimer = setTimeout(() => {
+    setStorage(STORAGE_KEYS.apps, JSON.stringify(apps));
+  }, 200);
+}
+
+/* ============================================================
+   FILTER ENGINE
+   ============================================================ */
+function evaluateLender(L, d) {
+  const reasons = [];
+  const warnings = [];
+
+  const industry = (d.industry || '').trim().toLowerCase();
+  if (industry) {
+    const onNoList = (L.industriesNo || []).some(x => x.toLowerCase() === industry);
+    if (onNoList) reasons.push(`Industry restricted: ${d.industry}`);
+    const onYesList = (L.industriesYes || []).some(x => x.toLowerCase() === industry);
+    if (!onYesList && (L.industriesYes || []).length > 0 && !onNoList) {
+      warnings.push('Industry not preferred');
+    }
+  }
+
+  const state = (d.state || '').trim().toLowerCase();
+  if (state) {
+    if ((L.statesOut || []).some(x => x.toLowerCase() === state))
+      reasons.push(`State excluded: ${d.state}`);
+  }
+
+  if (d.position) {
+    const p = Number(d.position);
+    if (L.positionMin != null && p < L.positionMin) reasons.push(`Wants ≥ position ${L.positionMin}`);
+    if (L.positionMax != null && p > L.positionMax) reasons.push(`Caps at position ${L.positionMax}`);
+  }
+  if (d.revenue) {
+    const r = Number(d.revenue);
+    if (L.depositsMin != null && r < L.depositsMin) reasons.push(`Revenue below $${fmtNum(L.depositsMin)}`);
+  }
+  if (d.fico) {
+    if (L.ficoMin != null && Number(d.fico) < L.ficoMin) reasons.push(`FICO below ${L.ficoMin}`);
+  }
+  if (d.tib) {
+    if (L.tibMinMonths != null && Number(d.tib) < L.tibMinMonths) reasons.push(`TIB under ${L.tibMinMonths}mo`);
+  }
+  if (d.negdays !== '' && d.negdays != null && !isNaN(d.negdays)) {
+    const n = Number(d.negdays);
+    if (L.negDaysMax != null && !(n < L.negDaysMax)) reasons.push(`Neg days too high (limit < ${L.negDaysMax})`);
+  }
+  if (d.defaults) {
+    if (L.defaultsAccepts === 'no' && (d.defaults === 'satisfied' || d.defaults === 'yes')) {
+      reasons.push("Won't accept defaults");
+    } else if (L.defaultsAccepts === 'satisfied' && d.defaults === 'yes') {
+      reasons.push('Only satisfied defaults');
+    }
+  }
+
+  const preferred = industry && (L.industriesYes || []).some(x => x.toLowerCase() === industry);
+  return { isMatch: reasons.length === 0, reasons, warnings, preferred };
+}
+
+function positionColor(L) {
+  if (L.positionMin == null) return 'gray';
+  if (L.positionMin === 1 && L.positionMax === 1) return 'green';
+  if (L.positionMin === 1) return 'blue';
+  if (L.positionMin === 2) return 'purple';
+  if (L.positionMin === 3) return 'amber';
+  return 'coral';
+}
+
+/* ============================================================
+   SORTING
+   ============================================================ */
+function compareLenders(a, b, mode) {
+  // 'a' and 'b' are objects with .L and .preferred etc.
+  const La = a.L, Lb = b.L;
+  switch (mode) {
+    case 'alpha':
+      return La.name.localeCompare(Lb.name);
+    case 'alpha-desc':
+      return Lb.name.localeCompare(La.name);
+    case 'position': {
+      const pa = La.positionMin == null ? 99 : La.positionMin;
+      const pb = Lb.positionMin == null ? 99 : Lb.positionMin;
+      if (pa !== pb) return pa - pb;
+      const xa = La.positionMax == null ? 99 : La.positionMax;
+      const xb = Lb.positionMax == null ? 99 : Lb.positionMax;
+      if (xa !== xb) return xa - xb;
+      return La.name.localeCompare(Lb.name);
+    }
+    case 'revenue-asc': {
+      const va = La.depositsMin == null ? Infinity : La.depositsMin;
+      const vb = Lb.depositsMin == null ? Infinity : Lb.depositsMin;
+      if (va !== vb) return va - vb;
+      return La.name.localeCompare(Lb.name);
+    }
+    case 'revenue-desc': {
+      const va = La.depositsMin == null ? -1 : La.depositsMin;
+      const vb = Lb.depositsMin == null ? -1 : Lb.depositsMin;
+      if (va !== vb) return vb - va;
+      return La.name.localeCompare(Lb.name);
+    }
+    case 'fico-asc': {
+      const va = La.ficoMin == null ? Infinity : La.ficoMin;
+      const vb = Lb.ficoMin == null ? Infinity : Lb.ficoMin;
+      if (va !== vb) return va - vb;
+      return La.name.localeCompare(Lb.name);
+    }
+    case 'fico-desc': {
+      const va = La.ficoMin == null ? -1 : La.ficoMin;
+      const vb = Lb.ficoMin == null ? -1 : Lb.ficoMin;
+      if (va !== vb) return vb - va;
+      return La.name.localeCompare(Lb.name);
+    }
+    case 'defaults': {
+      // 'no' (strict) first, then 'satisfied', then 'yes', then unknown
+      const order = { 'no': 0, 'satisfied': 1, 'yes': 2, '': 3 };
+      const da = order[La.defaultsAccepts] != null ? order[La.defaultsAccepts] : 3;
+      const db = order[Lb.defaultsAccepts] != null ? order[Lb.defaultsAccepts] : 3;
+      if (da !== db) return da - db;
+      return La.name.localeCompare(Lb.name);
+    }
+    case 'recommended':
+    default: {
+      // preferred industry first, then sortRank, then alpha
+      if (a.preferred !== b.preferred) return a.preferred ? -1 : 1;
+      const ra = La.sortRank == null ? 999 : La.sortRank;
+      const rb = Lb.sortRank == null ? 999 : Lb.sortRank;
+      if (ra !== rb) return ra - rb;
+      return La.name.localeCompare(Lb.name);
+    }
+  }
+}
+
+/* ============================================================
+   UTILS
+   ============================================================ */
+function fmtNum(n) {
+  if (n == null || isNaN(n)) return '';
+  return Number(n).toLocaleString();
+}
+function el(id) { return document.getElementById(id); }
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function toast(msg, color) {
+  const t = el('toast');
+  t.textContent = msg;
+  t.style.borderColor = color || 'var(--green)';
+  t.style.color = color || 'var(--green)';
+  t.classList.add('show');
+  clearTimeout(t._h);
+  t._h = setTimeout(() => t.classList.remove('show'), 2000);
+}
+function updateMeta() {
+  const m = el('meta-count');
+  if (m) m.textContent = lenders.length || 0;
+}
+function copyToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard.writeText(text);
+  }
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); } catch {}
+  document.body.removeChild(ta);
+  return Promise.resolve();
+}
+function attachCurrencyFormatter(input) {
+  if (!input || input._currencyAttached) return;
+  input._currencyAttached = true;
+  input.addEventListener('input', () => {
+    const oldVal = input.value;
+    const cursorAtEnd = input.selectionStart === oldVal.length;
+    const digitsBeforeCursor = oldVal.slice(0, input.selectionStart).replace(/[^0-9]/g, '').length;
+    const raw = oldVal.replace(/[^0-9]/g, '');
+    const formatted = raw ? Number(raw).toLocaleString('en-US') : '';
+    input.value = formatted;
+    if (!cursorAtEnd) {
+      let count = 0, pos = 0;
+      for (; pos < formatted.length && count < digitsBeforeCursor; pos++) {
+        if (/[0-9]/.test(formatted[pos])) count++;
+      }
+      input.setSelectionRange(pos, pos);
+    }
+  });
+}
+
+function readFilter() {
+  return {
+    state:    el('f-state').value.trim(),
+    position: el('f-position').value,
+    industry: el('f-industry').value.trim(),
+    revenue:  el('f-revenue').value.replace(/[^0-9]/g, ''),
+    fico:     el('f-fico').value,
+    tib:      el('f-tib').value,
+    negdays:  el('f-negdays').value,
+    defaults: el('f-defaults').value
+  };
+}
+function readEmailExtras() {
+  return {
+    merchant: (el('em-merchant')?.value || '').trim(),
+    amount:   (el('em-amount')?.value || '').replace(/[^0-9]/g, ''),
+    notes:    (el('em-notes')?.value || '').trim()
+  };
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function render() {
+  const filter = readFilter();
+  const evald = lenders.map(L => ({ L, ...evaluateLender(L, filter) }));
+  const matches = evald.filter(x => x.isMatch);
+  const rejects = evald.filter(x => !x.isMatch);
+
+  matches.sort((a, b) => compareLenders(a, b, sortBy));
+  // Rejected stays in recommended-ish order
+  rejects.sort((a, b) => compareLenders(a, b, 'recommended'));
+
+  el('s-match').textContent = matches.length;
+  el('s-fail').textContent = rejects.length;
+  el('s-sel').textContent = selectedIds.size;
+  el('cnt-match').textContent = matches.length;
+  el('cnt-fail').textContent = rejects.length;
+
+  const ml = el('matches-list');
+  if (matches.length === 0) {
+    ml.innerHTML = '<div class="empty-state"><h3>No matches with these filters</h3><p>Loosen a criterion, or scroll down to see why each lender is rejected.</p></div>';
+  } else {
+    ml.innerHTML = matches.map(x => renderLender(x, false)).join('');
+  }
+
+  const rl = el('rejected-list');
+  if (rejects.length === 0) {
+    rl.innerHTML = '<div class="empty-state" style="padding:24px;">Every lender qualifies.</div>';
+  } else {
+    rl.innerHTML = rejects.map(x => renderLender(x, true)).join('');
+  }
+
+  bindLenderRows();
+  updateSelBar();
+}
+
+/* CONSISTENT lender card: same sections always rendered.
+   Empty values show as "(none)" so layout is identical across cards. */
+function renderLender(x, rejected) {
+  const L = x.L;
+  const sel = selectedIds.has(L.name);
+  const expanded = expandedRow === L.name;
+  const cls = ['lender-row'];
+  if (rejected) cls.push('rejected');
+  else { cls.push('match'); if (x.preferred) cls.push('preferred'); }
+  if (sel) cls.push('selected');
+  if (expanded) cls.push('expanded');
+
+  const pc = positionColor(L);
+
+  const crit = (label, value) => `
+    <div class="crit">
+      <div class="crit-label">${label}</div>
+      <div class="crit-value${!value ? ' muted' : ''}">${esc(value || '—')}</div>
+    </div>`;
+
+  const sectionRow = (label, valueHtml, isEmpty) => `
+    <div class="detail-section">
+      <div class="detail-k">${esc(label)}</div>
+      <div class="detail-v ${isEmpty ? 'muted' : ''}">${valueHtml || '(none)'}</div>
+    </div>`;
+
+  const statesHtml = (L.statesOut && L.statesOut.length)
+    ? esc(L.statesOut.join(', '))
+    : '';
+  const yesHtml = (L.industriesYes && L.industriesYes.length)
+    ? esc(L.industriesYes.join(', '))
+    : '';
+  const noHtml = (L.industriesNo && L.industriesNo.length)
+    ? esc(L.industriesNo.join(', '))
+    : '';
+  const emailsHtml = (L.emails && L.emails.length)
+    ? `<div class="email-list mono">${L.emails.map(e => esc(e)).join('<br>')}</div>`
+    : '';
+  const notesHtml = L.notes ? esc(L.notes).replace(/\n/g, '<br>') : '';
+
+  return `
+    <div class="${cls.join(' ')}" data-id="${esc(L.name)}">
+      <div class="lender-top">
+        <input type="checkbox" class="lender-checkbox" data-name="${esc(L.name)}"
+          ${sel ? 'checked' : ''} ${rejected ? 'disabled' : ''}
+          onclick="event.stopPropagation()">
+        <div class="lender-header-info">
+          <div class="lender-name-row">
+            <span class="lender-name">${esc(L.name)}</span>
+            <span class="position-pill ${pc}">${esc(L.positionRaw || '—')}</span>
+            ${x.preferred ? '<span class="preferred-pill">★ Preferred</span>' : ''}
+            ${x.warnings.map(w => `<span class="warning-pill">${esc(w)}</span>`).join('')}
+          </div>
+        </div>
+        <button class="expand-toggle" data-toggle-expand title="Show details">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="crit-grid">
+        ${crit('Revenue', L.depositsRaw ? '$' + L.depositsRaw : '')}
+        ${crit('FICO', L.ficoRaw)}
+        ${crit('TIB', L.tibRaw)}
+        ${crit('Neg Days', L.negDaysRaw)}
+        ${crit('Defaults', L.defaultsRaw)}
+      </div>
+      ${rejected && x.reasons.length ? `
+        <div class="rejection-reasons">
+          ${x.reasons.map(r => `<span class="reason-badge">${esc(r)}</span>`).join('')}
+        </div>` : ''}
+      <div class="lender-expand">
+        ${sectionRow('States Excluded', statesHtml, !statesHtml)}
+        ${sectionRow('Preferred Industries', yesHtml, !yesHtml)}
+        ${sectionRow('Restricted Industries', noHtml, !noHtml)}
+        ${sectionRow('Submission Emails', emailsHtml, !emailsHtml)}
+        ${sectionRow('Notes', notesHtml, !notesHtml)}
+      </div>
+    </div>`;
+}
+
+function bindLenderRows() {
+  document.querySelectorAll('.lender-row').forEach(row => {
+    row.addEventListener('click', e => {
+      if (e.target.closest('.lender-checkbox')) return;
+      if (e.target.closest('button')) return;
+      if (e.target.closest('a')) return;
+      const id = row.dataset.id;
+      const isRejected = row.classList.contains('rejected');
+      if (isRejected) {
+        expandedRow = (expandedRow === id) ? null : id;
+        render();
+      } else {
+        const cb = row.querySelector('.lender-checkbox');
+        if (!cb) return;
+        cb.checked = !cb.checked;
+        const name = cb.dataset.name;
+        if (cb.checked) selectedIds.add(name); else selectedIds.delete(name);
+        row.classList.toggle('selected', cb.checked);
+        el('s-sel').textContent = selectedIds.size;
+        el('sel-count').textContent = selectedIds.size;
+        updateSelBar();
+      }
+    });
+  });
+  document.querySelectorAll('[data-toggle-expand]').forEach(b => {
+    b.addEventListener('click', e => {
+      e.stopPropagation();
+      const row = b.closest('.lender-row');
+      const id = row.dataset.id;
+      expandedRow = (expandedRow === id) ? null : id;
+      render();
+    });
+  });
+  document.querySelectorAll('.lender-checkbox').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const name = cb.dataset.name;
+      if (cb.checked) selectedIds.add(name); else selectedIds.delete(name);
+      el('s-sel').textContent = selectedIds.size;
+      el('sel-count').textContent = selectedIds.size;
+      updateSelBar();
+      const row = cb.closest('.lender-row');
+      row.classList.toggle('selected', cb.checked);
+    });
+  });
+}
+
+function updateSelBar() {
+  el('sel-count').textContent = selectedIds.size;
+  el('sel-bar').classList.toggle('show', selectedIds.size > 0);
+}
+
+/* ============================================================
+   INDUSTRY COMBOBOX
+   ============================================================ */
+function setupIndustryCombo() {
+  const set = new Set();
+  lenders.forEach(L => {
+    (L.industriesYes || []).forEach(i => set.add(i));
+    (L.industriesNo || []).forEach(i => set.add(i));
+  });
+  const industries = [...set].sort();
+  const input = el('f-industry');
+  const list = el('industry-list');
+  if (!input || input._comboInit) return;
+  input._comboInit = true;
+  let highlightIdx = -1;
+
+  function showFiltered() {
+    const q = input.value.trim().toLowerCase();
+    const matches = q ? industries.filter(i => i.toLowerCase().includes(q)) : industries;
+    if (matches.length === 0) { list.classList.remove('show'); return; }
+    list.innerHTML = matches.slice(0, 60).map((i, idx) =>
+      `<div class="combobox-item ${idx === highlightIdx ? 'highlight' : ''}" data-val="${esc(i)}">${esc(i)}</div>`
+    ).join('');
+    list.classList.add('show');
+    list.querySelectorAll('.combobox-item').forEach(it => {
+      it.addEventListener('mousedown', () => {
+        input.value = it.dataset.val;
+        list.classList.remove('show');
+        render();
+      });
+    });
+  }
+  input.addEventListener('focus', () => { highlightIdx = -1; showFiltered(); });
+  input.addEventListener('input', () => { highlightIdx = -1; showFiltered(); render(); });
+  input.addEventListener('blur', () => setTimeout(() => list.classList.remove('show'), 150));
+  input.addEventListener('keydown', e => {
+    const items = list.querySelectorAll('.combobox-item');
+    if (e.key === 'ArrowDown') { e.preventDefault(); highlightIdx = Math.min(highlightIdx + 1, items.length - 1); showFiltered(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); highlightIdx = Math.max(highlightIdx - 1, -1); showFiltered(); }
+    else if (e.key === 'Enter' && highlightIdx >= 0) {
+      e.preventDefault();
+      input.value = items[highlightIdx].dataset.val;
+      list.classList.remove('show');
+      render();
+    } else if (e.key === 'Escape') list.classList.remove('show');
+  });
+}
+
+/* ============================================================
+   EMAIL MODAL
+   ============================================================ */
+function fillTemplate(s, filter, extras, lenderName) {
+  const map = {
+    '{merchant}':   extras.merchant || '[merchant]',
+    '{industry}':   filter.industry || '[industry]',
+    '{state}':      filter.state || '[state]',
+    '{position}':   filter.position || '[position]',
+    '{revenue}':    filter.revenue ? Number(filter.revenue).toLocaleString() : '[revenue]',
+    '{fico}':       filter.fico || '[fico]',
+    '{tib}':        filter.tib || '[tib]',
+    '{negdays}':    filter.negdays !== '' && filter.negdays != null ? filter.negdays : '[neg days]',
+    '{defaults}':   filter.defaults || '[defaults]',
+    '{amount}':     extras.amount ? Number(extras.amount).toLocaleString() : '[amount]',
+    '{notes}':      extras.notes || '—',
+    '{lender}':     lenderName,
+    '{yourname}':   settings.name || '',
+    '{yourcompany}':settings.company || '',
+    '{yourphone}':  settings.phone || '',
+    '{youremail}':  settings.email || ''
+  };
+  let out = s;
+  for (const k in map) out = out.split(k).join(map[k]);
+  return out;
+}
+
+function buildEmailObj(L) {
+  const filter = readFilter();
+  const extras = readEmailExtras();
+  return {
+    to: (L.emails || []).join(', '),
+    subject: fillTemplate(settings.subject || DEFAULT_SUBJECT, filter, extras, L.name),
+    body: fillTemplate(settings.body || DEFAULT_TEMPLATE, filter, extras, L.name)
+  };
+}
+
+function buildEmailModal() {
+  const selected = lenders.filter(L => selectedIds.has(L.name));
+  const list = el('email-list');
+  if (selected.length === 0) {
+    list.innerHTML = '<div class="empty-state">No lenders selected.</div>';
+    return;
+  }
+  list.innerHTML = selected.map(L => {
+    const has = (L.emails || []).length > 0;
+    const eo = buildEmailObj(L);
+    return `
+      <div class="email-recipient ${!has ? 'no-email' : ''}" data-name="${esc(L.name)}">
+        <div class="email-recipient-row">
+          <div style="min-width:0;">
+            <div class="lname">${esc(L.name)}</div>
+            <div class="lemail">${has ? esc(L.emails.join(', ')) : 'NO EMAIL ON FILE'}</div>
+          </div>
+          <div class="email-actions">
+            <button class="btn btn-sm btn-ghost" data-preview="${esc(L.name)}">Preview</button>
+            ${has ? `<button class="btn btn-sm" data-copy-addr="${esc(L.name)}">Copy addr</button>` : ''}
+            <button class="btn btn-sm" data-copy-email="${esc(L.name)}">Copy email</button>
+          </div>
+        </div>
+        <div class="preview-panel" data-preview-panel="${esc(L.name)}">
+<div><span class="key">To: </span>${esc(eo.to || '(no recipients)')}</div>
+<div><span class="key">Subject: </span>${esc(eo.subject)}</div>
+
+${esc(eo.body)}
+        </div>
+      </div>`;
+  }).join('');
+
+  list.querySelectorAll('[data-preview]').forEach(b => {
+    b.addEventListener('click', () => {
+      const panel = list.querySelector(`[data-preview-panel="${CSS.escape(b.dataset.preview)}"]`);
+      if (panel) panel.classList.toggle('show');
+    });
+  });
+  list.querySelectorAll('[data-copy-addr]').forEach(b => {
+    b.addEventListener('click', async () => {
+      const L = lenders.find(x => x.name === b.dataset.copyAddr);
+      if (!L) return;
+      await copyToClipboard((L.emails || []).join(', '));
+      toast(`Copied ${L.name} address`);
+    });
+  });
+  list.querySelectorAll('[data-copy-email]').forEach(b => {
+    b.addEventListener('click', async () => {
+      const L = lenders.find(x => x.name === b.dataset.copyEmail);
+      if (!L) return;
+      const eo = buildEmailObj(L);
+      const text = `To: ${eo.to}\nSubject: ${eo.subject}\n\n${eo.body}`;
+      await copyToClipboard(text);
+      toast(`Copied ${L.name} email`);
+    });
+  });
+}
+
+/* ============================================================
+   LENDER DB TABLE
+   ============================================================ */
+function renderDb(filter) {
+  const body = el('db-body');
+  if (!body) return;
+  const q = (filter || '').trim().toLowerCase();
+  const filtered = lenders.filter(L => {
+    if (!q) return true;
+    return (
+      L.name.toLowerCase().includes(q) ||
+      (L.industriesYes||[]).some(i => i.toLowerCase().includes(q)) ||
+      (L.industriesNo||[]).some(i => i.toLowerCase().includes(q)) ||
+      (L.statesOut||[]).some(s => s.toLowerCase().includes(q))
+    );
+  });
+  el('db-count').textContent = `${filtered.length} of ${lenders.length}`;
+  const sorted = filtered.slice().sort((a,b) => {
+    const ra = a.sortRank == null ? 999 : a.sortRank;
+    const rb = b.sortRank == null ? 999 : b.sortRank;
+    if (ra !== rb) return ra - rb;
+    return a.name.localeCompare(b.name);
+  });
+  body.innerHTML = sorted.map(L => {
+    const pc = positionColor(L);
+    return `
+    <tr>
+      <td class="name">${esc(L.name)}</td>
+      <td><span class="position-pill sm ${pc}">${esc(L.positionRaw || '—')}</span></td>
+      <td class="mono">${L.depositsRaw ? '$' + esc(L.depositsRaw) : '—'}</td>
+      <td class="mono">${L.ficoMin != null ? L.ficoMin : '—'}</td>
+      <td class="mono">${L.tibMinMonths != null ? L.tibMinMonths + 'mo' : '—'}</td>
+      <td class="mono">${L.negDaysMax != null ? '<' + L.negDaysMax : '—'}</td>
+      <td class="mono">${esc(L.defaultsAccepts || '—')}</td>
+      <td class="trunc">${esc((L.statesOut||[]).join(', ') || '—')}</td>
+      <td class="mono trunc">${esc((L.emails||[]).join(', ') || '—')}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ============================================================
+   JOTFORM APPLICATIONS TAB
+   ============================================================ */
+function renderApps() {
+  const container = el('app-list-container');
+  if (!container) return;
+
+  if (apps.length === 0) {
+    container.innerHTML = `
+      <div class="jotform-empty">
+        <h3>No applications yet</h3>
+        <p>This is where merchant applications will live. For now, you can add them manually — paste in info from a JotForm submission email or just type one up.</p>
+        <div class="jotform-callout">
+          <h4>About automatic JotForm sync</h4>
+          <p>True auto-import from JotForm (and bank statement underwriting like MCA Pilot does) needs a small backend — JotForm posts data to a webhook URL, which feeds into this app. That's a separate build with hosting costs (~$5–$20/mo) plus a statement-analysis API like Heron Data (~$300+/mo for accurate MCA-style parsing). Happy to scope it out when you're ready.</p>
+        </div>
+        <button class="btn btn-primary" id="btn-empty-add-app" style="margin-top:8px;">+ Add Application Manually</button>
+      </div>`;
+    const b = el('btn-empty-add-app');
+    if (b) b.addEventListener('click', () => openAppModal(null));
+    return;
+  }
+
+  // Sort by most recently added
+  const sorted = apps.slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  container.innerHTML = `
+    <div class="app-grid">
+      ${sorted.map(a => `
+        <div class="app-card">
+          <div class="app-card-header">
+            <div style="min-width:0; flex:1;">
+              <h3 class="app-card-title">${esc(a.merchant || 'Untitled')}</h3>
+              ${a.business ? `<div class="app-card-sub">${esc(a.business)}</div>` : ''}
+            </div>
+          </div>
+          <div class="app-card-meta">
+            ${a.state ? metaItem('State', a.state) : ''}
+            ${a.industry ? metaItem('Industry', a.industry) : ''}
+            ${a.amount ? metaItem('Requested', '$' + Number(a.amount).toLocaleString()) : ''}
+            ${a.contactName ? metaItem('Contact', a.contactName) : ''}
+            ${a.contactPhone ? metaItem('Phone', a.contactPhone) : ''}
+            ${a.contactEmail ? metaItem('Email', a.contactEmail) : ''}
+          </div>
+          ${a.notes ? `<div style="font-size:12px; color:var(--text-3); margin-bottom:10px; line-height:1.5;">${esc(a.notes)}</div>` : ''}
+          <div class="app-card-actions">
+            <button class="btn btn-primary btn-sm" data-find-lenders="${esc(a.id)}">Find Lenders →</button>
+            <button class="btn btn-sm" data-edit-app="${esc(a.id)}">Edit</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>`;
+
+  container.querySelectorAll('[data-find-lenders]').forEach(b => {
+    b.addEventListener('click', () => useAppAsFilter(b.dataset.findLenders));
+  });
+  container.querySelectorAll('[data-edit-app]').forEach(b => {
+    b.addEventListener('click', () => openAppModal(b.dataset.editApp));
+  });
+}
+
+function metaItem(k, v) {
+  return `<div class="app-card-meta-item"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div></div>`;
+}
+
+function openAppModal(id) {
+  editingAppId = id;
+  const app = id ? apps.find(a => a.id === id) : null;
+  if (app) {
+    el('app-modal-title').textContent = 'Edit Application · ' + (app.merchant || 'Untitled');
+    el('a-merchant').value = app.merchant || '';
+    el('a-business').value = app.business || '';
+    el('a-contact').value = app.contactName || '';
+    el('a-phone').value = app.contactPhone || '';
+    el('a-email').value = app.contactEmail || '';
+    el('a-state').value = app.state || '';
+    el('a-industry').value = app.industry || '';
+    el('a-amount').value = app.amount ? Number(app.amount).toLocaleString('en-US') : '';
+    el('a-notes').value = app.notes || '';
+    el('btn-delete-app').style.display = '';
+  } else {
+    el('app-modal-title').textContent = 'New Application';
+    ['a-merchant','a-business','a-contact','a-phone','a-email','a-state','a-industry','a-amount','a-notes']
+      .forEach(id => el(id).value = '');
+    el('btn-delete-app').style.display = 'none';
+  }
+  openModal('modal-app');
+  setTimeout(() => el('a-merchant').focus(), 50);
+}
+
+function saveAppFromModal() {
+  const merchant = el('a-merchant').value.trim();
+  if (!merchant) { toast('Merchant name is required', 'var(--coral)'); return; }
+  const data = {
+    merchant: merchant,
+    business: el('a-business').value.trim(),
+    contactName: el('a-contact').value.trim(),
+    contactPhone: el('a-phone').value.trim(),
+    contactEmail: el('a-email').value.trim(),
+    state: el('a-state').value,
+    industry: el('a-industry').value.trim(),
+    amount: el('a-amount').value.replace(/[^0-9]/g, ''),
+    notes: el('a-notes').value.trim()
+  };
+  if (editingAppId) {
+    const a = apps.find(x => x.id === editingAppId);
+    if (a) Object.assign(a, data, { updatedAt: Date.now() });
+  } else {
+    apps.push({
+      id: 'app_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6),
+      createdAt: Date.now(),
+      ...data
+    });
+  }
+  persistApps();
+  closeModal('modal-app');
+  renderApps();
+  toast(editingAppId ? 'Application updated' : 'Application added');
+  editingAppId = null;
+}
+
+function deleteAppFromModal() {
+  if (!editingAppId) return;
+  const a = apps.find(x => x.id === editingAppId);
+  if (!a) return;
+  if (!confirm(`Delete application "${a.merchant || 'Untitled'}"? This cannot be undone.`)) return;
+  apps = apps.filter(x => x.id !== editingAppId);
+  persistApps();
+  closeModal('modal-app');
+  renderApps();
+  toast('Application deleted', 'var(--coral)');
+  editingAppId = null;
+}
+
+/* When user clicks "Find Lenders" on an application, fill the filter
+   and email-modal merchant/amount/notes, then switch to Match Deal. */
+function useAppAsFilter(id) {
+  const a = apps.find(x => x.id === id);
+  if (!a) return;
+  el('f-state').value = a.state || '';
+  el('f-industry').value = a.industry || '';
+  // amount goes into email modal, not the filter
+  el('em-merchant').value = a.merchant || '';
+  el('em-amount').value = a.amount ? Number(a.amount).toLocaleString('en-US') : '';
+  el('em-notes').value = a.notes || '';
+  // Switch to Match Deal tab
+  document.querySelectorAll('.nav-tab').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+  document.querySelector('.nav-tab[data-page="deal"]').classList.add('active');
+  el('page-deal').classList.add('active');
+  render();
+  toast(`Filter set for ${a.merchant} — fill in revenue/FICO/etc. above`);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function openModal(id) { el(id).classList.add('show'); }
+function closeModal(id) { el(id).classList.remove('show'); }
+
+async function init() {
+  await loadAll();
+  lenders = DEFAULT_LENDERS.slice();
+  updateMeta();
+
+  // States in both filter and app form
+  US_STATES.forEach(s => {
+    const o1 = document.createElement('option'); o1.value = s; o1.textContent = s; el('f-state').appendChild(o1);
+    const o2 = document.createElement('option'); o2.value = s; o2.textContent = s; el('a-state').appendChild(o2);
+  });
+
+  // Settings form
+  el('set-name').value    = settings.name || '';
+  el('set-company').value = settings.company || '';
+  el('set-phone').value   = settings.phone || '';
+  el('set-email').value   = settings.email || '';
+  el('set-subject').value = settings.subject;
+  el('set-body').value    = settings.body;
+
+  // Currency formatters
+  attachCurrencyFormatter(el('f-revenue'));
+  attachCurrencyFormatter(el('em-amount'));
+  attachCurrencyFormatter(el('a-amount'));
+
+  // Tab nav
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.nav-tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      el('page-' + t.dataset.page).classList.add('active');
+      if (t.dataset.page === 'lenders') renderDb(el('db-search').value);
+      if (t.dataset.page === 'jotform') renderApps();
+    });
+  });
+
+  // Filter inputs
+  ['f-state','f-position','f-revenue','f-fico','f-tib','f-negdays','f-defaults']
+    .forEach(id => {
+      el(id).addEventListener('input', render);
+      el(id).addEventListener('change', render);
+    });
+  setupIndustryCombo();
+
+  // Sort
+  el('sort-by').value = sortBy;
+  el('sort-by').addEventListener('change', () => {
+    sortBy = el('sort-by').value;
+    setStorage(STORAGE_KEYS.sort, sortBy);
+    render();
+  });
+
+  // Clear filters
+  el('btn-clear').addEventListener('click', () => {
+    ['f-state','f-position','f-industry','f-revenue','f-fico','f-tib','f-negdays','f-defaults']
+      .forEach(id => el(id).value = '');
+    selectedIds.clear();
+    render();
+  });
+
+  // Select all / clear
+  el('btn-select-all').addEventListener('click', () => {
+    document.querySelectorAll('#matches-list .lender-checkbox:not(:disabled)').forEach(cb => {
+      cb.checked = true;
+      selectedIds.add(cb.dataset.name);
+      cb.closest('.lender-row').classList.add('selected');
+    });
+    el('s-sel').textContent = selectedIds.size;
+    updateSelBar();
+  });
+  el('btn-deselect-all').addEventListener('click', () => {
+    selectedIds.clear();
+    document.querySelectorAll('.lender-checkbox').forEach(cb => { cb.checked = false; });
+    document.querySelectorAll('.lender-row').forEach(r => r.classList.remove('selected'));
+    el('s-sel').textContent = 0;
+    updateSelBar();
+  });
+  el('btn-clear-sel').addEventListener('click', () => el('btn-deselect-all').click());
+
+  // Email modal
+  el('btn-emails').addEventListener('click', () => { buildEmailModal(); openModal('modal-email'); });
+  ['em-merchant','em-amount','em-notes'].forEach(id => {
+    const n = el(id);
+    if (n) n.addEventListener('input', () => buildEmailModal());
+  });
+  el('btn-copy-all-addrs').addEventListener('click', async () => {
+    const addrs = lenders.filter(L => selectedIds.has(L.name)).flatMap(L => L.emails || []).join(', ');
+    if (!addrs) return toast('No emails available', 'var(--coral)');
+    await copyToClipboard(addrs);
+    toast('All addresses copied');
+  });
+  el('btn-copy-all-emails').addEventListener('click', async () => {
+    const sel = lenders.filter(L => selectedIds.has(L.name));
+    if (sel.length === 0) return toast('No lenders selected', 'var(--coral)');
+    const blocks = sel.map(L => {
+      const eo = buildEmailObj(L);
+      return `─── ${L.name} ───\nTo: ${eo.to}\nSubject: ${eo.subject}\n\n${eo.body}`;
+    }).join('\n\n\n');
+    await copyToClipboard(blocks);
+    toast(`Copied ${sel.length} emails`);
+  });
+
+  // Application modal
+  el('btn-add-app').addEventListener('click', () => openAppModal(null));
+  el('btn-save-app').addEventListener('click', saveAppFromModal);
+  el('btn-delete-app').addEventListener('click', deleteAppFromModal);
+
+  // Modal close
+  document.querySelectorAll('[data-close]').forEach(b => {
+    b.addEventListener('click', () => b.closest('.modal-bg').classList.remove('show'));
+  });
+  document.querySelectorAll('.modal-bg').forEach(m => {
+    m.addEventListener('click', e => { if (e.target === m) m.classList.remove('show'); });
+  });
+
+  // DB
+  el('db-search').addEventListener('input', e => renderDb(e.target.value));
+
+  // Settings
+  el('btn-save-settings').addEventListener('click', () => {
+    settings.name = el('set-name').value.trim();
+    settings.company = el('set-company').value.trim();
+    settings.phone = el('set-phone').value.trim();
+    settings.email = el('set-email').value.trim();
+    settings.subject = el('set-subject').value;
+    settings.body = el('set-body').value;
+    setStorage(STORAGE_KEYS.settings, JSON.stringify(settings));
+    toast('Settings saved');
+  });
+  el('btn-reset-template').addEventListener('click', () => {
+    el('set-subject').value = DEFAULT_SUBJECT;
+    el('set-body').value = DEFAULT_TEMPLATE;
+  });
+
+  render();
+  renderApps();
+}
+
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
