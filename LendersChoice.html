@@ -74,9 +74,7 @@
     align-items: center;
     padding: 14px 28px;
     border-bottom: 1px solid var(--border);
-    background: rgba(10, 10, 11, 0.85);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: var(--bg);
     gap: 24px;
     position: sticky;
     top: 0;
@@ -133,67 +131,86 @@
 
   /* FILTER BAR */
   .filter-bar {
-    background: rgba(17, 17, 20, 0.85);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: var(--bg);
     border-bottom: 1px solid var(--border);
-    padding: 14px 28px;
+    padding: 10px 20px;
     display: flex;
-    align-items: flex-end;
-    gap: 10px;
+    align-items: center;
+    gap: 8px;
     position: sticky;
     top: 60px;
     z-index: 50;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: thin;
   }
+  .filter-bar::-webkit-scrollbar { height: 4px; }
   .filter-field {
-    flex: 1 1 110px;
-    min-width: 100px;
-    max-width: 200px;
-    display: flex;
-    flex-direction: column;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    background: var(--bg-1);
+    border: 1px solid var(--border-2);
+    border-radius: 8px;
+    padding: 0 4px 0 10px;
+    height: 32px;
+    transition: border-color 0.15s;
   }
-  .filter-field.wide { max-width: 220px; flex-basis: 180px; }
+  .filter-field:hover { border-color: var(--border-3); }
+  .filter-field:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(255, 224, 138, 0.10);
+  }
   .filter-field label {
-    font-size: 10px;
+    font-size: 9.5px;
     color: var(--text-3);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 5px;
-    margin-left: 2px;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    user-select: none;
   }
   .filter-field input,
   .filter-field select {
-    width: 100%;
-    background: var(--bg-1);
-    border: 1px solid var(--border-2);
+    background: transparent;
+    border: none;
     color: var(--text);
-    padding: 8px 11px;
-    border-radius: 8px;
     outline: none;
-    transition: all 0.15s;
-    font-size: 13.5px;
+    font-size: 12.5px;
     font-weight: 500;
-    height: 34px;
+    height: 30px;
+    padding: 0 6px 0 0;
+    min-width: 0;
   }
-  .filter-field input:hover,
-  .filter-field select:hover { border-color: var(--border-3); }
-  .filter-field input:focus,
-  .filter-field select:focus {
-    border-color: var(--accent);
-    background: var(--bg-2);
-    box-shadow: 0 0 0 3px rgba(255, 224, 138, 0.10);
-  }
+  .filter-field input::placeholder { color: var(--text-4); }
   .filter-field select {
     appearance: none;
+    cursor: pointer;
     background-image: linear-gradient(45deg, transparent 50%, var(--text-3) 50%),
                       linear-gradient(135deg, var(--text-3) 50%, transparent 50%);
-    background-position: calc(100% - 13px) 50%, calc(100% - 9px) 50%;
+    background-position: calc(100% - 12px) 50%, calc(100% - 8px) 50%;
     background-size: 4px 4px, 4px 4px;
     background-repeat: no-repeat;
-    padding-right: 26px;
+    padding-right: 22px;
   }
+  /* Per-field widths sized to typical content */
+  .filter-field.f-state    { width: 170px; }
+  .filter-field.f-state select { width: 100%; }
+  .filter-field.f-position { width: 100px; }
+  .filter-field.f-position select { width: 100%; }
+  .filter-field.f-industry { width: 200px; flex: 1 0 200px; max-width: 280px; }
+  .filter-field.f-industry input { width: 100%; }
+  .filter-field.f-revenue  { width: 140px; }
+  .filter-field.f-revenue input { width: 100%; }
+  .filter-field.f-fico     { width: 90px; }
+  .filter-field.f-fico input { width: 100%; }
+  .filter-field.f-tib      { width: 105px; }
+  .filter-field.f-tib input { width: 100%; }
+  .filter-field.f-neg      { width: 100px; }
+  .filter-field.f-neg input { width: 100%; }
+  .filter-field.f-defaults { width: 150px; }
+  .filter-field.f-defaults select { width: 100%; }
   .dollar-input { position: relative; width: 100%; }
   .dollar-prefix {
     position: absolute;
@@ -276,63 +293,42 @@
 
   .page { display: none; }
   .page.active { display: block; }
-  .main-content { padding: 22px 28px 130px; }
+  .main-content { padding: 18px 28px 130px; }
 
   /* RESULTS HEADER */
-  .results-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 16px;
-    gap: 14px;
-    flex-wrap: wrap;
+  #section-matches, #section-rejected {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
   }
-  .res-stats { display: flex; gap: 8px; }
-  .stat-chip {
-    padding: 7px 13px;
-    border-radius: var(--rad-pill);
-    background: var(--bg-1);
-    border: 1px solid var(--border-2);
-    color: var(--text-2);
-    font-size: 12px;
-    font-weight: 500;
+  /* Compact inline stats embedded in section header */
+  .inline-stats {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-  }
-  .stat-chip .num {
-    color: var(--text);
-    font-weight: 700;
-    font-size: 14px;
-    font-family: 'JetBrains Mono', monospace;
-  }
-  .stat-chip .lbl {
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    font-size: 10px;
-    font-weight: 600;
-  }
-  .stat-chip.match { color: var(--green); border-color: var(--green-bd); background: var(--green-bg); }
-  .stat-chip.match .num { color: var(--green); }
-  .stat-chip.fail { color: var(--coral); border-color: var(--coral-bd); background: var(--coral-bg); }
-  .stat-chip.fail .num { color: var(--coral); }
-  .stat-chip.sel { color: var(--accent); border-color: rgba(255,224,138,0.3); background: rgba(255,224,138,0.08); }
-  .stat-chip.sel .num { color: var(--accent); }
-
-  .pos-legend {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 5px;
+    gap: 14px;
+    margin-left: 4px;
+    font-size: 11.5px;
+    color: var(--text-3);
+    font-weight: 500;
     flex-wrap: wrap;
   }
-  .pos-legend .lbl {
-    font-size: 10px;
+  .stat-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     color: var(--text-3);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 600;
-    margin-right: 4px;
+    text-transform: lowercase;
+    letter-spacing: 0;
   }
+  .stat-inline .num {
+    color: var(--text);
+    font-weight: 700;
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .stat-inline.match .num { color: var(--green); }
+  .stat-inline.fail  .num { color: var(--coral); }
+  .stat-inline.sel   .num { color: var(--accent); }
 
   /* POSITION PILL */
   .position-pill {
@@ -358,12 +354,13 @@
     display: flex;
     align-items: center;
     gap: 11px;
-    margin: 22px 0 12px;
+    margin: 4px 0 12px;
     font-size: 14.5px;
     font-weight: 600;
     letter-spacing: -0.01em;
     flex-wrap: wrap;
   }
+  #section-rejected .section-head { margin-top: 24px; }
   .section-head .ico {
     width: 7px; height: 7px;
     border-radius: 50%;
@@ -418,215 +415,237 @@
   }
   .sort-control select option { background: var(--bg-2); color: var(--text); }
 
-  /* LENDER GRID */
-  .lender-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-    gap: 10px;
-  }
-  .lender-row {
+
+  /* Filter toggle is mobile-only; hidden on desktop */
+  .filter-toggle { display: none; }
+
+  /* =========================================================
+     LENDER TABLE — primary list view
+     ========================================================= */
+  .lender-table-wrap {
     background: var(--bg-1);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 14px 16px;
-    cursor: pointer;
-    transition: all 0.15s;
-    position: relative;
-    user-select: none;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    max-width: 1200px;
+    margin: 0 auto;
+    /* No overflow:hidden — it breaks sticky thead. Use border-radius on first/last cells instead. */
   }
-  .lender-row::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 3px;
-    background: transparent;
-    transition: background 0.2s;
+  .lender-table thead th:first-child { border-top-left-radius: 11px; }
+  .lender-table thead th:last-child  { border-top-right-radius: 11px; }
+  .lender-table tbody tr:last-child td:first-child { border-bottom-left-radius: 11px; }
+  .lender-table tbody tr:last-child td:last-child  { border-bottom-right-radius: 11px; }
+  .lender-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    table-layout: auto;
   }
-  .lender-row.match:hover {
-    border-color: rgba(255, 224, 138, 0.30);
+  /* Header */
+  .lender-table thead th {
+    text-align: left;
+    padding: 12px 14px;
     background: var(--bg-2);
+    border-bottom: 1px solid var(--border-2);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    white-space: nowrap;
+    position: sticky;
+    top: 112px;  /* topbar(60) + compact filterbar(~52) */
+    z-index: 20;
+    box-shadow: 0 1px 0 var(--border);
   }
-  .lender-row.match::before    { background: var(--green); }
-  .lender-row.preferred::before { background: var(--accent); }
-  .lender-row.rejected { opacity: 0.7; }
-  .lender-row.rejected::before { background: rgba(248,113,113,0.35); }
-  .lender-row.rejected:hover { opacity: 1; }
-  .lender-row.selected {
-    background: rgba(255, 224, 138, 0.05);
-    border-color: rgba(255, 224, 138, 0.35);
+  /* When the header is "stuck" (scrolled), add a stronger shadow */
+  .lender-table thead th {
+    box-shadow: 0 4px 12px -4px rgba(0,0,0,0.4), 0 1px 0 var(--border-2);
   }
-  .lender-row.selected::before {
-    background: var(--accent);
-    box-shadow: 0 0 14px var(--accent);
+  .lender-table thead th.col-check {
+    width: 40px;
+    padding-right: 0;
+  }
+  .lender-table thead th.col-chev {
+    width: 70px;
+    padding-left: 0;
+    text-align: center;
+  }
+  .lender-table td.col-chev {
+    width: 70px;
+    padding: 4px 8px 4px 0;
+    text-align: center;
+    cursor: pointer;
+  }
+  /* Make the chev cell itself feel clickable */
+  .lender-table tbody tr:not(.expand-row):hover td.col-chev .row-chev {
+    background: var(--bg-3);
+    color: var(--text-2);
+    border-color: var(--border-3);
+  }
+  .lender-table thead th.num { text-align: right; }
+
+  /* Body rows */
+  .lender-table tbody tr {
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.1s;
+    position: relative;
+  }
+  .lender-table tbody tr:last-child { border-bottom: none; }
+  .lender-table tbody tr:nth-child(odd) { background: rgba(255,255,255,0.012); }
+  .lender-table tbody tr:hover { background: var(--bg-2); }
+  .lender-table tbody tr.preferred { background: rgba(255, 224, 138, 0.04); }
+  .lender-table tbody tr.preferred:hover { background: rgba(255, 224, 138, 0.07); }
+  .lender-table tbody tr.selected {
+    background: rgba(255, 224, 138, 0.10) !important;
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+  .lender-table tbody tr.rejected { color: var(--text-3); }
+  .lender-table tbody tr.rejected:hover { background: var(--bg-2); }
+
+  .lender-table td {
+    padding: 11px 14px;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+  /* Lender + Position should sit next to each other, not float apart */
+  .lender-table .col-name     { width: 1%; padding-right: 8px; }
+  .lender-table .col-position { width: 1%; padding-left: 8px; }
+  .lender-table .col-revenue  { width: 1%; }
+  .lender-table .col-fico     { width: 1%; }
+  .lender-table .col-tib      { width: 1%; }
+  .lender-table .col-neg      { width: 1%; }
+  /* Defaults absorbs slack so the chevron at the end stays right next to the data, with empty space living to the right of the chev */
+  .lender-table .col-defaults { width: auto; }
+  /* Defaults cell content stays left-aligned so the value sits next to NEG */
+  .lender-table td.col-defaults {
+    text-align: left;
+  }
+  /* Wrap defaults value + chev together so chev follows the value */
+  .defaults-and-chev {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .defaults-and-chev .def-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    color: var(--text-2);
+    text-transform: capitalize;
+    min-width: 50px;
+  }
+  .lender-table td.col-check {
+    width: 40px;
+    padding-right: 0;
+  }
+  .lender-table td.num {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    color: var(--text);
+  }
+  .lender-table td.num.muted { color: var(--text-4); }
+  .lender-table td.col-name {
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .lender-table td.col-name .star {
+    color: var(--accent);
+    margin-right: 6px;
+    font-size: 11px;
+  }
+  .lender-table td.col-defaults {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    color: var(--text-2);
+    text-transform: capitalize;
+  }
+  .lender-table td.col-reason {
+    color: var(--coral);
+    font-size: 11.5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 380px;
+    white-space: nowrap;
+    width: auto;
+  }
+  .lender-table td.col-reason::before {
+    content: '× ';
+    font-weight: 700;
   }
 
-  .lender-top {
-    display: grid;
-    grid-template-columns: 18px 1fr;
-    gap: 10px;
-    align-items: flex-start;
-  }
-  .lender-checkbox {
+  /* Checkbox */
+  .lender-check {
     appearance: none;
-    width: 18px;
-    height: 18px;
-    margin-top: 2px;
+    width: 17px;
+    height: 17px;
     border: 1.5px solid var(--border-3);
     background: var(--bg);
-    border-radius: 5px;
+    border-radius: 4px;
     cursor: pointer;
     position: relative;
     transition: all 0.15s;
-    flex-shrink: 0;
+    vertical-align: middle;
+    display: block;
+    margin: 0 auto;
   }
-  .lender-checkbox:hover { border-color: var(--accent); }
-  .lender-checkbox:checked { background: var(--accent); border-color: var(--accent); }
-  .lender-checkbox:checked::after {
+  .lender-check:hover { border-color: var(--accent); }
+  .lender-check:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .lender-check:checked::after {
     content: '';
     position: absolute;
-    left: 5px; top: 1px;
+    left: 4px; top: 0;
     width: 5px; height: 10px;
     border: solid #1A1408;
     border-width: 0 2.5px 2.5px 0;
     transform: rotate(45deg);
   }
-  .lender-checkbox:disabled { cursor: not-allowed; opacity: 0.2; }
+  .lender-check:disabled { cursor: not-allowed; opacity: 0.25; }
 
-  .lender-header-info {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    min-width: 0;
-  }
-  .lender-name-row {
-    display: flex;
+  /* Chevron */
+  .row-chev {
+    width: 36px;
+    height: 30px;
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .lender-name {
-    font-size: 15.5px;
-    font-weight: 700;
-    letter-spacing: -0.015em;
-    color: var(--text);
-    line-height: 1.2;
-  }
-  .lender-row.preferred .lender-name::after {
-    content: '★';
-    color: var(--accent);
-    margin-left: 5px;
-    font-size: 12px;
-    vertical-align: 1px;
-  }
-  .preferred-pill, .warning-pill {
-    font-size: 10px;
-    padding: 2px 8px;
-    border-radius: var(--rad-pill);
-    font-weight: 600;
-    letter-spacing: 0.02em;
-  }
-  .preferred-pill {
-    background: rgba(255, 224, 138, 0.10);
-    color: var(--accent);
-    border: 1px solid rgba(255, 224, 138, 0.30);
-  }
-  .warning-pill {
-    background: var(--amber-bg);
-    color: var(--amber);
-    border: 1px solid var(--amber-bd);
-  }
-
-  .expand-strip {
-    margin: -2px -16px -14px;
-    padding: 9px 16px;
-    border-top: 1px solid var(--border);
+    justify-content: center;
+    border: 1px solid var(--border-2);
     background: var(--bg-2);
     color: var(--text-3);
-    font-size: 11.5px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    border-radius: 8px;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
     transition: all 0.15s;
-    user-select: none;
+    padding: 0;
   }
-  .expand-strip:hover {
+  .row-chev:hover { background: var(--bg-3); color: var(--accent); border-color: var(--accent); }
+  .row-chev svg { transition: transform 0.2s; width: 14px; height: 14px; }
+  .lender-table tbody tr.expanded .row-chev svg { transform: rotate(180deg); }
+  .lender-table tbody tr.expanded .row-chev {
     background: var(--bg-3);
     color: var(--accent);
+    border-color: var(--accent);
   }
-  .expand-strip svg { transition: transform 0.2s; }
-  .lender-row.expanded .expand-strip svg { transform: rotate(180deg); }
-  .lender-row.expanded .expand-strip { background: var(--bg-3); color: var(--accent); }
 
-  /* CONSISTENT CRITERIA GRID — 5 columns always present */
-  .crit-grid {
+  /* Expansion row */
+  .expand-row { background: var(--bg) !important; cursor: default; }
+  .expand-row td {
+    padding: 14px 18px 18px;
+  }
+  .expand-content {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 8px 12px;
-  }
-  .crit { min-width: 0; }
-  .crit-label {
-    font-size: 9.5px;
-    color: var(--text-3);
-    text-transform: uppercase;
-    letter-spacing: 0.09em;
-    font-weight: 600;
-    margin-bottom: 2px;
-  }
-  .crit-value {
-    font-size: 12.5px;
-    color: var(--text);
-    font-weight: 600;
-    line-height: 1.3;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .crit-value.muted { color: var(--text-4); font-weight: 400; }
-
-  /* EXPAND PANEL — consistent structure for every lender */
-  .lender-expand {
-    border-top: 1px solid var(--border);
-    margin: -2px -16px -14px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px 22px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     padding: 14px 16px;
-    background: var(--bg);
-    display: none;
-    gap: 12px;
-    flex-direction: column;
   }
-  .lender-row.expanded .lender-expand { display: flex; }
-  /* When expanded, hide the strip and show panel instead — toggle lives on strip click */
-  .lender-row.expanded .expand-strip { display: none; }
-  .expand-strip-collapse {
-    margin: 6px -16px -14px;
-    padding: 9px 16px;
-    border-top: 1px solid var(--border);
-    background: var(--bg-3);
-    color: var(--accent);
-    font-size: 11.5px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    cursor: pointer;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    transition: all 0.15s;
-    user-select: none;
-  }
-  .lender-row.expanded .expand-strip-collapse { display: flex; }
-  .expand-strip-collapse:hover { background: var(--bg-4); }
-  .detail-section { }
-  .detail-k {
+  .expand-content .k {
     font-size: 9.5px;
     color: var(--text-3);
     text-transform: uppercase;
@@ -634,40 +653,316 @@
     font-weight: 600;
     margin-bottom: 4px;
   }
-  .detail-v {
+  .expand-content .v {
     font-size: 12.5px;
     color: var(--text);
     line-height: 1.5;
     font-weight: 500;
     word-wrap: break-word;
+    white-space: normal;
   }
-  .detail-v.muted { color: var(--text-4); font-style: italic; font-weight: 400; }
-  .detail-v.mono { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; }
-  .detail-v.email-list { display: flex; flex-direction: column; gap: 2px; }
+  .expand-content .v.muted { color: var(--text-4); font-style: italic; font-weight: 400; }
+  .expand-content .v.mono { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; }
 
-  /* REJECTION REASONS */
-  .rejection-reasons {
-    display: flex;
+  /* Mobile: collapse less-critical columns */
+  /* Desktop: hide mobile-only chev cell, show desktop chev wrapper */
+  .lender-table .col-chev-mobile { display: none; }
+  .row-chev.mobile-only { display: none; }
+  .mobile-stats {
+    display: none;
+    gap: 12px;
     flex-wrap: wrap;
-    gap: 5px;
-  }
-  .reason-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
+    font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
-    padding: 2px 9px 2px 8px;
-    background: var(--coral-bg);
-    color: var(--coral);
-    border: 1px solid var(--coral-bd);
-    border-radius: var(--rad-pill);
-    font-weight: 500;
+    color: var(--text-3);
   }
-  .reason-badge::before {
-    content: '×';
-    font-weight: 700;
-    font-size: 13px;
-    line-height: 1;
+  .mobile-stats span { color: var(--text-2); }
+  .mobile-stats .v { color: var(--text); font-weight: 600; }
+  /* =========================================================
+     MOBILE — under 700px: convert table rows into compact cards
+     ========================================================= */
+  @media (max-width: 700px) {
+    /* Container loses the table chrome */
+    .lender-table-wrap {
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      max-width: 100%;
+    }
+    /* Hide the header row entirely */
+    .lender-table thead { display: none; }
+    /* Make table render as flowing blocks */
+    .lender-table,
+    .lender-table tbody,
+    .lender-table tr,
+    .lender-table td { display: block; width: auto; }
+    /* Each row becomes a card */
+    .lender-table tbody tr.lender-data-row {
+      background: var(--bg-1);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      position: relative;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      grid-template-areas:
+        "check name chev"
+        "check stats chev";
+      column-gap: 10px;
+      row-gap: 4px;
+      align-items: center;
+    }
+    .lender-table tbody tr.lender-data-row:nth-child(odd) { background: var(--bg-1); }
+    .lender-table tbody tr.lender-data-row.selected {
+      background: rgba(255, 224, 138, 0.08) !important;
+      border-color: var(--accent);
+      box-shadow: none;
+    }
+    .lender-table tbody tr.lender-data-row.preferred { background: rgba(255, 224, 138, 0.04); }
+
+    /* Checkbox cell */
+    .lender-table td.col-check {
+      grid-area: check;
+      padding: 0;
+      width: 22px;
+    }
+    .lender-check { width: 20px; height: 20px; }
+    .lender-check:checked::after { left: 5px; top: 1px; }
+
+    /* Name + position on one line */
+    .lender-table td.col-name {
+      grid-area: name;
+      padding: 0;
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .lender-table td.col-position {
+      display: none;  /* merged into name */
+    }
+    /* Inject position pill after the name */
+    .lender-table tbody tr.lender-data-row td.col-name::after {
+      content: attr(data-position);
+      display: inline-flex;
+      align-items: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--bg-3);
+      color: var(--text-3);
+      border: 1px solid var(--border-2);
+    }
+    /* Position colors via data-position-color */
+    .lender-table tbody tr[data-pc="green"] td.col-name::after  { background: var(--green-bg);  color: var(--green);  border-color: var(--green-bd); }
+    .lender-table tbody tr[data-pc="blue"] td.col-name::after   { background: var(--blue-bg);   color: var(--blue);   border-color: var(--blue-bd); }
+    .lender-table tbody tr[data-pc="purple"] td.col-name::after { background: var(--purple-bg); color: var(--purple); border-color: var(--purple-bd); }
+    .lender-table tbody tr[data-pc="amber"] td.col-name::after  { background: var(--amber-bg);  color: var(--amber);  border-color: var(--amber-bd); }
+    .lender-table tbody tr[data-pc="coral"] td.col-name::after  { background: var(--coral-bg);  color: var(--coral);  border-color: var(--coral-bd); }
+
+    /* Numeric stats compress into one inline strip */
+    .lender-table td.col-revenue,
+    .lender-table td.col-fico,
+    .lender-table td.col-tib,
+    .lender-table td.col-neg,
+    .lender-table td.col-defaults {
+      display: none;  /* hide individual cells */
+    }
+    /* The defaults cell becomes the stats line via injected content */
+    .lender-table td.col-defaults {
+      display: block;
+      grid-area: stats;
+      padding: 0;
+      text-align: left;
+    }
+    .defaults-and-chev { display: none; }  /* hide desktop wrapper */
+
+    .lender-table td.col-defaults .defaults-and-chev { display: none; }
+    .lender-table .col-chev-mobile {
+      display: block;
+      grid-area: chev;
+      padding: 0;
+      width: auto;
+    }
+    .row-chev.mobile-only { display: inline-flex; }
+    .mobile-stats { display: flex; }
+
+    /* Hide the rejected-row's desktop defaults-and-chev wrapper on mobile */
+    .lender-table tbody tr.rejected td.col-reason .row-chev:not(.mobile-only) {
+      display: none;
+    }
+
+    /* Chevron — vertically centered, anchored right */
+    .row-chev {
+      grid-area: chev;
+      width: 32px;
+      height: 32px;
+    }
+
+    /* Rejected row tweaks */
+    .lender-table tbody tr.rejected {
+      grid-template-areas:
+        "check name chev"
+        "check reason chev";
+    }
+    .lender-table td.col-reason {
+      display: block;
+      grid-area: reason;
+      padding: 0;
+      max-width: 100%;
+      white-space: normal;
+      font-size: 11.5px;
+      line-height: 1.4;
+    }
+    .lender-table td.col-reason .defaults-and-chev {
+      display: block;
+    }
+    .lender-table td.col-reason .row-chev {
+      display: none;  /* chev moves to its own grid area */
+    }
+    /* In mobile, render an explicit chev cell for rejected rows */
+    .lender-table tbody tr.rejected td.col-reason span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Expansion row */
+    .lender-table tr.expand-row {
+      background: transparent !important;
+      padding: 0;
+      margin-bottom: 8px;
+    }
+    .lender-table tr.expand-row td {
+      padding: 0;
+    }
+    .expand-content {
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding: 12px 14px;
+      margin-top: -6px;
+      border-radius: 0 0 10px 10px;
+    }
+
+    /* Filter bar becomes a collapsible drawer on mobile */
+    .filter-bar {
+      padding: 10px 14px;
+      gap: 8px;
+      overflow-x: visible;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: stretch;
+      max-height: 48px;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    .filter-bar.expanded { max-height: 600px; }
+
+    /* The "filters toggle" header sits inside the filter-bar, spanning both columns */
+    .filter-toggle {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      padding: 4px 2px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+    }
+    .filter-toggle-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .filter-toggle-label .count-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+      height: 18px;
+      padding: 0 6px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #1A1408;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .filter-toggle-label .count-badge.empty {
+      background: var(--bg-3);
+      color: var(--text-3);
+    }
+    .filter-toggle-chev {
+      transition: transform 0.2s;
+      color: var(--text-3);
+    }
+    .filter-bar.expanded .filter-toggle-chev { transform: rotate(180deg); }
+
+    .filter-field {
+      width: auto !important;
+      min-width: 0 !important;
+      max-width: none !important;
+      flex: none !important;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 4px;
+      padding: 6px 10px;
+      height: auto;
+    }
+    .filter-field label {
+      font-size: 9.5px;
+      letter-spacing: 0.08em;
+    }
+    .filter-field input,
+    .filter-field select {
+      height: 26px;
+      font-size: 13px;
+      padding: 0;
+      width: 100%;
+    }
+    .filter-field select {
+      padding-right: 18px;
+      background-position: calc(100% - 4px) 50%, calc(100% - 0px) 50%;
+    }
+    .filter-field.f-industry { grid-column: 1 / -1; }
+    .filter-bar > #btn-clear { grid-column: 1 / -1; justify-self: end; }
+    .filter-bar > span:last-of-type { display: none; }
+
+    /* Topbar */
+    .topbar { padding: 12px 14px; gap: 10px; }
+    .nav-tabs { gap: 0; flex: 1; justify-content: flex-end; }
+    .nav-tab { padding: 6px 10px; font-size: 12px; }
+    .meta-pill { display: none; }
+    .brand { font-size: 16px; }
+    .brand span { display: none; }  /* hide "Lenders Choice" text, keep logo */
+
+    .main-content { padding: 14px 12px 100px; }
+    .section-head { font-size: 13px; gap: 8px; flex-wrap: wrap; }
+    .sort-control { font-size: 10px; }
+    .inline-stats { gap: 10px; font-size: 11px; }
+
+    /* Selection bar — full width at the bottom */
+    .selection-bar {
+      left: 12px;
+      right: 12px;
+      transform: translateY(180%);
+      width: auto;
+      max-width: none;
+      padding: 10px 14px;
+      border-radius: 14px;
+    }
+    .selection-bar.show { transform: translateY(0); }
   }
 
   /* EMPTY STATE */
@@ -1107,8 +1402,6 @@
   @media (max-width: 800px) {
     .topbar, .filter-bar { padding-left: 16px; padding-right: 16px; }
     .main-content { padding-left: 16px; padding-right: 16px; }
-    .pos-legend { display: none; }
-    .crit-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
 </style>
 </head>
@@ -1132,78 +1425,77 @@
 
 <!-- ==================== MATCH DEAL PAGE ==================== -->
 <main class="page active" id="page-deal">
-  <div class="filter-bar">
-    <div class="filter-field">
+  <div class="filter-bar" id="filter-bar">
+    <button class="filter-toggle" id="filter-toggle">
+      <span class="filter-toggle-label">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        Filters
+        <span class="count-badge empty" id="filter-count">0</span>
+      </span>
+      <svg class="filter-toggle-chev" width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <div class="filter-field f-state">
       <label>State</label>
-      <select id="f-state"><option value="">— any —</option></select>
+      <select id="f-state"><option value="">any</option></select>
     </div>
-    <div class="filter-field" style="min-width:88px;">
-      <label>Position</label>
+    <div class="filter-field f-position">
+      <label>Pos</label>
       <select id="f-position">
         <option value="">—</option>
         <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
         <option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
       </select>
     </div>
-    <div class="filter-field wide combobox">
+    <div class="filter-field f-industry combobox">
       <label>Industry</label>
-      <input type="text" id="f-industry" placeholder="Type to search…" autocomplete="off">
+      <input type="text" id="f-industry" placeholder="any" autocomplete="off">
       <div class="combobox-list" id="industry-list"></div>
     </div>
-    <div class="filter-field">
-      <label>Revenue</label>
-      <div class="dollar-input">
-        <span class="dollar-prefix">$</span>
-        <input type="text" inputmode="numeric" id="f-revenue" placeholder="25,000" autocomplete="off">
-      </div>
+    <div class="filter-field f-revenue">
+      <label>Rev</label>
+      <span style="color:var(--text-3); font-size:11px; margin-right:-2px;">$</span>
+      <input type="text" inputmode="numeric" id="f-revenue" placeholder="25,000" autocomplete="off">
     </div>
-    <div class="filter-field" style="min-width:88px;">
+    <div class="filter-field f-fico">
       <label>FICO</label>
       <input type="number" id="f-fico" placeholder="650" min="300" max="850">
     </div>
-    <div class="filter-field" style="min-width:96px;">
-      <label>TIB (mo)</label>
+    <div class="filter-field f-tib">
+      <label>TIB</label>
       <input type="number" id="f-tib" placeholder="24" min="0">
+      <span style="color:var(--text-4); font-size:10px; margin-right:6px;">mo</span>
     </div>
-    <div class="filter-field" style="min-width:96px;">
-      <label>Neg Days</label>
+    <div class="filter-field f-neg">
+      <label>Neg</label>
       <input type="number" id="f-negdays" placeholder="3" min="0">
     </div>
-    <div class="filter-field" style="min-width:130px;">
+    <div class="filter-field f-defaults">
       <label>Defaults</label>
       <select id="f-defaults">
-        <option value="">—</option>
-        <option value="no">None / clean</option>
-        <option value="satisfied">Satisfied</option>
-        <option value="yes">Open default</option>
+        <option value="">any</option>
+        <option value="no">clean only</option>
+        <option value="satisfied">satisfied</option>
+        <option value="yes">open default</option>
       </select>
     </div>
-    <div class="filter-spacer"></div>
-    <button class="btn btn-ghost btn-sm" id="btn-clear" title="Clear all filters">Clear</button>
+    <span style="flex:1; min-width: 8px;"></span>
+    <button class="btn btn-ghost btn-sm" id="btn-clear" title="Clear all filters" style="flex-shrink:0;">Clear</button>
   </div>
 
   <div class="main-content">
-    <div class="results-header">
-      <div class="res-stats">
-        <span class="stat-chip match"><span class="num" id="s-match">0</span><span class="lbl">match</span></span>
-        <span class="stat-chip fail"><span class="num" id="s-fail">0</span><span class="lbl">rejected</span></span>
-        <span class="stat-chip sel"><span class="num" id="s-sel">0</span><span class="lbl">selected</span></span>
-      </div>
-      <div class="pos-legend">
-        <span class="lbl">Positions</span>
-        <span class="position-pill green sm">1st only</span>
-        <span class="position-pill blue sm">1st – Nth</span>
-        <span class="position-pill purple sm">2nd+</span>
-        <span class="position-pill amber sm">3rd+</span>
-        <span class="position-pill coral sm">4th+</span>
-      </div>
-    </div>
-
     <div id="section-matches">
       <div class="section-head">
         <span class="ico green"></span>
         Qualifying Lenders
-        <span class="count" id="cnt-match">0</span>
+        <span class="inline-stats">
+          <span class="stat-inline match"><span class="num" id="s-match">0</span> match</span>
+          <span class="stat-inline fail"><span class="num" id="s-fail">0</span> rejected</span>
+          <span class="stat-inline sel"><span class="num" id="s-sel">0</span> selected</span>
+        </span>
         <span class="section-head-spacer"></span>
         <div class="sort-control">
           <label for="sort-by">Sort</label>
@@ -1222,7 +1514,23 @@
         <button class="btn btn-sm" id="btn-select-all">Select all</button>
         <button class="btn btn-sm btn-ghost" id="btn-deselect-all">Clear</button>
       </div>
-      <div id="matches-list" class="lender-grid"></div>
+      <div class="lender-table-wrap" id="matches-wrap">
+        <table class="lender-table">
+          <thead>
+            <tr>
+              <th class="col-check"></th>
+              <th class="col-name">Lender</th>
+              <th class="col-position">Position</th>
+              <th class="col-revenue num">Min Revenue</th>
+              <th class="col-fico num">FICO</th>
+              <th class="col-tib num">TIB</th>
+              <th class="col-neg num">Neg</th>
+              <th class="col-defaults">Defaults</th>
+            </tr>
+          </thead>
+          <tbody id="matches-list"></tbody>
+        </table>
+      </div>
     </div>
 
     <div id="section-rejected">
@@ -1231,7 +1539,19 @@
         Will Not Qualify
         <span class="count" id="cnt-fail">0</span>
       </div>
-      <div id="rejected-list" class="lender-grid"></div>
+      <div class="lender-table-wrap" id="rejected-wrap">
+        <table class="lender-table">
+          <thead>
+            <tr>
+              <th class="col-check"></th>
+              <th class="col-name">Lender</th>
+              <th class="col-position">Position</th>
+              <th class="col-reason">Why Rejected</th>
+            </tr>
+          </thead>
+          <tbody id="rejected-list"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -1662,6 +1982,16 @@ function updateMeta() {
   const m = el('meta-count');
   if (m) m.textContent = lenders.length || 0;
 }
+
+function updateFilterCount() {
+  const filter = readFilter();
+  const active = Object.values(filter).filter(v => v !== '' && v != null).length;
+  const badge = el('filter-count');
+  if (badge) {
+    badge.textContent = active;
+    badge.classList.toggle('empty', active === 0);
+  }
+}
 function copyToClipboard(text) {
   if (navigator.clipboard && navigator.clipboard.writeText) {
     return navigator.clipboard.writeText(text);
@@ -1732,21 +2062,50 @@ function render() {
   el('s-match').textContent = matches.length;
   el('s-fail').textContent = rejects.length;
   el('s-sel').textContent = selectedIds.size;
-  el('cnt-match').textContent = matches.length;
-  el('cnt-fail').textContent = rejects.length;
+  const cntMatch = el('cnt-match'); if (cntMatch) cntMatch.textContent = matches.length;
+  const cntFail = el('cnt-fail'); if (cntFail) cntFail.textContent = rejects.length;
+  updateFilterCount();
 
   const ml = el('matches-list');
+  const mw = el('matches-wrap');
   if (matches.length === 0) {
-    ml.innerHTML = '<div class="empty-state"><h3>No matches with these filters</h3><p>Loosen a criterion, or scroll down to see why each lender is rejected.</p></div>';
+    mw.innerHTML = '<div class="empty-state"><h3>No matches with these filters</h3><p>Loosen a criterion, or scroll down to see why each lender is rejected.</p></div>';
   } else {
-    ml.innerHTML = matches.map(x => renderLender(x, false)).join('');
+    // Restore table structure if needed
+    if (!el('matches-list')) {
+      mw.innerHTML = `<table class="lender-table">
+        <thead><tr>
+          <th class="col-check"></th>
+          <th class="col-name">Lender</th>
+          <th class="col-position">Position</th>
+          <th class="col-revenue num">Min Revenue</th>
+          <th class="col-fico num">FICO</th>
+          <th class="col-tib num">TIB</th>
+          <th class="col-neg num">Neg</th>
+          <th class="col-defaults">Defaults</th>
+        </tr></thead>
+        <tbody id="matches-list"></tbody>
+      </table>`;
+    }
+    el('matches-list').innerHTML = matches.map(renderMatchRow).join('');
   }
 
-  const rl = el('rejected-list');
+  const rw = el('rejected-wrap');
   if (rejects.length === 0) {
-    rl.innerHTML = '<div class="empty-state" style="padding:24px;">Every lender qualifies.</div>';
+    rw.innerHTML = '<div class="empty-state" style="padding:24px;">Every lender qualifies.</div>';
   } else {
-    rl.innerHTML = rejects.map(x => renderLender(x, true)).join('');
+    if (!el('rejected-list')) {
+      rw.innerHTML = `<table class="lender-table">
+        <thead><tr>
+          <th class="col-check"></th>
+          <th class="col-name">Lender</th>
+          <th class="col-position">Position</th>
+          <th class="col-reason">Why Rejected</th>
+        </tr></thead>
+        <tbody id="rejected-list"></tbody>
+      </table>`;
+    }
+    el('rejected-list').innerHTML = rejects.map(renderRejectRow).join('');
   }
 
   bindLenderRows();
@@ -1755,97 +2114,146 @@ function render() {
 
 /* CONSISTENT lender card: same sections always rendered.
    Empty values show as "(none)" so layout is identical across cards. */
-function renderLender(x, rejected) {
+/* Render a lender row in the qualifying table */
+function renderMatchRow(x) {
   const L = x.L;
   const sel = selectedIds.has(L.name);
   const expanded = expandedRow === L.name;
-  const cls = ['lender-row'];
-  if (rejected) cls.push('rejected');
-  else { cls.push('match'); if (x.preferred) cls.push('preferred'); }
+  const cls = ['lender-data-row'];
+  if (x.preferred) cls.push('preferred');
   if (sel) cls.push('selected');
   if (expanded) cls.push('expanded');
 
   const pc = positionColor(L);
+  const revText = L.depositsMin != null
+    ? '$' + Number(L.depositsMin).toLocaleString()
+    : (L.depositsRaw ? '$' + L.depositsRaw : '—');
+  const ficoText = L.ficoMin != null ? L.ficoMin : (L.ficoRaw || '—');
+  const tibText = L.tibMinMonths != null
+    ? L.tibMinMonths + 'mo'
+    : (L.tibRaw || '—');
+  const negText = L.negDaysMax != null ? '<' + L.negDaysMax : (L.negDaysRaw || '—');
+  const defText = L.defaultsAccepts || '—';
 
-  const crit = (label, value) => `
-    <div class="crit">
-      <div class="crit-label">${label}</div>
-      <div class="crit-value${!value ? ' muted' : ''}">${esc(value || '—')}</div>
-    </div>`;
-
-  const sectionRow = (label, valueHtml, isEmpty) => `
-    <div class="detail-section">
-      <div class="detail-k">${esc(label)}</div>
-      <div class="detail-v ${isEmpty ? 'muted' : ''}">${valueHtml || '(none)'}</div>
-    </div>`;
-
-  const statesHtml = (L.statesOut && L.statesOut.length)
-    ? esc(L.statesOut.join(', '))
-    : '';
-  const yesHtml = (L.industriesYes && L.industriesYes.length)
-    ? esc(L.industriesYes.join(', '))
-    : '';
-  const noHtml = (L.industriesNo && L.industriesNo.length)
-    ? esc(L.industriesNo.join(', '))
-    : '';
-  const emailsHtml = (L.emails && L.emails.length)
-    ? `<div class="email-list mono">${L.emails.map(e => esc(e)).join('<br>')}</div>`
-    : '';
-  const notesHtml = L.notes ? esc(L.notes).replace(/\n/g, '<br>') : '';
+  const star = x.preferred ? '<span class="star">★</span>' : '';
 
   return `
-    <div class="${cls.join(' ')}" data-id="${esc(L.name)}">
-      <div class="lender-top">
-        <input type="checkbox" class="lender-checkbox" data-name="${esc(L.name)}"
-          ${sel ? 'checked' : ''} ${rejected ? 'disabled' : ''}
-          onclick="event.stopPropagation()">
-        <div class="lender-header-info">
-          <div class="lender-name-row">
-            <span class="lender-name">${esc(L.name)}</span>
-            <span class="position-pill ${pc}">${esc(L.positionRaw || '—')}</span>
-            ${x.preferred ? '<span class="preferred-pill">★ Preferred</span>' : ''}
-            ${x.warnings.map(w => `<span class="warning-pill">${esc(w)}</span>`).join('')}
-          </div>
+    <tr class="${cls.join(' ')}" data-id="${esc(L.name)}" data-pc="${pc}">
+      <td class="col-check">
+        <input type="checkbox" class="lender-check" data-name="${esc(L.name)}"
+          ${sel ? 'checked' : ''} onclick="event.stopPropagation()">
+      </td>
+      <td class="col-name" data-position="${esc(L.positionRaw || '—')}">${star}${esc(L.name)}</td>
+      <td class="col-position"><span class="position-pill sm ${pc}">${esc(L.positionRaw || '—')}</span></td>
+      <td class="col-revenue num ${L.depositsMin == null ? 'muted' : ''}">${esc(revText)}</td>
+      <td class="col-fico num ${L.ficoMin == null ? 'muted' : ''}">${esc(String(ficoText))}</td>
+      <td class="col-tib num ${L.tibMinMonths == null ? 'muted' : ''}">${esc(tibText)}</td>
+      <td class="col-neg num ${L.negDaysMax == null ? 'muted' : ''}">${esc(negText)}</td>
+      <td class="col-defaults">
+        <div class="defaults-and-chev">
+          <span class="def-val">${esc(defText)}</span>
+          <button class="row-chev" data-toggle-expand title="Show details">
+            <svg viewBox="0 0 16 16" fill="none">
+              <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
         </div>
-      </div>
-      <div class="crit-grid">
-        ${crit('Revenue', L.depositsRaw ? '$' + L.depositsRaw : '')}
-        ${crit('FICO', L.ficoRaw)}
-        ${crit('TIB', L.tibRaw)}
-        ${crit('Neg Days', L.negDaysRaw)}
-        ${crit('Defaults', L.defaultsRaw)}
-      </div>
-      ${rejected && x.reasons.length ? `
-        <div class="rejection-reasons">
-          ${x.reasons.map(r => `<span class="reason-badge">${esc(r)}</span>`).join('')}
-        </div>` : ''}
-      <div class="lender-expand">
-        ${sectionRow('States Excluded', statesHtml, !statesHtml)}
-        ${sectionRow('Preferred Industries', yesHtml, !yesHtml)}
-        ${sectionRow('Restricted Industries', noHtml, !noHtml)}
-        ${sectionRow('Submission Emails', emailsHtml, !emailsHtml)}
-        ${sectionRow('Notes', notesHtml, !notesHtml)}
-      </div>
-      <div class="expand-strip" data-toggle-expand>
-        Show details
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-          <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      <div class="expand-strip-collapse" data-toggle-expand>
-        Hide details
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="transform: rotate(180deg);">
-          <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
+        <div class="mobile-stats">
+          <span>Rev <span class="v">${esc(revText)}</span></span>
+          <span>FICO <span class="v">${esc(String(ficoText))}</span></span>
+          <span>TIB <span class="v">${esc(tibText)}</span></span>
+          <span>Neg <span class="v">${esc(negText)}</span></span>
+          <span>Def <span class="v">${esc(defText)}</span></span>
+        </div>
+      </td>
+      <td class="col-chev-mobile">
+        <button class="row-chev mobile-only" data-toggle-expand title="Show details">
+          <svg viewBox="0 0 16 16" fill="none">
+            <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </td>
+    </tr>
+    ${expanded ? renderExpandRow(L, 9) : ''}`;
+}
+
+/* Render a lender row in the rejected table */
+function renderRejectRow(x) {
+  const L = x.L;
+  const expanded = expandedRow === L.name;
+  const cls = ['lender-data-row', 'rejected'];
+  if (expanded) cls.push('expanded');
+
+  const pc = positionColor(L);
+  const reasonText = x.reasons.length ? x.reasons.join(' · ') : '—';
+
+  return `
+    <tr class="${cls.join(' ')}" data-id="${esc(L.name)}" data-pc="${pc}">
+      <td class="col-check">
+        <input type="checkbox" class="lender-check" disabled>
+      </td>
+      <td class="col-name" data-position="${esc(L.positionRaw || '—')}">${esc(L.name)}</td>
+      <td class="col-position"><span class="position-pill sm ${pc}">${esc(L.positionRaw || '—')}</span></td>
+      <td class="col-reason">
+        <div class="defaults-and-chev" style="width:100%; justify-content: space-between;">
+          <span title="${esc(reasonText)}" style="overflow:hidden; text-overflow:ellipsis; flex:1; min-width:0;">${esc(reasonText)}</span>
+          <button class="row-chev" data-toggle-expand title="Show details">
+            <svg viewBox="0 0 16 16" fill="none">
+              <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </td>
+      <td class="col-chev-mobile">
+        <button class="row-chev mobile-only" data-toggle-expand title="Show details">
+          <svg viewBox="0 0 16 16" fill="none">
+            <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </td>
+    </tr>
+    ${expanded ? renderExpandRow(L, 5) : ''}`;
+}
+
+function renderExpandRow(L, colspan) {
+  const statesHtml = (L.statesOut && L.statesOut.length) ? esc(L.statesOut.join(', ')) : '';
+  const yesHtml = (L.industriesYes && L.industriesYes.length) ? esc(L.industriesYes.join(', ')) : '';
+  const noHtml = (L.industriesNo && L.industriesNo.length) ? esc(L.industriesNo.join(', ')) : '';
+  const emailsHtml = (L.emails && L.emails.length)
+    ? `<div class="mono">${L.emails.map(e => esc(e)).join('<br>')}</div>` : '';
+  const notesHtml = L.notes ? esc(L.notes).replace(/\n/g, '<br>') : '';
+
+  const field = (label, html, isEmpty) => `
+    <div>
+      <div class="k">${esc(label)}</div>
+      <div class="v ${isEmpty ? 'muted' : ''}">${html || '(none)'}</div>
     </div>`;
+
+  return `
+    <tr class="expand-row" data-expand-for="${esc(L.name)}">
+      <td colspan="${colspan}">
+        <div class="expand-content">
+          ${field('States Excluded', statesHtml, !statesHtml)}
+          ${field('Preferred Industries', yesHtml, !yesHtml)}
+          ${field('Restricted Industries', noHtml, !noHtml)}
+          ${field('Submission Emails', emailsHtml, !emailsHtml)}
+          ${field('Notes', notesHtml, !notesHtml)}
+        </div>
+      </td>
+    </tr>`;
 }
 
 function bindLenderRows() {
-  document.querySelectorAll('.lender-row').forEach(row => {
+  document.querySelectorAll('.lender-data-row').forEach(row => {
     row.addEventListener('click', e => {
-      if (e.target.closest('.lender-checkbox')) return;
-      if (e.target.closest('[data-toggle-expand]')) return;
+      if (e.target.closest('.lender-check')) return;
+      // Click on the chev or its surrounding wrapper expands
+      if (e.target.closest('.row-chev') || e.target.closest('[data-toggle-expand]')) {
+        const id = row.dataset.id;
+        expandedRow = (expandedRow === id) ? null : id;
+        render();
+        return;
+      }
       if (e.target.closest('button')) return;
       if (e.target.closest('a')) return;
       const id = row.dataset.id;
@@ -1854,8 +2262,8 @@ function bindLenderRows() {
         expandedRow = (expandedRow === id) ? null : id;
         render();
       } else {
-        const cb = row.querySelector('.lender-checkbox');
-        if (!cb) return;
+        const cb = row.querySelector('.lender-check');
+        if (!cb || cb.disabled) return;
         cb.checked = !cb.checked;
         const name = cb.dataset.name;
         if (cb.checked) selectedIds.add(name); else selectedIds.delete(name);
@@ -1866,23 +2274,15 @@ function bindLenderRows() {
       }
     });
   });
-  document.querySelectorAll('[data-toggle-expand]').forEach(b => {
-    b.addEventListener('click', e => {
-      e.stopPropagation();
-      const row = b.closest('.lender-row');
-      const id = row.dataset.id;
-      expandedRow = (expandedRow === id) ? null : id;
-      render();
-    });
-  });
-  document.querySelectorAll('.lender-checkbox').forEach(cb => {
+  document.querySelectorAll('.lender-check').forEach(cb => {
     cb.addEventListener('change', () => {
+      if (cb.disabled) return;
       const name = cb.dataset.name;
       if (cb.checked) selectedIds.add(name); else selectedIds.delete(name);
       el('s-sel').textContent = selectedIds.size;
       el('sel-count').textContent = selectedIds.size;
       updateSelBar();
-      const row = cb.closest('.lender-row');
+      const row = cb.closest('.lender-data-row');
       row.classList.toggle('selected', cb.checked);
     });
   });
@@ -2295,20 +2695,28 @@ async function init() {
     render();
   });
 
+  // Mobile filter drawer toggle
+  const filterToggle = el('filter-toggle');
+  if (filterToggle) {
+    filterToggle.addEventListener('click', () => {
+      el('filter-bar').classList.toggle('expanded');
+    });
+  }
+
   // Select all / clear
   el('btn-select-all').addEventListener('click', () => {
-    document.querySelectorAll('#matches-list .lender-checkbox:not(:disabled)').forEach(cb => {
+    document.querySelectorAll('#matches-list .lender-check:not(:disabled)').forEach(cb => {
       cb.checked = true;
       selectedIds.add(cb.dataset.name);
-      cb.closest('.lender-row').classList.add('selected');
+      cb.closest('.lender-data-row').classList.add('selected');
     });
     el('s-sel').textContent = selectedIds.size;
     updateSelBar();
   });
   el('btn-deselect-all').addEventListener('click', () => {
     selectedIds.clear();
-    document.querySelectorAll('.lender-checkbox').forEach(cb => { cb.checked = false; });
-    document.querySelectorAll('.lender-row').forEach(r => r.classList.remove('selected'));
+    document.querySelectorAll('.lender-check').forEach(cb => { cb.checked = false; });
+    document.querySelectorAll('.lender-data-row').forEach(r => r.classList.remove('selected'));
     el('s-sel').textContent = 0;
     updateSelBar();
   });
