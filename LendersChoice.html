@@ -91,6 +91,17 @@ button { cursor: pointer; }
   padding-top: env(safe-area-inset-top);
   box-sizing: content-box;
 }
+/* Solid fill behind the iOS status bar so content underneath doesn't bleed through */
+.topbar::before {
+  content: '';
+  position: absolute;
+  top: calc(-1 * env(safe-area-inset-top));
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top);
+  background: var(--bg);
+  pointer-events: none;
+}
 .tb-stats {
   display: flex;
   align-items: center;
@@ -118,23 +129,6 @@ button { cursor: pointer; }
 .tb-stat.paused .n { color: var(--amber); }
 .tb-stat .lbl { color: var(--text-3); font-size: 12px; }
 .tb-sep { color: var(--text-4); font-weight: 300; }
-
-.tb-sync {
-  width: 34px; height: 34px;
-  border-radius: 9px;
-  background: var(--bg-1);
-  border: 1px solid var(--border-2);
-  color: var(--text-3);
-  display: inline-flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.15s;
-}
-.tb-sync svg { width: 16px; height: 16px; transition: transform 0.3s; }
-.tb-sync:hover { color: var(--text); border-color: var(--border-3); }
-.tb-sync.syncing svg { animation: spin 0.8s linear infinite; color: var(--accent); }
-.tb-sync.ok { color: var(--green); border-color: var(--green-bd); }
-.tb-sync.err { color: var(--coral); border-color: var(--coral-bd); }
-@keyframes spin { to { transform: rotate(360deg); } }
 
 .tb-menu { position: relative; flex-shrink: 0; }
 .menu-btn {
@@ -199,6 +193,48 @@ button { cursor: pointer; }
 }
 
 /* ========== FILTER BAR ========== */
+.filter-summary {
+  position: sticky;
+  top: 56px;
+  z-index: 80;
+  background: var(--bg);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  display: none;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-2);
+  font-size: 13.5px;
+  transition: background 0.12s;
+}
+.filter-summary:hover { background: var(--bg-1); }
+.filter-summary.show { display: flex; }
+.filter-summary .fs-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-3);
+}
+.filter-summary .fs-icon svg { width: 16px; height: 16px; }
+.filter-summary .fs-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.filter-summary.has-filters .fs-text { color: var(--accent); font-weight: 600; }
+.filter-summary .fs-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-4);
+}
+.filter-summary .fs-arrow svg { width: 14px; height: 14px; }
+
 .filter-bar {
   position: sticky;
   top: 56px;
@@ -211,6 +247,34 @@ button { cursor: pointer; }
   gap: 7px;
   align-items: center;
 }
+.filter-bar.collapsed,
+.filter-bar.hidden { display: none; }
+
+.filter-footer {
+  flex: 1 0 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  gap: 12px;
+}
+.hide-filters-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-1);
+  border: 1px solid var(--border-2);
+  color: var(--text-2);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.hide-filters-btn:hover { border-color: var(--border-3); background: var(--bg-2); color: var(--text); }
+.hide-filters-btn svg { width: 13px; height: 13px; }
+
 .chip {
   position: relative;
   display: inline-flex;
@@ -364,28 +428,24 @@ button { cursor: pointer; }
   border: 1px solid var(--border);
   border-left: 3px solid var(--green);
   border-radius: 11px;
-  padding: 12px 14px;
-  margin-bottom: 7px;
+  padding: 14px 16px;
+  margin-bottom: 8px;
   display: grid;
-  grid-template-columns: 22px 1fr auto;
+  grid-template-columns: 24px 1fr 40px;
   grid-template-areas:
     "check head action"
-    "check stats action";
-  align-items: center;
-  gap: 4px 12px;
+    ".     stats action"
+    ".     excl action";
+  align-items: start;
+  gap: 6px 12px;
   transition: all 0.12s;
   cursor: pointer;
 }
 .lender-card:hover { border-color: var(--border-3); background: var(--bg-2); }
-.lender-card.no-stats {
-  grid-template-areas: "check head action";
-  grid-template-rows: auto;
-}
-.lender-card.no-stats .lc-stats { display: none; }
 
 .lender-card.rejected {
   border-left-color: var(--coral);
-  opacity: 0.85;
+  opacity: 0.8;
 }
 .lender-card.rejected:hover { opacity: 1; }
 .lender-card.paused {
@@ -400,9 +460,9 @@ button { cursor: pointer; }
 
 .lc-check {
   grid-area: check;
-  width: 20px; height: 20px;
+  width: 22px; height: 22px;
   border: 1.5px solid var(--border-3);
-  border-radius: 5px;
+  border-radius: 6px;
   background: var(--bg);
   display: inline-flex;
   align-items: center;
@@ -410,6 +470,7 @@ button { cursor: pointer; }
   transition: all 0.12s;
   cursor: pointer;
   flex-shrink: 0;
+  margin-top: 2px;
 }
 .lc-check:hover { border-color: var(--accent-bd); }
 .lc-check.checked {
@@ -418,7 +479,7 @@ button { cursor: pointer; }
 }
 .lc-check.checked::after {
   content: '';
-  width: 6px; height: 10px;
+  width: 6px; height: 11px;
   border-right: 2px solid #0A0A0B;
   border-bottom: 2px solid #0A0A0B;
   transform: rotate(45deg);
@@ -433,44 +494,63 @@ button { cursor: pointer; }
   grid-area: head;
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+  gap: 9px;
   min-width: 0;
+  padding-top: 1px;
+  flex-wrap: wrap;
 }
 .lc-name {
-  font-size: 14.5px;
+  font-size: 15px;
   font-weight: 700;
   letter-spacing: -0.01em;
+  min-width: 0;
+  word-break: break-word;
 }
+
+/* Colored position pill */
 .lc-pos {
+  display: inline-flex;
+  align-items: center;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9.5px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 2px 7px;
+  padding: 3px 9px;
   border-radius: 999px;
   background: var(--bg-3);
   color: var(--text-3);
   border: 1px solid var(--border-2);
-  text-transform: uppercase;
   letter-spacing: 0.04em;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
-.lc-pos.green { background: var(--green-bg); color: var(--green); border-color: var(--green-bd); }
-.lc-pos.blue { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-bd); }
-.lc-pos.amber { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-bd); }
+.lc-pos.green {
+  background: var(--green-bg);
+  color: var(--green);
+  border-color: var(--green-bd);
+}
+.lc-pos.blue {
+  background: var(--blue-bg);
+  color: var(--blue);
+  border-color: var(--blue-bd);
+}
+.lc-pos.amber {
+  background: var(--amber-bg);
+  color: var(--amber);
+  border-color: var(--amber-bd);
+}
 
 .lc-stats {
   grid-area: stats;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
-  font-size: 12px;
-  margin-top: 2px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(95px, 1fr));
+  gap: 10px 16px;
+  font-size: 12.5px;
 }
 .lc-stat {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 5px;
-  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 .lc-stat .k {
   font-size: 9.5px;
@@ -478,30 +558,53 @@ button { cursor: pointer; }
   text-transform: uppercase;
   letter-spacing: 0.07em;
   color: var(--text-4);
+  line-height: 1.2;
 }
 .lc-stat .v {
   font-family: 'JetBrains Mono', monospace;
   font-weight: 600;
-  color: var(--text-2);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.2;
+  word-break: keep-all;
 }
 .lc-stat .v.unknown { color: var(--text-4); font-weight: 400; }
 
+.lc-excl {
+  grid-area: excl;
+  font-size: 11.5px;
+  color: var(--text-3);
+  line-height: 1.4;
+  padding-top: 3px;
+  border-top: 1px dashed var(--border);
+  margin-top: 2px;
+}
+.lc-excl .k {
+  display: inline-block;
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--coral);
+  margin-right: 5px;
+}
+
 .lc-reason {
   grid-area: stats;
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--coral);
-  margin-top: 2px;
+  padding-top: 2px;
 }
 
 .lc-action {
   grid-area: action;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
 }
 .lc-edit {
-  width: 32px; height: 32px;
-  border-radius: 8px;
+  width: 36px; height: 36px;
+  border-radius: 9px;
   background: var(--bg-2);
   color: var(--text-3);
   display: inline-flex; align-items: center; justify-content: center;
@@ -511,63 +614,134 @@ button { cursor: pointer; }
 .lc-edit:hover { color: var(--accent); border-color: var(--accent-bd); background: var(--bg-3); }
 .lc-edit svg { width: 14px; height: 14px; }
 
-/* ========== BOTTOM ACTION BAR (when selections active) ========== */
-.action-bar {
+/* ========== SUBMISSION PANEL (when selections active) ========== */
+.sub-panel {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 90;
-  background: linear-gradient(to top, var(--bg) 60%, rgba(10,10,11,0));
-  padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, var(--bg) 70%, rgba(10,10,11,0));
+  padding: 24px 16px calc(16px + env(safe-area-inset-bottom));
   display: none;
   pointer-events: none;
 }
-.action-bar.show { display: block; }
-.action-bar-inner {
+.sub-panel.show { display: block; }
+.sub-panel-inner {
   max-width: 800px;
   margin: 0 auto;
   background: var(--bg-2);
   border: 1px solid var(--border-3);
   border-radius: 14px;
-  padding: 12px 14px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  padding: 14px 16px 16px;
   box-shadow: var(--shadow-pop);
   pointer-events: auto;
+  max-height: 70vh;
+  overflow-y: auto;
 }
-.ab-count {
+.sub-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.sub-count {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--accent);
 }
-.ab-count .lbl { color: var(--text-3); font-weight: 500; margin-left: 4px; }
-.ab-clear {
+.sub-count-lbl { color: var(--text-3); font-weight: 500; margin-left: 2px; }
+.sub-clear {
   font-size: 12px;
   color: var(--text-3);
-  padding: 6px 10px;
+  padding: 5px 10px;
   border-radius: 7px;
+  transition: all 0.12s;
 }
-.ab-clear:hover { color: var(--coral); background: var(--bg-3); }
-.ab-spacer { flex: 1; }
-.ab-send {
+.sub-clear:hover { color: var(--coral); background: var(--bg-3); }
+
+.sub-field { margin-bottom: 10px; }
+.sub-field:last-child { margin-bottom: 0; }
+.sub-field-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+.sub-field-head label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.sub-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   background: var(--accent);
   color: #0A0A0B;
   font-weight: 700;
-  font-size: 13.5px;
-  padding: 10px 16px;
-  border-radius: 9px;
-  letter-spacing: -0.01em;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
+  font-size: 11.5px;
+  padding: 5px 10px;
+  border-radius: 7px;
   transition: opacity 0.12s, transform 0.1s;
+  letter-spacing: 0.01em;
 }
-.ab-send:hover { opacity: 0.92; }
-.ab-send:active { transform: scale(0.97); }
-.ab-send svg { width: 14px; height: 14px; }
+.sub-copy-btn:hover { opacity: 0.92; }
+.sub-copy-btn:active { transform: scale(0.96); }
+.sub-copy-btn svg { width: 11px; height: 11px; }
+.sub-copy-btn.copied {
+  background: var(--green);
+  color: #0A0A0B;
+}
+.sub-copy-btn.copied svg { display: none; }
+
+.sub-emails {
+  background: var(--bg);
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  padding: 9px 11px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 38px;
+  word-break: break-all;
+  user-select: all;
+  -webkit-user-select: all;
+}
+.sub-emails .placeholder {
+  color: var(--text-4);
+  font-family: 'Inter', sans-serif;
+  font-style: italic;
+  font-size: 12.5px;
+}
+.sub-emails .missing {
+  color: var(--coral);
+  font-family: 'Inter', sans-serif;
+  font-size: 11.5px;
+  display: block;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.sub-message {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text);
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color 0.12s;
+}
+.sub-message:focus { border-color: var(--accent-bd); background: var(--bg-2); }
 
 /* ========== LENDERS PAGE ========== */
 .page-head {
@@ -864,21 +1038,45 @@ button { cursor: pointer; }
 
 /* ========== MOBILE ========== */
 @media (max-width: 700px) {
-  .topbar { padding: 0 12px; height: 52px; gap: 8px; }
-  .tb-stats { font-size: 12px; gap: 10px; }
-  .tb-stat .lbl { display: none; }
-  .tb-stat.match::after { content: 'M'; font-size: 11px; color: var(--text-3); font-family: 'JetBrains Mono', monospace; margin-left: -2px; }
-  .tb-stat.sel::after { content: 'S'; font-size: 11px; color: var(--text-3); font-family: 'JetBrains Mono', monospace; margin-left: -2px; }
-  .tb-stat.paused::after { content: 'P'; font-size: 11px; color: var(--text-3); font-family: 'JetBrains Mono', monospace; margin-left: -2px; }
+  /* Topbar — keep safe-area-inset-top, only override horizontal padding and height */
+  .topbar {
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: 0;
+    height: 54px;
+    gap: 10px;
+  }
+  .tb-stats { font-size: 13px; gap: 14px; }
+  .tb-stat .lbl { font-size: 11px; }
+  .tb-stat .n { font-size: 15px; }
   .tb-sep { display: none; }
-  .tb-sync, .menu-btn { width: 32px; height: 32px; }
+  .menu-btn { width: 40px; height: 40px; }
+  .menu-btn svg { width: 22px; height: 22px; }
 
-  .filter-bar { padding: 8px 12px; top: 52px; }
+  /* Filter chips — sticky position needs to clear the topbar including its safe-area */
+  .filter-bar {
+    padding: 10px 12px;
+    top: calc(54px + env(safe-area-inset-top));
+  }
+  .filter-summary {
+    top: calc(54px + env(safe-area-inset-top));
+  }
+  .filter-grid { gap: 8px; }
   .chip {
     flex: 1 1 calc(50% - 4px);
     min-width: 0;
     justify-content: space-between;
+    padding: 11px 12px;
+    font-size: 13px;
+    min-height: 44px;
   }
+  .hide-filters-btn { padding: 11px 14px; font-size: 13px; min-height: 42px; }
+  .clear-btn { padding: 11px 14px; font-size: 13px; min-height: 42px; }
+  .filter-summary { padding: 13px 14px; font-size: 14px; top: 54px; min-height: 48px; }
+  .filter-summary .fs-text { font-size: 13.5px; }
+  .chip-label { font-size: 10px; letter-spacing: 0.08em; }
+  .chip-value { font-size: 13.5px; font-weight: 600; }
   .chip-menu {
     position: fixed;
     left: 12px;
@@ -887,22 +1085,60 @@ button { cursor: pointer; }
     min-width: 0;
     width: auto;
   }
+  .chip-menu-option { padding: 13px 14px; font-size: 14.5px; min-height: 44px; }
 
-  .match-list { padding: 10px 12px 120px; }
-  .lender-card { padding: 10px 12px; gap: 3px 10px; }
-  .lc-name { font-size: 14px; }
-  .lc-stats { gap: 12px; font-size: 11.5px; }
-  .lc-edit { width: 36px; height: 36px; }
+  /* Match results */
+  .match-list { padding: 12px 12px 240px; }
+  .lender-card {
+    padding: 14px 14px;
+    grid-template-columns: 24px 1fr 40px;
+    gap: 8px 12px;
+  }
+  .lc-name { font-size: 15.5px; }
+  .lc-check { width: 24px; height: 24px; }
+  .lc-stats { gap: 10px 14px; grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); }
+  .lc-stat .v { font-size: 13.5px; }
+  .lc-stat .k { font-size: 10px; }
+  .lc-edit { width: 40px; height: 40px; }
+  .lc-edit svg { width: 18px; height: 18px; }
+  .lc-excl { font-size: 11.5px; }
 
-  .page-head { padding: 14px 12px 10px; }
-  .page-title { font-size: 19px; }
-  .subbar { padding: 0 12px 10px; }
+  /* Section headings on match page */
+  .match-section h2 { font-size: 14px; padding: 14px 0 8px; }
+
+  /* Lenders list page */
+  .page-head { padding: 16px 12px 12px; }
+  .page-title { font-size: 20px; font-weight: 700; }
+  .page-sub { font-size: 13px; }
+  .subbar { padding: 0 12px 12px; flex-wrap: wrap; gap: 10px; }
+  .tabs { gap: 4px; }
+  .tab { padding: 9px 13px; font-size: 13px; min-height: 40px; }
+  .search-input { font-size: 14px; padding: 11px 14px; min-height: 44px; }
   .lender-rows { padding: 0 12px 120px; }
-  .lender-row { padding: 12px 14px; gap: 10px; }
+  .lender-row { padding: 14px 14px; gap: 12px; }
+  .lr-name { font-size: 15px; }
+  .lr-meta { font-size: 12.5px; }
+  .lr-badge { padding: 6px 11px; font-size: 11.5px; min-height: 30px; }
 
-  .form-page { padding: 14px 12px 120px; }
-  .form-grid { grid-template-columns: 1fr; }
-  .form-card { padding: 16px; }
+  /* Forms */
+  .form-page { padding: 16px 12px 140px; }
+  .form-grid { grid-template-columns: 1fr; gap: 14px; }
+  .form-card, .settings-card { padding: 16px 14px; }
+  .field label { font-size: 12px; }
+  .field input, .field select, .field textarea { font-size: 16px; padding: 12px 14px; min-height: 44px; }
+  .btn-primary, .btn-ghost, .btn-danger { padding: 13px 18px; font-size: 14.5px; min-height: 48px; }
+
+  /* Submission panel */
+  .sub-panel { padding: 16px 12px calc(12px + env(safe-area-inset-bottom)); }
+  .sub-panel-inner { padding: 14px 14px 16px; max-height: 78vh; }
+  .sub-emails { font-size: 13px; padding: 11px 12px; }
+  .sub-message { font-size: 15px; min-height: 90px; padding: 12px 13px; }
+  .sub-copy-btn { padding: 8px 14px; font-size: 13px; min-height: 36px; }
+  .sub-copy-btn svg { width: 12px; height: 12px; }
+
+  /* Side menu */
+  .menu-panel { width: min(280px, 85vw); }
+  .menu-item { padding: 14px 18px; font-size: 15px; min-height: 48px; }
 }
 </style>
 </head>
@@ -915,15 +1151,7 @@ button { cursor: pointer; }
     <span class="tb-stat match"><span class="n" id="ct-match">0</span><span class="lbl">match</span></span>
     <span class="tb-sep">·</span>
     <span class="tb-stat sel"><span class="n" id="ct-sel">0</span><span class="lbl">selected</span></span>
-    <span class="tb-sep">·</span>
-    <span class="tb-stat paused"><span class="n" id="ct-paused">0</span><span class="lbl">paused</span></span>
   </div>
-  <button class="tb-sync" id="btn-sync" title="Refresh data">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M21 12a9 9 0 1 1-3-6.7"/>
-      <path d="M21 3v6h-6"/>
-    </svg>
-  </button>
   <div class="tb-menu" id="tb-menu">
     <button class="menu-btn" id="menu-btn" aria-label="Menu">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -955,6 +1183,21 @@ button { cursor: pointer; }
 
 <!-- ============ MATCH DEAL PAGE ============ -->
 <main class="page active" id="page-match">
+  <!-- Collapsed summary - shown when filters are set and panel hidden -->
+  <button class="filter-summary" id="filter-summary">
+    <span class="fs-icon">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 4h12M4 8h8M6 12h4"/>
+      </svg>
+    </span>
+    <span class="fs-text" id="fs-text">No filters set</span>
+    <span class="fs-arrow">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 6l4 4 4-4"/>
+      </svg>
+    </span>
+  </button>
+
   <div class="filter-bar" id="filter-bar">
     <!-- chips injected by JS -->
   </div>
@@ -971,10 +1214,6 @@ button { cursor: pointer; }
       <p class="page-sub" id="ll-summary">0 active · 0 needs signup · 0 paused</p>
     </div>
     <div class="page-actions">
-      <button class="btn-ghost" id="btn-refresh-lenders">
-        <svg style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
-        Refresh
-      </button>
       <button class="btn-primary" data-nav="add">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>
         Add Lender
@@ -1098,66 +1337,16 @@ button { cursor: pointer; }
   <div class="page-head">
     <div>
       <h1 class="page-title">Settings</h1>
-      <p class="page-sub">Your contact info and email template.</p>
+      <p class="page-sub">Default message template and data backup.</p>
     </div>
   </div>
   <div class="form-page">
     <div class="settings-card">
-      <h3 style="font-size:13px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; color:var(--text-3); margin-bottom:12px;">Your Info</h3>
-      <div class="form-grid">
-        <div class="field">
-          <label>Your Name</label>
-          <input type="text" id="s-name" placeholder="Sam Lendiago">
-        </div>
-        <div class="field">
-          <label>Your Company</label>
-          <input type="text" id="s-company" placeholder="Lendiago Capital">
-        </div>
-        <div class="field">
-          <label>Your Phone</label>
-          <input type="tel" id="s-phone" placeholder="(555) 555-5555">
-        </div>
-        <div class="field">
-          <label>Your Email</label>
-          <input type="email" id="s-email" placeholder="sam@lendiago.com">
-        </div>
-      </div>
-    </div>
-
-    <div class="settings-card">
-      <h3 style="font-size:13px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; color:var(--text-3); margin-bottom:12px;">Deal Info</h3>
-      <p class="page-sub" style="margin-bottom:14px;">Fill these in for the current deal — used in generated emails.</p>
+      <h3 style="font-size:13px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; color:var(--text-3); margin-bottom:12px;">Default message</h3>
+      <p class="page-sub" style="margin-bottom:14px;">This pre-fills the message field when you select lenders. Edit it per deal as needed.</p>
       <div class="form-grid">
         <div class="field full">
-          <label>Merchant Name</label>
-          <input type="text" id="s-merchant" placeholder="ABC Restaurants LLC">
-        </div>
-        <div class="field">
-          <label>Amount Requested</label>
-          <input type="text" id="s-amount" class="mono" placeholder="$50,000">
-        </div>
-        <div class="field">
-          <label>Position</label>
-          <input type="text" id="s-deal-position" class="mono" placeholder="1st">
-        </div>
-        <div class="field full">
-          <label>Deal Notes</label>
-          <textarea id="s-deal-notes" placeholder="Brief deal summary for the email body..."></textarea>
-        </div>
-      </div>
-    </div>
-
-    <div class="settings-card">
-      <h3 style="font-size:13px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; color:var(--text-3); margin-bottom:12px;">Email Template</h3>
-      <p class="page-sub" style="margin-bottom:14px;">Variables: <code>{lender}</code>, <code>{merchant}</code>, <code>{amount}</code>, <code>{position}</code>, <code>{notes}</code>, <code>{your_name}</code></p>
-      <div class="form-grid">
-        <div class="field full">
-          <label>Subject</label>
-          <input type="text" id="s-subject" placeholder="Submission: {merchant} - {amount}">
-        </div>
-        <div class="field full">
-          <label>Body</label>
-          <textarea id="s-body" rows="8" placeholder="Hi {lender} team,&#10;&#10;Submitting {merchant} for {amount} ({position} position).&#10;&#10;{notes}&#10;&#10;Thanks,&#10;{your_name}"></textarea>
+          <textarea id="s-default-message" rows="6" placeholder="Please underwrite. He wants $50k working capital — 1st position, FICO 640, $80k/mo revenue, retail merchant in TX. Funded statements + driver's license attached. Let me know what you can do."></textarea>
         </div>
       </div>
     </div>
@@ -1179,16 +1368,35 @@ button { cursor: pointer; }
   </div>
 </main>
 
-<!-- ============ ACTION BAR ============ -->
-<div class="action-bar" id="action-bar">
-  <div class="action-bar-inner">
-    <span class="ab-count"><span id="ab-count-n">0</span><span class="lbl">selected</span></span>
-    <button class="ab-clear" id="btn-ab-clear">Clear</button>
-    <span class="ab-spacer"></span>
-    <button class="ab-send" id="btn-ab-send">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2L7 9M14 2l-5 12-2-5-5-2 12-5z"/></svg>
-      <span id="ab-send-label">Generate emails</span>
-    </button>
+<!-- ============ SUBMISSION PANEL (appears when 1+ lenders selected) ============ -->
+<div class="sub-panel" id="sub-panel">
+  <div class="sub-panel-inner">
+    <div class="sub-panel-head">
+      <span class="sub-count"><span id="sub-count-n">0</span><span class="sub-count-lbl"> selected</span></span>
+      <button class="sub-clear" id="btn-sub-clear">Clear selection</button>
+    </div>
+
+    <div class="sub-field">
+      <div class="sub-field-head">
+        <label>Email recipients</label>
+        <button class="sub-copy-btn" id="btn-copy-emails">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="9" height="9" rx="1.5"/><path d="M11 4V3a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h1"/></svg>
+          Copy
+        </button>
+      </div>
+      <div class="sub-emails" id="sub-emails-display"></div>
+    </div>
+
+    <div class="sub-field">
+      <div class="sub-field-head">
+        <label>Message</label>
+        <button class="sub-copy-btn" id="btn-copy-message">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="9" height="9" rx="1.5"/><path d="M11 4V3a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h1"/></svg>
+          Copy
+        </button>
+      </div>
+      <textarea class="sub-message" id="sub-message" rows="4" placeholder="Please underwrite. He wants $50k for working capital..."></textarea>
+    </div>
   </div>
 </div>
 
@@ -1208,21 +1416,7 @@ const STORAGE = {
 };
 
 const DEFAULT_LENDERS = [{"name":"MINT","status":"active","state_rule":"all","position":"1-9","industry_excl":"","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"clean","contact_email":"","contact_name":"","notes":""},{"name":"Pinnacle Business Funding","status":"active","state_rule":"all_except:North Dakota","position":"2-6","industry_excl":"Solar, Cannabis","revenue_min":15000,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"","contact_email":"gabriel@pbffunding.com","contact_name":"Gabriel Ohana","notes":"Contact: (410) 624-9032 | Funding $15k-$2MM | State minimums: NY $30k, CA $500k, TX $100k, UT $1M | Construction needs $100k/mo rev | Trucking needs $400k/mo rev | Term 70-180 days, up to 9-10mo max | Renewals up to 12mo | HB under 35% preferred | Likes 2mo spacing between fundings | Can overlook neg days w/ good overdraft | Stips: ID VC POO AR | Commission: 12pts 1.499 / 10pts 1.459 / 7pts 1.399"},{"name":"1 STOP CAPITAL","status":"needs_signup","state_rule":"all","position":"2-5","industry_excl":"Auto Sales","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"satisfied","contact_email":"","contact_name":"","notes":""},{"name":"2M7","status":"needs_signup","state_rule":"all","position":"1-5","industry_excl":"Boat sales, Investment firm, Insurance, Commodities broker, Vape shop, Farming, Aviation, Energy supplier","revenue_min":30000,"fico_min":450,"tib_min":6,"neg_max":8,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Alpine","status":"needs_signup","state_rule":"all_except:Utah,Virginia","position":"2-11","industry_excl":"Check cashing services","revenue_min":75000,"fico_min":450,"tib_min":12,"neg_max":5,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"APEX","status":"needs_signup","state_rule":"all","position":"2-5","industry_excl":"Solar / Energy, Auto Sales","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Arcadia Advance","status":"needs_signup","state_rule":"all","position":"2-9","industry_excl":"Automotive sales (used), Construction, Transportation (trucking), Attorney/law firm, Real estate brokerage, Travel agent, Oil/fuel, Solar panels","revenue_min":30000,"fico_min":520,"tib_min":null,"neg_max":null,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Arena","status":"needs_signup","state_rule":"all_except:Hawaii","position":"1-4","industry_excl":"Transportation (trucking), Automotive sales (new/used), Marijuana/cannabis, Check cashing services, Credit protection, Collection agencies, ATM rentals, Construction","revenue_min":20000,"fico_min":500,"tib_min":9,"neg_max":4,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Arf Financial","status":"needs_signup","state_rule":"all_except:North Dakota,South Dakota","position":"1-2","industry_excl":"Construction, Transportation, Staffing, HVAC","revenue_min":15000,"fico_min":551,"tib_min":12,"neg_max":15,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Arsenal","status":"needs_signup","state_rule":"all","position":"1-5","industry_excl":"Cannabis / Vape, Auto Sales, Attorney / Law","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"satisfied","contact_email":"","contact_name":"","notes":""},{"name":"Aspire Funding","status":"needs_signup","state_rule":"all_except:New York","position":"1-11","industry_excl":"","revenue_min":20000,"fico_min":450,"tib_min":12,"neg_max":8,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"AVANZA","status":"needs_signup","state_rule":"all","position":"2-99","industry_excl":"Attorney / Law, Transportation, Auto Sales","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"clean","contact_email":"","contact_name":"","notes":""},{"name":"Backd","status":"needs_signup","state_rule":"all","position":"1-2","industry_excl":"Financial services","revenue_min":100000,"fico_min":650,"tib_min":12,"neg_max":3,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Barclays Advance","status":"needs_signup","state_rule":"all","position":"2-99","industry_excl":"Casino, Financial Services","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Bitty","status":"needs_signup","state_rule":"all","position":"1-3","industry_excl":"Adult, Auto sales, Collection agencies, Credit repair, Financial services, Insurance, Marijuana/cannabis, Pawn","revenue_min":5000,"fico_min":500,"tib_min":6,"neg_max":5,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Bizfund","status":"needs_signup","state_rule":"all","position":"1-5","industry_excl":"Transportation (trucking)","revenue_min":20000,"fico_min":500,"tib_min":12,"neg_max":5,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Bizfund CA","status":"needs_signup","state_rule":"all","position":"1-5","industry_excl":"Transportation (trucking), Construction (general contractor), Real estate investment, Marijuana / cannabis, Staffing / human resources","revenue_min":20000,"fico_min":500,"tib_min":12,"neg_max":5,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Blue Ocean Group LLC","status":"needs_signup","state_rule":"all","position":"1","industry_excl":"","revenue_min":0,"fico_min":0,"tib_min":0,"neg_max":0,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Breakout Capital","status":"needs_signup","state_rule":"all","position":"1-3","industry_excl":"","revenue_min":0,"fico_min":0,"tib_min":0,"neg_max":0,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"BREEZE","status":"needs_signup","state_rule":"all","position":"any","industry_excl":"","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"","contact_email":"","contact_name":"","notes":""},{"name":"Byzfunder","status":"needs_signup","state_rule":"all","position":"1-4","industry_excl":"Auto Sales, Collection Agency, Casino, Financial Services, Pawn Shop, Nail / Hair Salon, Real Estate","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"","contact_email":"","contact_name":"","notes":""},{"name":"Can Capital","status":"needs_signup","state_rule":"all","position":"1","industry_excl":"Non profit / charity, Financial services, Real estate brokerage, Construction (new home), Real estate investment, Insurance, Adult related business, Automotive sales (new/used)","revenue_min":25000,"fico_min":600,"tib_min":36,"neg_max":3,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Canacap","status":"needs_signup","state_rule":"all","position":"1-5","industry_excl":"Auto Sales, Gas Station, Investment Broker, Energy, Insurance, Tax, Mortgage Brokers, Staffing","revenue_min":10000,"fico_min":450,"tib_min":6,"neg_max":3,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Capital Domain","status":"needs_signup","state_rule":"all","position":"1-3","industry_excl":"Non-Profit, Collection Agency, Religion, Casino, Insurance, Credit Repair, Cannabis / Vape","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"","contact_email":"","contact_name":"","notes":""},{"name":"Cash Arc","status":"needs_signup","state_rule":"all","position":"any","industry_excl":"","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Cedar Funding","status":"needs_signup","state_rule":"all_except:Alaska,Hawaii","position":"1-6","industry_excl":"Automotive sales (new/used), Automotive rental (no sales), Lodging, Attorney/law firm, Non profit/charity, Transportation (trucking), Real estate investment, Marijuana/cannabis","revenue_min":40000,"fico_min":550,"tib_min":12,"neg_max":3,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"CFG","status":"needs_signup","state_rule":"all","position":"1-5","industry_excl":"Automotive sales (new/used), Collection agencies, Church/temple, Non profit/charity","revenue_min":10000,"fico_min":500,"tib_min":6,"neg_max":5,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Channel Partners","status":"needs_signup","state_rule":"all","position":"1-2","industry_excl":"Farming / Livestock, Bail Bond Services, Cannabis / Vape, Guns / Weapons, Transportation, Attorney / Law, Financial Services, Credit Repair","revenue_min":25000,"fico_min":650,"tib_min":36,"neg_max":2,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Chase","status":"needs_signup","state_rule":"all","position":"1","industry_excl":"","revenue_min":0,"fico_min":0,"tib_min":0,"neg_max":0,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Cobalt Funding","status":"needs_signup","state_rule":"all","position":"1-10","industry_excl":"","revenue_min":40000,"fico_min":450,"tib_min":null,"neg_max":6,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Credibly","status":"needs_signup","state_rule":"all","position":"1","industry_excl":"Airlines, Bail Bond Services, Cannabis / Vape, Casino, Credit Repair, Financial Services, Movie and Video Production, Auto Sales","revenue_min":25000,"fico_min":550,"tib_min":6,"neg_max":6,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Cromwell Capital","status":"needs_signup","state_rule":"all_except:New York","position":"1-6","industry_excl":"Transportation (trucking)","revenue_min":15000,"fico_min":500,"tib_min":12,"neg_max":5,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Cucumber Capital","status":"needs_signup","state_rule":"all","position":"2-99","industry_excl":"Attorney / law firm, Non profit / charity, Investment firm, Bail bonds, Real estate investment, Title company, Accounting, Transportation (trucking)","revenue_min":50000,"fico_min":550,"tib_min":24,"neg_max":2,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"DLP","status":"needs_signup","state_rule":"all_except:Utah,New York,Virginia","position":"2-5","industry_excl":"Recycling, Automotive repair, Boat sales","revenue_min":40000,"fico_min":550,"tib_min":24,"neg_max":3,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"EFINANCIAL","status":"needs_signup","state_rule":"all","position":"1-3","industry_excl":"Transportation, Auto Sales, Real Estate, Farming / Livestock, Gas Station, Pawn Shop, Jewelry, Cell Phone Services","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"clean","contact_email":"","contact_name":"","notes":""},{"name":"eFinancial Tree","status":"needs_signup","state_rule":"all","position":"any","industry_excl":"","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"","contact_email":"","contact_name":"","notes":""},{"name":"Endless","status":"needs_signup","state_rule":"all","position":"1","industry_excl":"","revenue_min":0,"fico_min":0,"tib_min":0,"neg_max":0,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"ESSENTIAL","status":"needs_signup","state_rule":"all","position":"1-6","industry_excl":"Casino, Guns / Weapons, Attorney / Law, Travel Agency, Cannabis / Vape, Real Estate, Non-Profit","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"clean","contact_email":"","contact_name":"","notes":""},{"name":"Essential Funding","status":"needs_signup","state_rule":"all","position":"any","industry_excl":"","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"","contact_email":"","contact_name":"","notes":""},{"name":"Everest","status":"needs_signup","state_rule":"all","position":"1-99","industry_excl":"Financial Services, Attorney / Law, Auto Sales","revenue_min":10000,"fico_min":550,"tib_min":3,"neg_max":10,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Falcon Capital Group","status":"needs_signup","state_rule":"all","position":"1-10","industry_excl":"Cannabis / Vape, Attorney / Law","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Family Funding Group","status":"needs_signup","state_rule":"all","position":"1-10","industry_excl":"Cannabis / Vape","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Fintap","status":"needs_signup","state_rule":"all","position":"1-3","industry_excl":"Attorney / Law, Financial Services","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Fintegra","status":"needs_signup","state_rule":"all","position":"1-3","industry_excl":"","revenue_min":10000,"fico_min":550,"tib_min":12,"neg_max":2,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Forest","status":"needs_signup","state_rule":"all_except:New York,California,Utah,Virginia","position":"2-99","industry_excl":"Attorney / law firm, Transportation (trucking)","revenue_min":50000,"fico_min":450,"tib_min":12,"neg_max":6,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Forever Funding","status":"needs_signup","state_rule":"all","position":"2-99","industry_excl":"","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"satisfied","contact_email":"","contact_name":"","notes":""},{"name":"Forward","status":"needs_signup","state_rule":"all","position":"1-99","industry_excl":"Adult related business, Automotive sales (new), Automotive sales (used), Auction houses, Bail bonds, Cannabis, Church, Commodities broker","revenue_min":50000,"fico_min":500,"tib_min":12,"neg_max":5,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Fox","status":"needs_signup","state_rule":"all_except:California,New York","position":"2-5","industry_excl":"Automotive sales (new), Automotive sales (used), Non profit / charity, Transportation (trucking)","revenue_min":50000,"fico_min":650,"tib_min":12,"neg_max":8,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Fratello Capital","status":"needs_signup","state_rule":"all_except:Hawaii","position":"1-6","industry_excl":"Transportation (trucking), Adult related business, Casinos / gambling","revenue_min":20000,"fico_min":500,"tib_min":6,"neg_max":5,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Fundfi","status":"needs_signup","state_rule":"all","position":"1-4","industry_excl":"Transportation (trucking), Equipment financing, Attorney / law firm, Construction (general contractor), Financial services, Pawn shops","revenue_min":35000,"fico_min":450,"tib_min":12,"neg_max":10,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Fundkite","status":"needs_signup","state_rule":"all","position":"1-4","industry_excl":"Banking, Psychics / astrologers, Concierge services, Marketing / advertising, Credit protection / consolidation, Restoration (commercial), Restoration (home), Detective services","revenue_min":60000,"fico_min":600,"tib_min":12,"neg_max":5,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Fundomate","status":"needs_signup","state_rule":"all","position":"any","industry_excl":"Automotive sales (used), Automotive sales (new), Marijuana / cannabis, Casinos / gambling, Financial services","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Fundworks","status":"needs_signup","state_rule":"all","position":"1-2","industry_excl":"Transportation, Real Estate, Construction, Attorney / Law, Manufacturing / Wholesale, Casino, Cannabis / Vape, Financial Services","revenue_min":0,"fico_min":0,"tib_min":0,"neg_max":0,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Fyncap","status":"needs_signup","state_rule":"all","position":"2-4","industry_excl":"Non-Profit, Attorney / Law, Casino, Real Estate, Cannabis / Vape, Marketing / Media","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"clean","contact_email":"","contact_name":"","notes":""},{"name":"G&G","status":"needs_signup","state_rule":"all","position":"3-10","industry_excl":"","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"","contact_email":"","contact_name":"","notes":""},{"name":"GCM","status":"needs_signup","state_rule":"all","position":"1-4","industry_excl":"Food Trucks, Financial Services, Accounting / CPA, Non-Profit, Bail Bond Services, Solar / Energy, Transportation, Property Management","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"clean","contact_email":"","contact_name":"","notes":""},{"name":"GFE","status":"needs_signup","state_rule":"all_except:California","position":"1-6","industry_excl":"Marijuana / cannabis, Real estate brokerage","revenue_min":25000,"fico_min":600,"tib_min":6,"neg_max":5,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Greenbox","status":"needs_signup","state_rule":"all","position":"1-2","industry_excl":"Recycling","revenue_min":10000,"fico_min":500,"tib_min":6,"neg_max":5,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Headway","status":"needs_signup","state_rule":"all_except:Arkansas,Michigan,North Dakota,Rhode Island,Vermont,Connecticut,Montana,Nevada,South Dakota,California","position":"1-2","industry_excl":"Adult related business, Church / temple, Marijuana / cannabis, Real estate investment, Transportation (limousine / taxi), Attorney / law firm, Non profit / charity, Vape shop","revenue_min":50000,"fico_min":660,"tib_min":6,"neg_max":3,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Highland Hill","status":"needs_signup","state_rule":"all_except:Virginia","position":"2-99","industry_excl":"Automotive sales (used), Financial services, Attorney / law firm","revenue_min":25000,"fico_min":500,"tib_min":12,"neg_max":4,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Idea Financial","status":"needs_signup","state_rule":"all_except:North Dakota,South Dakota,Vermont","position":"1-2","industry_excl":"Construction (new home), Farming, Automotive sales (used), Media, Government, Marijuana / cannabis, Transportation (trucking), Energy supplier","revenue_min":15000,"fico_min":650,"tib_min":36,"neg_max":6,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Inadvance Capital","status":"needs_signup","state_rule":"all","position":"1-3","industry_excl":"Automotive sales (new), Bail bonds, Collection agencies, Education, Gas stations (no convenience store), Insurance, Motorcycle sales, Oil / fuel","revenue_min":20000,"fico_min":550,"tib_min":12,"neg_max":3,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"IOU","status":"needs_signup","state_rule":"all_except:Montana,South Dakota,Hawaii,Nevada,Vermont,North Dakota","position":"1-2","industry_excl":"Adult related business, Transportation (medical), Attorney / law firm, Bail bonds, Real estate brokerage, Concierge services, Education, Debt consolidation","revenue_min":50000,"fico_min":650,"tib_min":12,"neg_max":3,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Iruka Capital","status":"needs_signup","state_rule":"all_except:New York,Utah,California,Virginia","position":"2-99","industry_excl":"Transportation, Auto Sales","revenue_min":75000,"fico_min":600,"tib_min":6,"neg_max":0,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Jasper Cap","status":"needs_signup","state_rule":"all_except:Hawaii","position":"1-11","industry_excl":"","revenue_min":50000,"fico_min":500,"tib_min":12,"neg_max":5,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"JRG","status":"needs_signup","state_rule":"all_except:Utah,Virginia","position":"2-8","industry_excl":"Automotive sales (new), Real estate investment, Non profit / charity, Automotive sales (used), Marijuana / cannabis, Professional services","revenue_min":25000,"fico_min":500,"tib_min":12,"neg_max":3,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Kalamata Capital Group","status":"needs_signup","state_rule":"all","position":"1-3","industry_excl":"Automotive sales (new), Vape shop, Construction (new home), Automotive sales (used), Bail bonds","revenue_min":20000,"fico_min":600,"tib_min":12,"neg_max":3,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Kapfi","status":"needs_signup","state_rule":"all","position":"3-10","industry_excl":"Cannabis / Vape","revenue_min":35000,"fico_min":200,"tib_min":null,"neg_max":3,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Kapitus","status":"needs_signup","state_rule":"all","position":"1-5","industry_excl":"Property management","revenue_min":10000,"fico_min":640,"tib_min":24,"neg_max":3,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"LCF","status":"needs_signup","state_rule":"all","position":"1-99","industry_excl":"","revenue_min":10000,"fico_min":450,"tib_min":3,"neg_max":20,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"LEGEND","status":"needs_signup","state_rule":"all","position":"1-3","industry_excl":"Auto Sales, Financial Services, Bail Bond Services, Collection Agency, Casino, Attorney / Law, Travel Agency, Pawn Shop","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"","contact_email":"","contact_name":"","notes":""},{"name":"Legend Funding","status":"needs_signup","state_rule":"all","position":"any","industry_excl":"","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"","contact_email":"","contact_name":"","notes":""},{"name":"Lendini","status":"needs_signup","state_rule":"all_except:Utah","position":"1-5","industry_excl":"Attorney / Law, Accounting / CPA, Tax, Auto Sales, Cannabis / Vape, Casino, Bail Bond Services, Real Estate","revenue_min":5000,"fico_min":475,"tib_min":8,"neg_max":6,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Lendr","status":"needs_signup","state_rule":"all_except:Hawaii,Alaska","position":"1-3","industry_excl":"Non profit / charity, Gas stations (with convenience store), Credit protection / consolidation, Marijuana / cannabis, Automotive sales (used), Church / temple, Gas stations (no convenience store), Financial services","revenue_min":10000,"fico_min":450,"tib_min":12,"neg_max":7,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Liberty Advance","status":"needs_signup","state_rule":"all","position":"any","industry_excl":"","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Liberty Funding Source","status":"needs_signup","state_rule":"all","position":"1-10","industry_excl":"Solar / Energy","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Lifetime","status":"needs_signup","state_rule":"all_except:Hawaii,Alaska","position":"2-11","industry_excl":"Attorney / law firm, Marijuana / cannabis","revenue_min":75000,"fico_min":550,"tib_min":12,"neg_max":4,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Lionheart Funding","status":"needs_signup","state_rule":"all","position":"1-8","industry_excl":"Transportation, Cannabis / Vape, Attorney / Law, Farming / Livestock, Solar / Energy, Auto Sales, Non-Profit","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"satisfied","contact_email":"","contact_name":"","notes":""},{"name":"Logic Advance","status":"needs_signup","state_rule":"all","position":"2-3","industry_excl":"Non-Profit, Auto Sales, Financial Services, Real Estate","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"clean","contact_email":"","contact_name":"","notes":""},{"name":"MADISON","status":"needs_signup","state_rule":"all","position":"2-99","industry_excl":"Transportation, Solar / Energy, Auto Sales","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"satisfied","contact_email":"","contact_name":"","notes":""},{"name":"Meged","status":"needs_signup","state_rule":"all","position":"2-99","industry_excl":"Automotive sales (new), Automotive sales (used)","revenue_min":50000,"fico_min":450,"tib_min":6,"neg_max":7,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Merchant Growth","status":"needs_signup","state_rule":"all","position":"1-2","industry_excl":"Real estate investment, Financial services, Solar panels","revenue_min":10000,"fico_min":600,"tib_min":6,"neg_max":3,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"MONDAY","status":"needs_signup","state_rule":"all","position":"2-99","industry_excl":"","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"satisfied","contact_email":"","contact_name":"","notes":""},{"name":"Monday Funding","status":"needs_signup","state_rule":"all","position":"any","industry_excl":"","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"","contact_email":"","contact_name":"","notes":""},{"name":"Mulligan","status":"needs_signup","state_rule":"all","position":"1","industry_excl":"Attorney / Law, Cannabis / Vape, Transportation","revenue_min":25000,"fico_min":625,"tib_min":6,"neg_max":3,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Newco","status":"needs_signup","state_rule":"all","position":"2-4","industry_excl":"","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"","contact_email":"","contact_name":"","notes":""},{"name":"Nexi","status":"needs_signup","state_rule":"all","position":"1-9","industry_excl":"Marijuana / cannabis, Debt consolidation","revenue_min":25000,"fico_min":550,"tib_min":12,"neg_max":15,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Novac Equities","status":"needs_signup","state_rule":"all","position":"2-6","industry_excl":"Transportation","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"OLYMPUS","status":"needs_signup","state_rule":"all","position":"1-5","industry_excl":"Auto Sales, Real Estate, Transportation, Staffing, Property Management","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"satisfied","contact_email":"","contact_name":"","notes":""},{"name":"Olympus Business Funding","status":"needs_signup","state_rule":"all","position":"any","industry_excl":"","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"","contact_email":"","contact_name":"","notes":""},{"name":"On Deck","status":"needs_signup","state_rule":"all_except:Nevada,South Dakota,North Dakota","position":"1-3","industry_excl":"","revenue_min":10000,"fico_min":625,"tib_min":12,"neg_max":3,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"PANTHERS","status":"needs_signup","state_rule":"all","position":"any","industry_excl":"","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Parkside","status":"needs_signup","state_rule":"all_except:Utah,Virginia","position":"2-10","industry_excl":"Automotive sales (new), Automotive sales (used), Transportation (trucking)","revenue_min":25000,"fico_min":500,"tib_min":12,"neg_max":5,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Parkview Advance","status":"needs_signup","state_rule":"all","position":"2-99","industry_excl":"Attorney / law firm, Debt consolidation, Credit protection / consolidation, Financial services, Firearms / gun dealers, Real estate investment, Marijuana / cannabis, Automotive sales (used)","revenue_min":20000,"fico_min":550,"tib_min":null,"neg_max":8,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"PDM Capital","status":"needs_signup","state_rule":"all_except:New York,California","position":"1-4","industry_excl":"Transportation (trucking), Attorney / law firm","revenue_min":30000,"fico_min":520,"tib_min":8,"neg_max":6,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Pearl Capital","status":"needs_signup","state_rule":"all","position":"1-3","industry_excl":"Transportation (trucking), Automotive sales (new), Automotive sales (used), Attorney / law firm, Solar panels, Equipment financing, Credit protection / consolidation, Vape shop","revenue_min":40000,"fico_min":450,"tib_min":6,"neg_max":4,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Pirs","status":"needs_signup","state_rule":"all","position":"1","industry_excl":"Counseling, Flowers, Recycling, Insurance, Casinos / gambling, Adult related business, Taxidermy, Supermarkets / grocery","revenue_min":12000,"fico_min":500,"tib_min":12,"neg_max":3,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Power Cap","status":"needs_signup","state_rule":"all","position":"2-99","industry_excl":"","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"QFS","status":"needs_signup","state_rule":"all","position":"3-8","industry_excl":"Attorney / law firm, Automotive sales (new), Automotive sales (used), Jewelry, Title company","revenue_min":30000,"fico_min":500,"tib_min":12,"neg_max":2,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Rapid","status":"needs_signup","state_rule":"all","position":"1","industry_excl":"Taxi Driver, Religion, Attorney / Law, Cannabis / Vape, Non-Profit, Real Estate","revenue_min":20000,"fico_min":600,"tib_min":24,"neg_max":3,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"RBLX","status":"needs_signup","state_rule":"all","position":"any","industry_excl":"","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Regal","status":"needs_signup","state_rule":"all","position":"2-10","industry_excl":"Attorney / Law, Debt Collection, Pawn Shop, Credit Repair, Real Estate, Guns / Weapons, Travel Agency, Boat Sales","revenue_min":25000,"fico_min":500,"tib_min":12,"neg_max":5,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Reliance Financial","status":"needs_signup","state_rule":"all","position":"any","industry_excl":"","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"","contact_email":"","contact_name":"","notes":""},{"name":"River Advance","status":"needs_signup","state_rule":"all","position":"any","industry_excl":"","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"","contact_email":"","contact_name":"","notes":""},{"name":"RIVERSIDE","status":"needs_signup","state_rule":"all","position":"2-10","industry_excl":"","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"satisfied","contact_email":"","contact_name":"","notes":""},{"name":"Riverside Capital","status":"needs_signup","state_rule":"all","position":"any","industry_excl":"","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"","contact_email":"","contact_name":"","notes":""},{"name":"Rowan","status":"needs_signup","state_rule":"all","position":"2-6","industry_excl":"Hair / nail / skin care, Automotive sales (new), Automotive sales (used), Marijuana / cannabis, Gas stations (with convenience store), Gas stations (no convenience store), Vape shop, Casinos / gambling","revenue_min":20000,"fico_min":580,"tib_min":12,"neg_max":3,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Seamless","status":"needs_signup","state_rule":"all","position":"2-11","industry_excl":"Recycling","revenue_min":30000,"fico_min":450,"tib_min":3,"neg_max":3,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Sheaves","status":"needs_signup","state_rule":"all","position":"2-5","industry_excl":"","revenue_min":20000,"fico_min":500,"tib_min":3,"neg_max":8,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Signature","status":"needs_signup","state_rule":"all","position":"1-4","industry_excl":"Transportation, Real Estate, Financial Services, Construction, Consulting","revenue_min":0,"fico_min":0,"tib_min":0,"neg_max":0,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Silverline","status":"needs_signup","state_rule":"all","position":"2-6","industry_excl":"Auto Sales, Nail / Hair Salon","revenue_min":0,"fico_min":0,"tib_min":0,"neg_max":0,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Simply Funding","status":"needs_signup","state_rule":"all","position":"1-3","industry_excl":"Attorney / Law, Non-Profit, Transportation, Solar / Energy, Insurance, Farming / Livestock, Real Estate, Gas Station","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Smart Step","status":"needs_signup","state_rule":"all","position":"1-3","industry_excl":"","revenue_min":10000,"fico_min":450,"tib_min":24,"neg_max":5,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Smarter Merchant","status":"needs_signup","state_rule":"all_except:California","position":"1-4","industry_excl":"Sports agent, Bail bonds, Collection agencies, Book store, Real estate brokerage, Livestock / cattle, Investment firm, Prepaid phone cards","revenue_min":25000,"fico_min":600,"tib_min":24,"neg_max":5,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Spartan Capital","status":"needs_signup","state_rule":"all_except:Utah","position":"1-4","industry_excl":"Automotive sales (new), Automotive sales (used), Financial services","revenue_min":15000,"fico_min":500,"tib_min":24,"neg_max":5,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Specialty Capital","status":"needs_signup","state_rule":"all","position":"any","industry_excl":"","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"","contact_email":"","contact_name":"","notes":""},{"name":"Square Advance","status":"needs_signup","state_rule":"all","position":"2-99","industry_excl":"Transportation, Financial Services, Real Estate, Auto Sales, Casino","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Superfast","status":"needs_signup","state_rule":"all","position":"1-3","industry_excl":"Boat sales, Recycling, Construction (general contractor), Real estate brokerage, Wholesale, Non profit / charity","revenue_min":40000,"fico_min":650,"tib_min":24,"neg_max":4,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Swift","status":"needs_signup","state_rule":"all_except:Virginia,New York,Utah","position":"2-6","industry_excl":"Transportation, Non-Profit, Real Estate, Cannabis / Vape, Child Care, Auto Sales","revenue_min":40000,"fico_min":550,"tib_min":12,"neg_max":5,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"TBF","status":"needs_signup","state_rule":"all","position":"2-11","industry_excl":"","revenue_min":20000,"fico_min":550,"tib_min":12,"neg_max":5,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"The Merchant Marketplace","status":"needs_signup","state_rule":"all","position":"any","industry_excl":"","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"","contact_email":"","contact_name":"","notes":""},{"name":"THE SMARTER MERCHANT","status":"needs_signup","state_rule":"all","position":"1-4","industry_excl":"Attorney / Law, Real Estate, Farming / Livestock, Gas Station, Cannabis / Vape, Auto Sales, Staffing, Transportation","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"clean","contact_email":"","contact_name":"","notes":""},{"name":"Throttle","status":"needs_signup","state_rule":"all_except:Utah,Virginia","position":"2-11","industry_excl":"Pharmacies, Church / temple, Photography, Party rentals, Prepaid phone cards, Real estate brokerage, Check cashing services, Interior design / decorating","revenue_min":40000,"fico_min":500,"tib_min":12,"neg_max":3,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"TVT Capital","status":"needs_signup","state_rule":"all","position":"1-2","industry_excl":"Auto Sales, Property Management, Attorney / Law","revenue_min":50000,"fico_min":450,"tib_min":12,"neg_max":3,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"UFS","status":"needs_signup","state_rule":"all_except:California","position":"1-5","industry_excl":"Auto Sales, Financial Services","revenue_min":50000,"fico_min":500,"tib_min":3,"neg_max":5,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"VCG","status":"needs_signup","state_rule":"all","position":"1-4","industry_excl":"Pawn Shop, Cannabis / Vape, Staffing, Real Estate, Auto Sales, Financial Services, Nail / Hair Salon, Transportation","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"","contact_email":"","contact_name":"","notes":""},{"name":"Velocity Capital Group","status":"needs_signup","state_rule":"all","position":"1-5","industry_excl":"Attorney / law firm, Financial services, Automotive sales (new), Automotive sales (used), Church / temple, Real estate investment, Transportation (trucking), Gas stations (with convenience store)","revenue_min":20000,"fico_min":500,"tib_min":12,"neg_max":2,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Vital Capital","status":"needs_signup","state_rule":"all","position":"any","industry_excl":"","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"","contact_email":"","contact_name":"","notes":""},{"name":"VOX","status":"needs_signup","state_rule":"all","position":"1-3","industry_excl":"Cannabis / Vape, Sole Prop, Financial Services, Auto Sales, Cleaning, State / Government","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"clean","contact_email":"","contact_name":"","notes":""},{"name":"Vox Funding","status":"needs_signup","state_rule":"all","position":"1-3","industry_excl":"","revenue_min":15000,"fico_min":575,"tib_min":12,"neg_max":4,"defaults":"open","contact_email":"","contact_name":"","notes":""},{"name":"Wall Street Funding","status":"needs_signup","state_rule":"all","position":"any","industry_excl":"","revenue_min":null,"fico_min":null,"tib_min":null,"neg_max":null,"defaults":"","contact_email":"","contact_name":"","notes":""},{"name":"Wynwood","status":"needs_signup","state_rule":"all","position":"1-11","industry_excl":"Check cashing services","revenue_min":30000,"fico_min":450,"tib_min":12,"neg_max":5,"defaults":"open","contact_email":"","contact_name":"","notes":""}];
-const DEFAULT_SUBJECT = 'Submission: {merchant} — {amount}';
-const DEFAULT_BODY = `Hi {lender} team,
-
-I have a deal I'd like to submit for review:
-
-Merchant: {merchant}
-Amount: {amount}
-Position: {position}
-
-{notes}
-
-Let me know if you need anything else.
-
-Thanks,
-{your_name}`;
+const DEFAULT_MESSAGE = `Please underwrite. Looking for offers ASAP — funded statements, ID, and voided check attached. Let me know what you can do.`;
 
 const US_STATES = ['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY','DC'];
 const INDUSTRY_OPTIONS = ['Construction','Restaurant','Retail','Healthcare','Trucking','Auto','Cannabis','Adult','Firearms','Legal','Real Estate','Manufacturing','Wholesale','Technology','Hospitality','Entertainment','Accounting','Consulting','Other'];
@@ -1318,45 +1512,19 @@ function loadAll(){
     const s = getLS(STORAGE.settings);
     settings = s ? JSON.parse(s) : {};
   } catch { settings = {}; }
-  if (!settings.subject) settings.subject = DEFAULT_SUBJECT;
-  if (!settings.body) settings.body = DEFAULT_BODY;
+  if (!settings.default_message) settings.default_message = DEFAULT_MESSAGE;
 
-  try {
-    const f = getLS(STORAGE.filter);
-    if (f) Object.assign(filter, JSON.parse(f));
-  } catch {}
+  // Filters always start fresh — don't restore from storage.
+  // Each new deal should be a clean slate.
+  // (We still clear the storage so old persisted values don't leak.)
+  try { localStorage.removeItem(STORAGE.filter); } catch {}
 }
 
 function persistCache(){ setLS(STORAGE.cache, JSON.stringify(lenders)); }
 function persistSettings(){ setLS(STORAGE.settings, JSON.stringify(settings)); }
 function persistFilter(){ setLS(STORAGE.filter, JSON.stringify(filter)); }
 
-/* ============================================================
-   REFRESH / SAVE (local only)
-   ============================================================ */
-function setSyncState(state){
-  const btn = document.getElementById('btn-sync');
-  btn.classList.remove('syncing','ok','err');
-  if (state === 'syncing') btn.classList.add('syncing');
-  else if (state === 'ok') {
-    btn.classList.add('ok');
-    setTimeout(()=>btn.classList.remove('ok'), 1500);
-  }
-  else if (state === 'err') btn.classList.add('err');
-}
-
-// "Sync" = reload from cache and re-render. Useful as a visual reset
-// or to recover if rendering gets into a weird state.
-function syncFromSheet(){
-  setSyncState('syncing');
-  setTimeout(() => {
-    loadAll();
-    renderAll();
-    setSyncState('ok');
-  }, 250);
-}
-
-// No-op stubs for compatibility — all writes are local-only.
+// No-op stubs — all writes are local-only (called from add/edit/delete flows).
 function pushLender(){}
 function deleteLenderRemote(){}
 
@@ -1513,14 +1681,63 @@ function buildFilterBar(){
     bar.appendChild(chip);
     renderChip(chip, def);
   });
-  // Clear
+  // Footer row: Clear all + Hide filters
+  const footer = document.createElement('div');
+  footer.className = 'filter-footer';
+
   const clear = document.createElement('button');
   clear.className = 'clear-btn';
   clear.id = 'btn-clear-filter';
   clear.textContent = 'Clear all';
   clear.style.display = 'none';
   clear.addEventListener('click', clearFilter);
-  bar.appendChild(clear);
+  footer.appendChild(clear);
+
+  const hide = document.createElement('button');
+  hide.className = 'hide-filters-btn';
+  hide.id = 'btn-hide-filters';
+  hide.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10l4-4 4 4"/></svg> Hide filters';
+  hide.addEventListener('click', () => setFilterBarCollapsed(true));
+  footer.appendChild(hide);
+
+  bar.appendChild(footer);
+}
+
+// Filter bar collapse state
+let filterBarCollapsed = false;
+function setFilterBarCollapsed(collapsed){
+  filterBarCollapsed = collapsed;
+  const bar = document.getElementById('filter-bar');
+  const summary = document.getElementById('filter-summary');
+  if (collapsed) {
+    bar.classList.add('hidden');
+    summary.classList.add('show');
+    updateFilterSummary();
+  } else {
+    bar.classList.remove('hidden');
+    summary.classList.remove('show');
+  }
+}
+
+function updateFilterSummary(){
+  const summary = document.getElementById('filter-summary');
+  const txt = document.getElementById('fs-text');
+  if (!summary || !txt) return;
+  const parts = [];
+  FILTER_DEFS.forEach(def => {
+    const v = filter[def.key];
+    if (v !== '' && v != null) {
+      const disp = def.format ? def.format(v) : (def.options ? (def.options().find(o => o.v === v)?.l || v) : v);
+      parts.push(disp);
+    }
+  });
+  if (parts.length === 0) {
+    txt.textContent = 'No filters set — tap to show';
+    summary.classList.remove('has-filters');
+  } else {
+    txt.textContent = `${parts.length} filter${parts.length===1?'':'s'}: ${parts.join(' · ')}`;
+    summary.classList.add('has-filters');
+  }
 }
 
 function renderChip(chip, def){
@@ -1730,41 +1947,65 @@ function renderMatches(){
 
 function renderLenderCard(L, isRejected, reason){
   const isSelected = selectedLenders.has(L.name);
-  const pc = positionColor(L);
-  const posLabel = formatPositionPill(L);
 
-  // Stats — only include fields that have actual data, hide placeholders
-  const stats = [];
-  if (L.revenue_min != null && L.revenue_min > 0) {
-    stats.push({ k: 'Rev', v: '$' + Number(L.revenue_min).toLocaleString() });
-  }
-  if (L.fico_min != null && L.fico_min > 0) {
-    stats.push({ k: 'FICO', v: String(L.fico_min) });
-  }
-  if (L.tib_min != null && L.tib_min > 0) {
-    stats.push({ k: 'TIB', v: L.tib_min + 'mo' });
-  }
-  if (L.neg_max != null) {
-    stats.push({ k: 'Neg', v: '≤' + L.neg_max });
-  }
-  if (L.defaults) {
-    const defLabel = ({clean:'Clean',satisfied:'Sat OK',open:'Open'})[L.defaults];
-    if (defLabel) stats.push({ k: 'Def', v: defLabel });
-  }
-  const hasStats = stats.length > 0;
+  // Format helpers
+  const fmtState = (rule) => {
+    if (!rule || rule === 'all') return 'All';
+    if (rule.startsWith('only:')) {
+      const list = rule.slice(5).split(',').map(s => s.trim());
+      if (list.length <= 2) return list.join(', ');
+      return list.slice(0, 2).join(', ') + ` +${list.length - 2}`;
+    }
+    if (rule.startsWith('all_except:')) {
+      const list = rule.slice(11).split(',').map(s => s.trim());
+      if (list.length === 1) return `Not ${list[0]}`;
+      return `Not ${list[0]} +${list.length - 1}`;
+    }
+    return rule;
+  };
+  const fmtDef = (d) => {
+    if (!d) return '—';
+    return ({clean:'Clean',satisfied:'Sat OK',open:'Open'})[d] || '—';
+  };
+  const isUnk = (v) => v === '—' || v === null || v === undefined;
+
+  // Position becomes a colored pill in the head; the rest are in stats
+  const posLabel = formatPositionPill(L);
+  const pc = positionColor(L);
+
+  const stats = [
+    { k: 'State',     v: fmtState(L.state_rule) },
+    { k: 'Revenue',   v: (L.revenue_min != null && L.revenue_min > 0) ? '$' + Number(L.revenue_min).toLocaleString() : '—' },
+    { k: 'FICO',      v: (L.fico_min != null && L.fico_min > 0) ? String(L.fico_min) : '—' },
+    { k: 'TIB',       v: (L.tib_min != null && L.tib_min > 0) ? L.tib_min + 'mo' : '—' },
+    { k: 'Neg Days',  v: (L.neg_max != null) ? '≤' + L.neg_max : '—' },
+    { k: 'Defaults',  v: fmtDef(L.defaults) }
+  ];
 
   const cls = ['lender-card'];
   if (isRejected) cls.push('rejected');
   if (isSelected) cls.push('selected');
-  if (!hasStats) cls.push('no-stats');
 
   let statsHtml = '';
   if (isRejected && reason) {
     statsHtml = `<div class="lc-reason">${esc(reason)}</div>`;
-  } else if (hasStats) {
+  } else {
     statsHtml = `<div class="lc-stats">` +
-      stats.map(s => `<span class="lc-stat"><span class="k">${s.k}</span><span class="v">${esc(String(s.v))}</span></span>`).join('') +
+      stats.map(s => {
+        const unkClass = isUnk(s.v) ? ' unknown' : '';
+        return `<span class="lc-stat"><span class="k">${s.k}</span><span class="v${unkClass}">${esc(String(s.v))}</span></span>`;
+      }).join('') +
       `</div>`;
+  }
+
+  // Show excluded industries line if any (truncated)
+  let exclHtml = '';
+  if (!isRejected && L.industry_excl) {
+    const items = L.industry_excl.split(',').map(s => s.trim()).filter(Boolean);
+    if (items.length) {
+      const display = items.length <= 3 ? items.join(', ') : items.slice(0, 3).join(', ') + ` +${items.length - 3}`;
+      exclHtml = `<div class="lc-excl"><span class="k">Excludes</span> ${esc(display)}</div>`;
+    }
   }
 
   return `
@@ -1775,6 +2016,7 @@ function renderLenderCard(L, isRejected, reason){
         <span class="lc-pos ${pc}">${esc(posLabel)}</span>
       </div>
       ${statsHtml}
+      ${exclHtml}
       <div class="lc-action">
         <button class="lc-edit" data-action="edit" title="Edit lender">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 2.5l2 2L5 13H3v-2l8.5-8.5zM10 4l2 2"/></svg>
@@ -1823,23 +2065,24 @@ function updateTopbarStats(){
   const active = lenders.filter(L => L.status === 'active');
   const evald = active.map(L => evaluateLender(L, filter));
   const matches = evald.filter(e => e.qualifies).length;
-  const paused = lenders.filter(L => L.status === 'paused').length;
   document.getElementById('ct-match').textContent = matches;
   document.getElementById('ct-sel').textContent = selectedLenders.size;
-  document.getElementById('ct-paused').textContent = paused;
   // Lender count badge in menu
   document.getElementById('menu-lender-count').textContent = lenders.length;
   // Clear button
   const cb = document.getElementById('btn-clear-filter');
   if (cb) cb.style.display = getActiveFilterCount() > 0 ? '' : 'none';
+  // Keep summary text fresh
+  if (typeof updateFilterSummary === 'function') updateFilterSummary();
 }
 
 function updateActionBar(){
-  const bar = document.getElementById('action-bar');
+  const panel = document.getElementById('sub-panel');
   const n = selectedLenders.size;
-  bar.classList.toggle('show', n > 0 && currentPage === 'match');
-  document.getElementById('ab-count-n').textContent = n;
-  document.getElementById('ab-send-label').textContent = n === 1 ? 'Generate email' : `Generate ${n} emails`;
+  panel.classList.toggle('show', n > 0 && currentPage === 'match');
+  const countEl = document.getElementById('sub-count-n');
+  if (countEl) countEl.textContent = n;
+  updateSubPanelEmails();
 }
 
 /* ============================================================
@@ -1942,7 +2185,6 @@ document.querySelectorAll('#page-lenders .tab').forEach(t => {
     renderLendersList();
   });
 });
-document.getElementById('btn-refresh-lenders').addEventListener('click', syncFromSheet);
 
 /* ============================================================
    FORM — ADD / EDIT
@@ -2057,29 +2299,11 @@ function numOrEmpty(v){
    SETTINGS PAGE
    ============================================================ */
 function populateSettingsForm(){
-  document.getElementById('s-name').value = settings.name || '';
-  document.getElementById('s-company').value = settings.company || '';
-  document.getElementById('s-phone').value = settings.phone || '';
-  document.getElementById('s-email').value = settings.email || '';
-  document.getElementById('s-merchant').value = settings.merchant || '';
-  document.getElementById('s-amount').value = settings.amount || '';
-  document.getElementById('s-deal-position').value = settings.deal_position || '';
-  document.getElementById('s-deal-notes').value = settings.deal_notes || '';
-  document.getElementById('s-subject').value = settings.subject || DEFAULT_SUBJECT;
-  document.getElementById('s-body').value = settings.body || DEFAULT_BODY;
+  document.getElementById('s-default-message').value = settings.default_message || DEFAULT_MESSAGE;
 }
 
 document.getElementById('btn-save-settings').addEventListener('click', () => {
-  settings.name = document.getElementById('s-name').value.trim();
-  settings.company = document.getElementById('s-company').value.trim();
-  settings.phone = document.getElementById('s-phone').value.trim();
-  settings.email = document.getElementById('s-email').value.trim();
-  settings.merchant = document.getElementById('s-merchant').value.trim();
-  settings.amount = document.getElementById('s-amount').value.trim();
-  settings.deal_position = document.getElementById('s-deal-position').value.trim();
-  settings.deal_notes = document.getElementById('s-deal-notes').value.trim();
-  settings.subject = document.getElementById('s-subject').value;
-  settings.body = document.getElementById('s-body').value;
+  settings.default_message = document.getElementById('s-default-message').value;
   persistSettings();
   toast('Settings saved');
 });
@@ -2132,56 +2356,108 @@ document.getElementById('btn-reset-data').addEventListener('click', () => {
 });
 
 /* ============================================================
-   EMAIL GENERATION
+   SUBMISSION PANEL — recipients + message with copy buttons
    ============================================================ */
-document.getElementById('btn-ab-send').addEventListener('click', () => {
-  if (selectedLenders.size === 0) return;
-  const merchant = settings.merchant || '[merchant]';
-  const amount = settings.amount || '[amount]';
-  const position = settings.deal_position || '[position]';
-  const notes = settings.deal_notes || '';
-  const yourName = settings.name || '[your name]';
 
-  const fill = (str, lender) => str
-    .replace(/\{lender\}/g, lender.contact_name || lender.name)
-    .replace(/\{merchant\}/g, merchant)
-    .replace(/\{amount\}/g, amount)
-    .replace(/\{position\}/g, position)
-    .replace(/\{notes\}/g, notes)
-    .replace(/\{your_name\}/g, yourName);
+// Update emails display when selection changes
+function updateSubPanelEmails(){
+  const display = document.getElementById('sub-emails-display');
+  if (!display) return;
+
+  if (selectedLenders.size === 0) {
+    display.innerHTML = '<span class="placeholder">Select lenders below to build the recipients list.</span>';
+    return;
+  }
 
   const selected = [...selectedLenders]
     .map(name => lenders.find(L => L.name === name))
     .filter(Boolean);
+  const withEmail = selected.filter(L => L.contact_email);
+  const withoutEmail = selected.filter(L => !L.contact_email);
 
-  if (!settings.merchant || !settings.amount) {
-    if (!confirm("Deal info isn't filled in (merchant/amount in Settings). Generate emails anyway with placeholders?")) {
-      return;
-    }
+  const emailsList = withEmail.map(L => L.contact_email).join(', ');
+  let html = emailsList || '<span class="placeholder">None of the selected lenders have a contact email.</span>';
+  if (withoutEmail.length) {
+    html += `<span class="missing">⚠ Missing email: ${withoutEmail.map(L => esc(L.name)).join(', ')} — tap edit on the card to add.</span>`;
   }
+  display.innerHTML = html;
+}
 
-  const missingEmails = selected.filter(L => !L.contact_email);
-  if (missingEmails.length) {
-    if (!confirm(`${missingEmails.length} lender(s) have no contact email set: ${missingEmails.map(L=>L.name).join(', ')}. Generate drafts anyway?`)) {
-      return;
-    }
+// Initialize message field with default
+const subMessageEl = document.getElementById('sub-message');
+function initSubMessage(){
+  if (!subMessageEl.value) {
+    subMessageEl.value = settings.default_message || DEFAULT_MESSAGE;
   }
+}
 
-  // Open one mailto per lender, staggered to avoid popup blocking
-  selected.forEach((L, i) => {
-    const subj = encodeURIComponent(fill(settings.subject, L));
-    const body = encodeURIComponent(fill(settings.body, L));
-    const to = encodeURIComponent(L.contact_email || '');
-    const url = `mailto:${to}?subject=${subj}&body=${body}`;
-    setTimeout(() => {
-      window.open(url, '_blank');
-    }, i * 200);
-  });
+// Copy helpers
+async function copyToClipboard(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    // Fallback for non-secure contexts
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch { return false; }
+  }
+}
 
-  toast(`Opened ${selected.length} email draft${selected.length===1?'':'s'}`);
+function flashCopied(btn) {
+  const original = btn.textContent.trim();
+  btn.classList.add('copied');
+  btn.innerHTML = '✓ Copied';
+  setTimeout(() => {
+    btn.classList.remove('copied');
+    btn.innerHTML = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="9" height="9" rx="1.5"/><path d="M11 4V3a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h1"/></svg>Copy`;
+  }, 1500);
+}
+
+document.getElementById('btn-copy-emails').addEventListener('click', async (e) => {
+  const selected = [...selectedLenders]
+    .map(name => lenders.find(L => L.name === name))
+    .filter(L => L && L.contact_email);
+  if (selected.length === 0) {
+    toast('No lenders with emails selected', true);
+    return;
+  }
+  const emails = selected.map(L => L.contact_email).join(', ');
+  const ok = await copyToClipboard(emails);
+  if (ok) {
+    flashCopied(e.currentTarget);
+    toast(`Copied ${selected.length} email${selected.length===1?'':'s'}`);
+  } else {
+    toast('Copy failed — long-press the emails to select manually', true);
+  }
 });
 
-document.getElementById('btn-ab-clear').addEventListener('click', () => {
+document.getElementById('btn-copy-message').addEventListener('click', async (e) => {
+  const msg = subMessageEl.value.trim();
+  if (!msg) { toast('Message is empty', true); return; }
+  const ok = await copyToClipboard(msg);
+  if (ok) {
+    flashCopied(e.currentTarget);
+    toast('Message copied');
+  } else {
+    toast('Copy failed', true);
+  }
+});
+
+// Persist message as user types (so it survives reloads but stays editable per deal)
+subMessageEl.addEventListener('input', () => {
+  setLS('lendiago_last_message_v1', subMessageEl.value);
+});
+
+document.getElementById('btn-sub-clear').addEventListener('click', () => {
   selectedLenders.clear();
   document.querySelectorAll('.lender-card.selected').forEach(c => {
     c.classList.remove('selected');
@@ -2194,7 +2470,6 @@ document.getElementById('btn-ab-clear').addEventListener('click', () => {
 /* ============================================================
    TOPBAR + NAV WIRING
    ============================================================ */
-document.getElementById('btn-sync').addEventListener('click', syncFromSheet);
 document.getElementById('menu-btn').addEventListener('click', (e) => {
   e.stopPropagation();
   document.getElementById('tb-menu').classList.toggle('open');
@@ -2234,6 +2509,7 @@ function renderAll(){
   renderMatches();
   if (currentPage === 'lenders') renderLendersList();
   updateTopbarStats();
+  if (typeof updateFilterSummary === 'function') updateFilterSummary();
 }
 
 /* ============================================================
@@ -2243,6 +2519,15 @@ function init(){
   loadAll();
   buildFilterBar();
   renderAll();
+  // Load last typed message (or default) into the message field
+  const lastMsg = getLS('lendiago_last_message_v1');
+  if (subMessageEl) {
+    subMessageEl.value = lastMsg || settings.default_message || DEFAULT_MESSAGE;
+  }
+  // Tap the summary bar to expand filters back
+  document.getElementById('filter-summary').addEventListener('click', () => {
+    setFilterBarCollapsed(false);
+  });
 }
 
 init();
