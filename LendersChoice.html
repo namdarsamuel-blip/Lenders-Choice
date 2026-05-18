@@ -429,7 +429,18 @@ button { cursor: pointer; }
 .match-search-row {
   max-width: 1500px;
   margin: 0 auto;
-  padding: 8px 16px 4px;
+  padding: 8px 16px 8px;
+  /* Pin the search bar so it's always accessible without scrolling back up.
+     The top offset is updated by JS to sit right under whichever of the
+     filter-bar / filter-summary is currently showing. */
+  position: sticky;
+  top: var(--search-row-top, 56px);
+  z-index: 70;            /* below filter-bar (80) and topbar, above content */
+  background: var(--bg);
+  transition: transform 0.18s ease-out;
+}
+.match-search-row.hidden-on-scroll {
+  transform: translateY(-110%);
 }
 .match-search-wrap {
   position: relative;
@@ -4242,6 +4253,65 @@ function renderAll(){
 }
 
 /* ============================================================
+   STICKY SEARCH BAR
+   Keep the lender-search input pinned just below the filter bar
+   so it's always one swipe away. Hides while scrolling down,
+   reappears the instant the user scrolls up.
+   ============================================================ */
+function updateSearchRowTop(){
+  const searchRow = document.querySelector('.match-search-row');
+  if (!searchRow) return;
+  const topbarH = window.innerWidth <= 700 ? 54 : 56;
+  const filterBar = document.getElementById('filter-bar');
+  const filterSummary = document.getElementById('filter-summary');
+  let extra = 0;
+  if (filterBar && !filterBar.classList.contains('hidden') && !filterBar.classList.contains('collapsed')) {
+    extra = filterBar.offsetHeight;
+  } else if (filterSummary && filterSummary.classList.contains('show')) {
+    extra = filterSummary.offsetHeight;
+  }
+  searchRow.style.setProperty('--search-row-top', (topbarH + extra) + 'px');
+}
+
+let _lastScrollY = 0;
+let _scrollTicking = false;
+function handleSearchRowScroll(){
+  if (_scrollTicking) return;
+  _scrollTicking = true;
+  requestAnimationFrame(() => {
+    const searchRow = document.querySelector('.match-search-row');
+    if (!searchRow) { _scrollTicking = false; return; }
+    const currentY = window.scrollY;
+    const goingDown = currentY > _lastScrollY + 4;
+    const goingUp   = currentY < _lastScrollY - 4;
+    // Near the top: always show.
+    if (currentY < 120) {
+      searchRow.classList.remove('hidden-on-scroll');
+    } else if (goingDown) {
+      searchRow.classList.add('hidden-on-scroll');
+    } else if (goingUp) {
+      searchRow.classList.remove('hidden-on-scroll');
+    }
+    _lastScrollY = currentY;
+    _scrollTicking = false;
+  });
+}
+
+function initStickySearchRow(){
+  updateSearchRowTop();
+  // Recompute top when the filter bar resizes (chip rewraps, show/hide, etc).
+  if (window.ResizeObserver) {
+    const filterBar = document.getElementById('filter-bar');
+    const filterSummary = document.getElementById('filter-summary');
+    const ro = new ResizeObserver(updateSearchRowTop);
+    if (filterBar) ro.observe(filterBar);
+    if (filterSummary) ro.observe(filterSummary);
+  }
+  window.addEventListener('resize', updateSearchRowTop);
+  window.addEventListener('scroll', handleSearchRowScroll, { passive: true });
+}
+
+/* ============================================================
    INIT
    ============================================================ */
 function init(){
@@ -4252,6 +4322,7 @@ function init(){
   requestAnimationFrame(() => {
     balanceFilterChips();
     observeFilterBarForBalancing();
+    initStickySearchRow();
   });
   // Load last typed message (or default) into the submission page message field
   const lastMsg = getLS('lendiago_last_message_v1');
