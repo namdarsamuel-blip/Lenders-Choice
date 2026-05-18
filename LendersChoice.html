@@ -566,6 +566,22 @@ button.strip-section-head:hover {
 .strip-row:nth-child(odd) { background: var(--bg); }
 .strip-row:hover { border-color: var(--border-3); background: var(--bg-2); }
 
+/* When a row is expanded, we drop overflow:hidden so the header strip can
+   stick to the viewport top during scroll. The badge and detail panel pick
+   up matching border-radius so the rounded card corners stay clean. */
+.strip-row.expanded {
+  overflow: visible;
+}
+.strip-row.expanded .strip-main {
+  position: sticky;
+  top: calc(56px + env(safe-area-inset-top, 0px));
+  z-index: 50;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border);
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
 /* 1st-only "premium" tier gets a subtle ambient green glow on top of the badge */
 .strip-row.first-position {
   box-shadow: -4px 0 16px -8px rgba(127, 219, 159, 0.30);
@@ -650,7 +666,9 @@ button.strip-section-head:hover {
   column-gap: 24px;
   margin-top: 4px;
   min-width: 0;
-  max-width: 880px;
+  /* Capped tight so the expand-zone (everything to the right) gets the empty space
+     at wide viewports instead of the stats columns ballooning out. */
+  max-width: 700px;
 }
 
 /* RIGHT ZONE — fills ALL space to the right of the stats grid + the chevron strip.
@@ -659,8 +677,8 @@ button.strip-section-head:hover {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding: 0 16px 0 8px;
-  min-width: 52px;
+  padding: 0 16px 0 12px;
+  min-width: 110px;
   cursor: pointer;
   position: relative;
   transition: background-color 0.12s;
@@ -711,6 +729,13 @@ button.strip-section-head:hover {
   text-overflow: ellipsis;
   flex: 0 1 auto;
 }
+/* Name color matches the position tier badge so the row reads as one
+   color-coded unit at a glance. Green = 1st only, blue = 1-N range,
+   pink = 2nd+, default white = any-position. Selected state overrides. */
+.strip-name.green { color: var(--green); }
+.strip-name.blue { color: var(--blue); }
+.strip-name.pink { color: var(--pink); }
+.strip-name.amber { color: var(--amber); }
 /* When the row is rejected, dim the name back toward muted so the row reads as inactive */
 .strip-row.rejected .strip-name { color: var(--text-3); }
 
@@ -735,6 +760,11 @@ button.strip-section-head:hover {
   cursor: pointer;
   transition: filter 0.12s;
   border-right: 1px solid var(--border);
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+.strip-row.expanded .strip-position-badge {
+  border-bottom-left-radius: 0;
 }
 .strip-position-badge .strip-pos-context {
   font-size: 8.5px;
@@ -908,6 +938,8 @@ button.strip-section-head:hover {
   border-top: 1px solid var(--border);
   background: var(--bg);
   padding: 18px 18px 20px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
 }
 .strip-row.first-position .strip-detail { background: rgba(127,219,159,0.025); }
 
@@ -1002,16 +1034,17 @@ button.strip-section-head:hover {
   padding: 0;
   margin: 0;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  flex-wrap: wrap;
+  gap: 5px;
 }
 .dt-industry-item {
-  padding: 7px 10px;
-  border-radius: 6px;
-  font-size: 12.5px;
-  line-height: 1.35;
+  padding: 5px 9px;
+  border-radius: 5px;
+  font-size: 12px;
+  line-height: 1.3;
   background: var(--bg-2);
   color: var(--text);
+  white-space: nowrap;
 }
 .dt-industry-item.preferred {
   background: var(--green-bg);
@@ -1026,6 +1059,8 @@ button.strip-section-head:hover {
   align-items: baseline;
   gap: 10px;
   flex-wrap: wrap;
+  flex-basis: 100%;            /* restricted gets its own row — has name + requirement */
+  white-space: normal;
 }
 .dt-industry-item.restricted .dt-industry-name {
   font-weight: 600;
@@ -1885,6 +1920,23 @@ button.strip-section-head:hover {
 }
 .toast.err { border-color: var(--coral-bd); color: var(--coral); }
 
+/* ========== MEDIUM (desktop-but-cramped) ==========
+   Above mobile, below comfortable spreadsheet width: the 6-cell stats grid
+   would otherwise eat the entire row and squash the expand zone against the
+   STATES cell. Wrap stats to 3-col × 2-row so the expand zone always has
+   meaningful empty space to click. Desktop typography/spacing otherwise stays. */
+@media (min-width: 701px) and (max-width: 879px) {
+  .strip-row2 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px 24px;
+    max-width: 560px;
+  }
+  .strip-expand-zone {
+    min-width: 96px;
+    padding: 0 18px 0 12px;
+  }
+}
+
 /* ========== MOBILE ========== */
 @media (max-width: 700px) {
   /* Topbar — keep safe-area-inset-top, only override horizontal padding and height */
@@ -1945,6 +1997,10 @@ button.strip-section-head:hover {
      Right-edge chevron strip narrows so the data area gets more room. */
   .strip-main {
     grid-template-columns: 64px auto 1fr;
+  }
+  /* Mobile sticky offset: topbar is 54px on mobile, not 56px */
+  .strip-row.expanded .strip-main {
+    top: calc(54px + env(safe-area-inset-top, 0px));
   }
   .strip-position-badge {
     min-width: 64px;
@@ -2870,6 +2926,63 @@ function buildFilterBar(){
   bar.appendChild(footer);
 }
 
+// Prevent a lone chip from sitting on its own line by inserting a flex-break
+// before the second-to-last chip when the last row would otherwise be an orphan.
+let _balancingChips = false;
+function balanceFilterChips(){
+  const bar = document.getElementById('filter-bar');
+  if (!bar) return;
+  if (bar.classList.contains('hidden') || bar.classList.contains('collapsed')) return;
+  _balancingChips = true;
+  try {
+    // Clear any previous break inserts
+    bar.querySelectorAll(':scope > .filter-break').forEach(el => el.remove());
+
+    const chips = Array.from(bar.querySelectorAll(':scope > .chip'));
+    if (chips.length < 2) return;
+
+    // Group chips by visual row (using offsetTop)
+    const rows = [];
+    chips.forEach(chip => {
+      const top = chip.offsetTop;
+      const lastRow = rows[rows.length - 1];
+      if (lastRow && Math.abs(lastRow.top - top) < 4) {
+        lastRow.items.push(chip);
+      } else {
+        rows.push({ top, items: [chip] });
+      }
+    });
+
+    // If the last row is an orphan (1 chip) and the previous row has 2+,
+    // insert a flex break before the previous row's last chip — that pulls
+    // it down to join the orphan, making a 2-chip bottom row.
+    const last = rows[rows.length - 1];
+    const prev = rows[rows.length - 2];
+    if (last && last.items.length === 1 && prev && prev.items.length >= 2){
+      const targetChip = prev.items[prev.items.length - 1];
+      const brk = document.createElement('div');
+      brk.className = 'filter-break';
+      brk.style.cssText = 'flex-basis:100%;width:100%;height:0;margin:0;padding:0;border:0;';
+      bar.insertBefore(brk, targetChip);
+    }
+  } finally {
+    // Defer past the ResizeObserver tick so our own DOM change doesn't loop
+    requestAnimationFrame(() => { _balancingChips = false; });
+  }
+}
+
+let _filterBarRO = null;
+function observeFilterBarForBalancing(){
+  if (_filterBarRO || !window.ResizeObserver) return;
+  const bar = document.getElementById('filter-bar');
+  if (!bar) return;
+  _filterBarRO = new ResizeObserver(() => {
+    if (_balancingChips) return;
+    requestAnimationFrame(balanceFilterChips);
+  });
+  _filterBarRO.observe(bar);
+}
+
 // Filter bar collapse state
 let filterBarCollapsed = false;
 function setFilterBarCollapsed(collapsed){
@@ -2883,6 +2996,7 @@ function setFilterBarCollapsed(collapsed){
   } else {
     bar.classList.remove('hidden');
     summary.classList.remove('show');
+    requestAnimationFrame(balanceFilterChips);
   }
 }
 
@@ -3338,7 +3452,7 @@ function renderStripRow(L, isRejected, reason, failField){
           <div class="strip-check ${isSelected ? 'checked' : ''}"></div>
           <div class="strip-content">
             <div class="strip-name-row">
-              <div class="strip-name">${esc(L.name)}</div>
+              <div class="strip-name ${pc}">${esc(L.name)}</div>
             </div>
             <div class="strip-row2">
               ${cell('Revenue', fmtMoney(L.revenue_min), 'revenue')}
@@ -4134,6 +4248,11 @@ function init(){
   loadAll();
   buildFilterBar();
   renderAll();
+  // Once the DOM has laid out, balance the filter chips and watch for changes.
+  requestAnimationFrame(() => {
+    balanceFilterChips();
+    observeFilterBarForBalancing();
+  });
   // Load last typed message (or default) into the submission page message field
   const lastMsg = getLS('lendiago_last_message_v1');
   const msgEl = document.getElementById('submit-message');
