@@ -526,7 +526,8 @@ button.strip-section-head:hover {
   margin-left: 4px;
   transition: transform 0.2s;
 }
-.rejected-section.expanded .ssh-chev {
+.rejected-section.expanded .ssh-chev,
+.collapsible-section.expanded .ssh-chev {
   transform: rotate(180deg);
   color: var(--text-2);
 }
@@ -637,6 +638,14 @@ button.strip-section-head:hover {
 }
 .strip-select-zone:active {
   background-color: rgba(255, 224, 138, 0.08);
+}
+
+/* Read-only mode (Lenders directory): no checkbox; tap anywhere = expand */
+.strip-row.read-only .strip-select-zone {
+  grid-template-columns: 1fr;
+}
+.strip-row.read-only:active .strip-select-zone {
+  background-color: rgba(255, 255, 255, 0.03);
 }
 
 .strip-check { align-self: center; }
@@ -2131,10 +2140,6 @@ button.strip-section-head:hover {
         Lenders
         <span class="badge" id="menu-lender-count">0</span>
       </button>
-      <button class="menu-item" data-nav="add">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>
-        Add Lender
-      </button>
       <div class="menu-sep"></div>
       <button class="menu-item" data-nav="settings">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="2.2"/><path d="M8 1.5v1.8M8 12.7v1.8M2.7 4.4l1.6.9M11.7 9.7l1.6.9M1.5 8h1.8M12.7 8h1.8M2.7 11.6l1.6-.9M11.7 6.3l1.6-.9" stroke-linecap="round"/></svg>
@@ -2184,25 +2189,19 @@ button.strip-section-head:hover {
   <div class="page-head">
     <div>
       <h1 class="page-title">Lenders</h1>
-      <p class="page-sub" id="ll-summary">0 active · 0 needs signup · 0 paused</p>
-    </div>
-    <div class="page-actions">
-      <button class="btn-primary" data-nav="add">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>
-        Add Lender
-      </button>
+      <p class="page-sub" id="ll-summary">Reference directory — tap a row to see details.</p>
     </div>
   </div>
-  <div class="subbar">
-    <input type="text" class="search-input" id="ll-search" placeholder="Search lenders...">
-    <div class="tabs">
-      <button class="tab" data-status="all">All</button>
-      <button class="tab active" data-status="active">Active</button>
-      <button class="tab" data-status="needs_signup">Needs signup</button>
-      <button class="tab" data-status="paused">Paused</button>
+  <div class="match-search-row">
+    <div class="match-search-wrap">
+      <svg class="match-search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="7" cy="7" r="5"/>
+        <path d="M11 11l3 3"/>
+      </svg>
+      <input type="text" id="ll-search" class="match-search-input" placeholder="Search the directory..." autocomplete="off" spellcheck="false">
     </div>
   </div>
-  <div class="lender-rows" id="ll-rows"></div>
+  <div class="match-list" id="ll-rows"></div>
 </main>
 
 <!-- ============ ADD/EDIT LENDER PAGE ============ -->
@@ -2266,9 +2265,9 @@ button.strip-section-head:hover {
           <label>Defaults Allowed</label>
           <select id="f-defaults">
             <option value="">— select —</option>
-            <option value="clean">Clean only (no defaults)</option>
-            <option value="satisfied">Satisfied OK</option>
-            <option value="open">Open OK (any defaults)</option>
+            <option value="clean">Not allowed</option>
+            <option value="satisfied">Satisfied</option>
+            <option value="open">Would fund</option>
           </select>
         </div>
         <div class="field full">
@@ -2326,9 +2325,13 @@ button.strip-section-head:hover {
 
     <div class="settings-card">
       <h3 style="font-size:13px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; color:var(--text-3); margin-bottom:12px;">Data</h3>
-      <p class="page-sub" style="margin-bottom:14px;">All lender data is stored on this device. Use export/import to back up or move to another device.</p>
-      <div class="form-actions" style="margin-top:0;">
-        <button class="btn-ghost" id="btn-export">Export backup</button>
+      <p class="page-sub" style="margin-bottom:14px;">All lender data is stored on this device. Download a CSV to back up the full directory in spreadsheet form.</p>
+      <div class="form-actions" style="margin-top:0; flex-wrap:wrap; gap:10px;">
+        <button class="btn-primary" id="btn-download-csv">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:6px;vertical-align:-2px;"><path d="M8 2v9M4 7l4 4 4-4M2 13h12"/></svg>
+          Download CSV
+        </button>
+        <button class="btn-ghost" id="btn-export">Export backup (JSON)</button>
         <button class="btn-ghost" id="btn-import">Import backup</button>
         <input type="file" id="import-file" accept="application/json,.json" style="display:none;">
         <button class="btn-danger" id="btn-reset-data" style="margin-left:auto;">Reset to defaults</button>
@@ -2461,6 +2464,8 @@ let filter = {
 
 let llSearchQ = '';
 let llStatusTab = 'active';
+let llSignedUpExpanded = true;
+let llDirectoryExpanded = true;
 
 /* ============================================================
    STORAGE HELPERS
@@ -2559,6 +2564,27 @@ function loadAll(){
     persistCache();
     console.log(`Migration: re-seeded from xlsx merge → ${lenders.length} lenders`);
     setLS(XLSX_MERGE_KEY, '1');
+  }
+
+  // Migration — only the lenders Sam has actually signed up with are "active"
+  // (currently Mint Funding + Pinnacle Business Funding). Everyone else
+  // becomes a directory-only reference (visible on the Lenders page, not
+  // matched on Match Deal).
+  const ACTIVE_WHITELIST_KEY = 'lendiago_migration_signed_up_only_v1_2025_05';
+  if (!getLS(ACTIVE_WHITELIST_KEY)) {
+    const signedUp = new Set(['mint funding', 'pinnacle business funding']);
+    let activated = 0, demoted = 0;
+    lenders.forEach(L => {
+      const isSignedUp = signedUp.has(L.name.toLowerCase());
+      const newStatus = isSignedUp ? 'active' : 'directory';
+      if (L.status !== newStatus) {
+        L.status = newStatus;
+        isSignedUp ? activated++ : demoted++;
+      }
+    });
+    persistCache();
+    console.log(`Migration: signed-up-only → ${activated} active, ${demoted} moved to directory`);
+    setLS(ACTIVE_WHITELIST_KEY, '1');
   }
 
   try {
@@ -2766,8 +2792,8 @@ function evaluateLender(L, f){
     const dealLevel = hierarchy.indexOf(f.defaults);
     const lenderLevel = hierarchy.indexOf(L.defaults);
     if (dealLevel > lenderLevel) {
-      const names = { clean: 'Clean only', satisfied: 'Satisfied OK', open: 'Open OK' };
-      return {qualifies:false, reason:`${names[L.defaults]} only`, field:'defaults'};
+      const names = { clean: 'Not allowed', satisfied: 'Satisfied', open: 'Would fund' };
+      return {qualifies:false, reason:`Defaults: ${names[L.defaults]}`, field:'defaults'};
     }
   }
   return {qualifies:true, reason:null};
@@ -2899,10 +2925,10 @@ const FILTER_DEFS = [
     ], format: (v) => v === '' ? '' : v + 'd' },
   { key: 'defaults', label: 'Defaults', type: 'select', options: () => [
       {v:'',l:'any'},
-      {v:'clean',l:'Clean only'},
-      {v:'satisfied',l:'Satisfied OK'},
-      {v:'open',l:'Open OK'}
-    ], format: (v) => ({clean:'Clean',satisfied:'Sat OK',open:'Open'})[v] || v }
+      {v:'clean',l:'Not allowed'},
+      {v:'satisfied',l:'Satisfied'},
+      {v:'open',l:'Would fund'}
+    ], format: (v) => ({clean:'Not allowed', satisfied:'Satisfied', open:'Would fund'})[v] || v }
 ];
 
 function buildFilterBar(){
@@ -3307,9 +3333,8 @@ function renderMatches(){
     list.innerHTML = `
       <div class="empty-state">
         <h3>No lenders yet</h3>
-        <p>Tap <a data-nav="add">Add Lender</a> to add your first one.</p>
+        <p>The lender directory is empty. Reset to defaults in Settings to restore.</p>
       </div>`;
-    list.querySelectorAll('[data-nav]').forEach(a => a.addEventListener('click', () => nav(a.dataset.nav)));
     updateTopbarStats();
     updateActionBar();
     return;
@@ -3389,8 +3414,8 @@ function renderMatches(){
   updateActionBar();
 }
 
-function renderStripRow(L, isRejected, reason, failField){
-  const isSelected = selectedLenders.has(L.name);
+function renderStripRow(L, isRejected, reason, failField, readOnly){
+  const isSelected = !readOnly && selectedLenders.has(L.name);
   const isExpanded = expandedLender === L.name;
   const pc = positionColor(L);
   const posLabel = formatPositionPill(L);
@@ -3399,6 +3424,9 @@ function renderStripRow(L, isRejected, reason, failField){
   // Only strictly "1st only" lenders get the dominant green-pill emphasis
   // (1-N range lenders fund 1st but aren't exclusive, so they keep their blue color)
   const isFirstOnly = L.position && L.position.trim() === '1';
+  // In read-only mode (Lenders directory), tap anywhere → expand.
+  // Otherwise badge + select-zone → select, expand-zone → expand.
+  const primaryAction = readOnly ? 'expand' : 'select';
 
   // Format helpers — collapsed row: dash for "no restriction", actual values otherwise.
   const fmtState = (rule) => {
@@ -3419,9 +3447,9 @@ function renderStripRow(L, isRejected, reason, failField){
     return esc(rule);
   };
   const fmtDef = (d) => {
-    // No restriction = dash. "open" means lender accepts all defaults — that's NO restriction, so dash.
+    // No restriction = dash. "open" / "Would fund" means lender accepts all defaults — that's NO restriction, so dash.
     if (!d || d === 'open') return '<span class="strip-muted">—</span>';
-    return ({clean:'Clean only', satisfied:'Satisfied only'})[d] || '<span class="strip-muted">—</span>';
+    return ({clean:'Not allowed', satisfied:'Satisfied'})[d] || '<span class="strip-muted">—</span>';
   };
   // Compact money: $20k, $1.5M, $100k — no truncation, no commas
   const fmtMoney = (n) => {
@@ -3448,6 +3476,7 @@ function renderStripRow(L, isRejected, reason, failField){
   if (isSelected) cls.push('selected');
   if (isFirst && !isRejected) cls.push('first-position');
   if (isExpanded) cls.push('expanded');
+  if (readOnly) cls.push('read-only');
 
   // Detail panel (only rendered if expanded)
   const detailHtml = isExpanded ? renderDetailPanel(L) : '';
@@ -3455,12 +3484,12 @@ function renderStripRow(L, isRejected, reason, failField){
   return `
     <div class="${cls.join(' ')}" data-name="${esc(L.name)}">
       <div class="strip-main">
-        <div class="strip-position-badge ${positionBadgeClass(L)}${isFirstOnly && !isRejected ? ' dominant' : ''}" data-action="select" aria-label="${esc(posLabel)}">
+        <div class="strip-position-badge ${positionBadgeClass(L)}${isFirstOnly && !isRejected ? ' dominant' : ''}" data-action="${primaryAction}" aria-label="${esc(posLabel)}">
           <div class="strip-pos-context">${positionBadgeContext(L)}</div>
           <div class="strip-pos-short">${esc(positionBadgeShort(L))}</div>
         </div>
-        <div class="strip-select-zone" data-action="select">
-          <div class="strip-check ${isSelected ? 'checked' : ''}"></div>
+        <div class="strip-select-zone" data-action="${primaryAction}">
+          ${readOnly ? '' : `<div class="strip-check ${isSelected ? 'checked' : ''}"></div>`}
           <div class="strip-content">
             <div class="strip-name-row">
               <div class="strip-name ${pc}">${esc(L.name)}</div>
@@ -3702,10 +3731,13 @@ function wireStripRows(){
         toggleSelection(name);
       });
     });
-    // Right zone (empty area + chevron strip) → EXPAND
-    row.querySelector('[data-action="expand"]')?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      toggleExpand(name);
+    // Expand zones. In read-only mode the badge + select-zone also carry
+    // data-action="expand", so querySelectorAll picks up all of them.
+    row.querySelectorAll('[data-action="expand"]').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleExpand(name);
+      });
     });
     // Clicks inside expanded detail (links, etc.) should NOT toggle anything
     row.querySelector('.strip-detail')?.addEventListener('click', (e) => {
@@ -3727,7 +3759,9 @@ function wireStripRows(){
 
 function toggleExpand(name){
   expandedLender = (expandedLender === name) ? null : name;
-  renderMatches();
+  // Re-render the currently visible list (match deal or lenders directory).
+  if (currentPage === 'lenders') renderLendersList();
+  else renderMatches();
 }
 
 function toggleSelection(name){
@@ -3823,70 +3857,83 @@ function renderLendersList(){
   const list = document.getElementById('ll-rows');
   const summary = document.getElementById('ll-summary');
 
-  const ct = { active: 0, needs_signup: 0, paused: 0 };
-  lenders.forEach(L => { ct[L.status] = (ct[L.status] || 0) + 1; });
-  summary.textContent = `${ct.active} active · ${ct.needs_signup} needs signup · ${ct.paused} paused`;
-
+  // Filter by search across the whole directory first
   let filtered = lenders.slice();
-  if (llStatusTab !== 'all') filtered = filtered.filter(L => L.status === llStatusTab);
   if (llSearchQ) {
     const q = llSearchQ.toLowerCase();
     filtered = filtered.filter(L => L.name.toLowerCase().includes(q));
   }
 
-  // Sort: in 'all' view, needs_signup first (action items), then active, then paused. Otherwise alpha.
-  if (llStatusTab === 'all') {
-    const order = { needs_signup: 0, active: 1, paused: 2 };
-    filtered.sort((a,b) => {
-      const oa = order[a.status] ?? 3, ob = order[b.status] ?? 3;
-      if (oa !== ob) return oa - ob;
-      return a.name.localeCompare(b.name);
-    });
-  } else {
-    filtered.sort((a,b) => a.name.localeCompare(b.name));
-  }
+  // Split into signed-up (status='active') vs the rest of the directory
+  const signedUp = filtered
+    .filter(L => L.status === 'active')
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const directory = filtered
+    .filter(L => L.status !== 'active')
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  const totalSigned = lenders.filter(L => L.status === 'active').length;
+  summary.textContent = `${lenders.length} lenders · ${totalSigned} signed up · tap a row for full details`;
 
   if (filtered.length === 0) {
     list.innerHTML = `<div class="empty-state">
-      <h3>${lenders.length === 0 ? 'No lenders yet' : 'No lenders match'}</h3>
-      <p>${lenders.length === 0 ? 'Add your first lender to get started.' : 'Try a different filter or search.'}</p>
+      <h3>No lenders match</h3>
+      <p>Try a different search.</p>
     </div>`;
     return;
   }
 
-  list.innerHTML = filtered.map(L => {
-    const metaParts = [];
-    if (L.position && L.position !== 'any') metaParts.push(formatPositionPill(L));
-    if (L.revenue_min) metaParts.push('$' + Number(L.revenue_min).toLocaleString() + '+ rev');
-    if (L.fico_min) metaParts.push('FICO ' + L.fico_min + '+');
-    if (L.tib_min) metaParts.push(L.tib_min + 'mo TIB');
-    const meta = metaParts.length ? metaParts.join('<span class="sep">·</span>') : '<span style="opacity:.5">No criteria set</span>';
+  let html = '';
 
-    const statusLabel = { active: 'Active', needs_signup: 'Needs signup', paused: 'Paused' }[L.status];
+  // --- Signed up section (always first, default expanded) ---
+  if (signedUp.length) {
+    const exp = llSignedUpExpanded;
+    html += `<div class="strip-section collapsible-section${exp ? ' expanded' : ''}">`;
+    html += `<button class="strip-section-head" data-action="toggle-signed-up" aria-expanded="${exp}">
+      <span class="ssh-dot ok"></span>
+      <span class="ssh-label">Signed up</span>
+      <span class="ssh-count">${signedUp.length}</span>
+      <span class="ssh-hint">${exp ? 'tap to collapse' : 'tap to expand'}</span>
+      <svg class="ssh-chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+    </button>`;
+    if (exp) {
+      html += signedUp.map(L => renderStripRow(L, false, null, null, /*readOnly*/ true)).join('');
+    }
+    html += `</div>`;
+  }
 
-    return `
-      <div class="lender-row status-${L.status}" data-name="${esc(L.name)}">
-        <div class="lr-info">
-          <div class="lr-name">${esc(L.name)}</div>
-          <div class="lr-meta">${meta}</div>
-        </div>
-        <button class="status-badge ${L.status}" data-cycle="${esc(L.name)}">${statusLabel}</button>
-      </div>`;
-  }).join('');
+  // --- Directory section (the rest, default expanded too — collapse to clear the page) ---
+  if (directory.length) {
+    const exp = llDirectoryExpanded;
+    html += `<div class="strip-section collapsible-section${exp ? ' expanded' : ''}">`;
+    html += `<button class="strip-section-head" data-action="toggle-directory" aria-expanded="${exp}">
+      <span class="ssh-dot"></span>
+      <span class="ssh-label">Not yet signed up</span>
+      <span class="ssh-count">${directory.length}</span>
+      <span class="ssh-hint">${exp ? 'tap to collapse' : 'tap to expand'}</span>
+      <svg class="ssh-chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+    </button>`;
+    if (exp) {
+      html += directory.map(L => renderStripRow(L, false, null, null, /*readOnly*/ true)).join('');
+    }
+    html += `</div>`;
+  }
 
-  // Wire row clicks (edit)
-  list.querySelectorAll('.lender-row').forEach(row => {
-    row.addEventListener('click', (e) => {
-      if (e.target.closest('[data-cycle]')) return;
-      openLenderForm(row.dataset.name);
-      nav('add');
-    });
-  });
-  // Wire status badge clicks (cycle status)
-  list.querySelectorAll('[data-cycle]').forEach(btn => {
+  list.innerHTML = html;
+  wireStripRows();
+  // Wire section toggles
+  list.querySelectorAll('[data-action="toggle-signed-up"]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      cycleStatus(btn.dataset.cycle);
+      llSignedUpExpanded = !llSignedUpExpanded;
+      renderLendersList();
+    });
+  });
+  list.querySelectorAll('[data-action="toggle-directory"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      llDirectoryExpanded = !llDirectoryExpanded;
+      renderLendersList();
     });
   });
 }
@@ -3907,14 +3954,6 @@ function cycleStatus(name){
 document.getElementById('ll-search').addEventListener('input', (e) => {
   llSearchQ = e.target.value;
   renderLendersList();
-});
-document.querySelectorAll('#page-lenders .tab').forEach(t => {
-  t.addEventListener('click', () => {
-    document.querySelectorAll('#page-lenders .tab').forEach(x => x.classList.remove('active'));
-    t.classList.add('active');
-    llStatusTab = t.dataset.status;
-    renderLendersList();
-  });
 });
 
 /* ============================================================
@@ -4040,6 +4079,55 @@ document.getElementById('btn-save-settings').addEventListener('click', () => {
 });
 
 /* Export / Import / Reset */
+
+/* CSV download — exports every lender as a row, every schema field as a column.
+   List fields (other_emails, alt_contacts) are flattened to single columns with
+   semicolons between entries; alt_contacts collapse to "Name <email> phone" tuples. */
+function lendersToCsv(arr){
+  const headers = [
+    'name','status','state_rule','position','industry_excl',
+    'revenue_min','fico_min','tib_min','neg_max','defaults',
+    'contact_name','contact_email','contact_phone',
+    'other_emails','alt_contacts','notes'
+  ];
+  const escapeCell = (v) => {
+    if (v == null) return '';
+    const s = String(v);
+    // RFC 4180 — quote anything containing comma, quote, newline, or carriage return
+    if (/[",\r\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  };
+  const altFmt = (alts) => {
+    if (!Array.isArray(alts) || alts.length === 0) return '';
+    return alts.map(a => {
+      const parts = [];
+      if (a.name) parts.push(a.name);
+      if (a.email) parts.push('<' + a.email + '>');
+      if (a.phone) parts.push(a.phone);
+      return parts.join(' ');
+    }).join('; ');
+  };
+  const rows = arr.map(L => headers.map(h => {
+    if (h === 'other_emails') return escapeCell(Array.isArray(L.other_emails) ? L.other_emails.join('; ') : '');
+    if (h === 'alt_contacts') return escapeCell(altFmt(L.alt_contacts));
+    return escapeCell(L[h]);
+  }).join(','));
+  return [headers.join(','), ...rows].join('\r\n');
+}
+
+document.getElementById('btn-download-csv').addEventListener('click', () => {
+  const csv = lendersToCsv(lenders);
+  // BOM prefix so Excel opens UTF-8 correctly
+  const blob = new Blob(['\uFEFF', csv], {type: 'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `lendiago-lenders-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast(`Downloaded ${lenders.length} lenders as CSV`);
+});
+
 document.getElementById('btn-export').addEventListener('click', () => {
   const blob = new Blob([JSON.stringify(lenders, null, 2)], {type: 'application/json'});
   const url = URL.createObjectURL(blob);
@@ -4257,20 +4345,27 @@ function renderAll(){
    Keep the lender-search input pinned just below the filter bar
    so it's always one swipe away. Hides while scrolling down,
    reappears the instant the user scrolls up.
+   Applied to every `.match-search-row` (Match Deal + Lenders directory).
    ============================================================ */
 function updateSearchRowTop(){
-  const searchRow = document.querySelector('.match-search-row');
-  if (!searchRow) return;
   const topbarH = window.innerWidth <= 700 ? 54 : 56;
   const filterBar = document.getElementById('filter-bar');
   const filterSummary = document.getElementById('filter-summary');
-  let extra = 0;
-  if (filterBar && !filterBar.classList.contains('hidden') && !filterBar.classList.contains('collapsed')) {
-    extra = filterBar.offsetHeight;
-  } else if (filterSummary && filterSummary.classList.contains('show')) {
-    extra = filterSummary.offsetHeight;
-  }
-  searchRow.style.setProperty('--search-row-top', (topbarH + extra) + 'px');
+
+  document.querySelectorAll('.match-search-row').forEach(row => {
+    // The Match Deal search bar lives under #page-match (which has a filter bar).
+    // The Lenders directory search bar lives under #page-lenders (no filter).
+    const onMatchPage = !!row.closest('#page-match');
+    let extra = 0;
+    if (onMatchPage){
+      if (filterBar && !filterBar.classList.contains('hidden') && !filterBar.classList.contains('collapsed')) {
+        extra = filterBar.offsetHeight;
+      } else if (filterSummary && filterSummary.classList.contains('show')) {
+        extra = filterSummary.offsetHeight;
+      }
+    }
+    row.style.setProperty('--search-row-top', (topbarH + extra) + 'px');
+  });
 }
 
 let _lastScrollY = 0;
@@ -4279,19 +4374,21 @@ function handleSearchRowScroll(){
   if (_scrollTicking) return;
   _scrollTicking = true;
   requestAnimationFrame(() => {
-    const searchRow = document.querySelector('.match-search-row');
-    if (!searchRow) { _scrollTicking = false; return; }
+    const rows = document.querySelectorAll('.match-search-row');
+    if (!rows.length) { _scrollTicking = false; return; }
     const currentY = window.scrollY;
     const goingDown = currentY > _lastScrollY + 4;
     const goingUp   = currentY < _lastScrollY - 4;
-    // Near the top: always show.
-    if (currentY < 120) {
-      searchRow.classList.remove('hidden-on-scroll');
-    } else if (goingDown) {
-      searchRow.classList.add('hidden-on-scroll');
-    } else if (goingUp) {
-      searchRow.classList.remove('hidden-on-scroll');
-    }
+    rows.forEach(row => {
+      // Near the top: always show.
+      if (currentY < 120) {
+        row.classList.remove('hidden-on-scroll');
+      } else if (goingDown) {
+        row.classList.add('hidden-on-scroll');
+      } else if (goingUp) {
+        row.classList.remove('hidden-on-scroll');
+      }
+    });
     _lastScrollY = currentY;
     _scrollTicking = false;
   });
