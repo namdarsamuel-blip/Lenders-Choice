@@ -41,9 +41,9 @@
   --blue: #7CB7FF;
   --blue-bg: rgba(124,183,255,0.10);
   --blue-bd: rgba(124,183,255,0.30);
-  --purple: #C7A6FF;
-  --purple-bg: rgba(199,166,255,0.10);
-  --purple-bd: rgba(199,166,255,0.30);
+  --pink: #F472B6;
+  --pink-bg: rgba(244,114,182,0.10);
+  --pink-bd: rgba(244,114,182,0.30);
 
   --accent: #FFE08A;
   --accent-dim: rgba(255,224,138,0.10);
@@ -558,7 +558,6 @@ button.strip-section-head:hover {
 .strip-row {
   background: var(--bg-1);
   border: 1px solid var(--border);
-  border-left: 3px solid transparent;
   border-radius: 10px;
   margin-bottom: 6px;
   transition: all 0.15s;
@@ -567,13 +566,12 @@ button.strip-section-head:hover {
 .strip-row:nth-child(odd) { background: var(--bg); }
 .strip-row:hover { border-color: var(--border-3); background: var(--bg-2); }
 
+/* 1st-only "premium" tier gets a subtle ambient green glow on top of the badge */
 .strip-row.first-position {
-  border-left-color: var(--green);
-  box-shadow: -6px 0 18px -8px rgba(127, 219, 159, 0.30);
+  box-shadow: -4px 0 16px -8px rgba(127, 219, 159, 0.30);
 }
 
 .strip-row.rejected {
-  border-left-color: rgba(255,107,107,0.4);
   background: rgba(255,107,107,0.025);
   opacity: 0.65;
 }
@@ -582,12 +580,10 @@ button.strip-section-head:hover {
 .strip-row.selected {
   background: rgba(255, 224, 138, 0.14) !important;
   border-color: var(--accent);
-  border-left-color: var(--accent);
   box-shadow: 0 0 0 1px var(--accent) inset, 0 0 18px rgba(255, 224, 138, 0.12);
   opacity: 1;
 }
 .strip-row.selected .strip-name { color: var(--accent); }
-.strip-row.selected.first-position { border-left-width: 3px; }
 
 /* TWO-ROW CARD LAYOUT
    Row 1: identity bar (checkbox, name, position pill).
@@ -596,7 +592,7 @@ button.strip-section-head:hover {
    Right edge: dedicated chevron strip for expanding details. */
 .strip-main {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto auto 1fr;
   align-items: stretch;
   cursor: pointer;
 }
@@ -714,6 +710,80 @@ button.strip-section-head:hover {
   overflow: hidden;
   text-overflow: ellipsis;
   flex: 0 1 auto;
+}
+/* When the row is rejected, dim the name back toward muted so the row reads as inactive */
+.strip-row.rejected .strip-name { color: var(--text-3); }
+
+/* POSITION TIER BADGE
+   The leftmost element of every row. Full-height colored block with the position
+   range inside. Color encodes the tier:
+     green  = 1st only (premium first-position-exclusive lenders)
+     blue   = 1st-N range (funds 1st alongside later positions)
+     pink = 2nd-N range (does not fund 1st)
+     gray   = any position (flexible lender)
+   Tap = select (same behavior as the rest of the left side of the card). */
+.strip-position-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 92px;
+  padding: 10px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: filter 0.12s;
+  border-right: 1px solid var(--border);
+}
+.strip-position-badge .strip-pos-context {
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin-bottom: 4px;
+}
+.strip-position-badge .strip-pos-short {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+.strip-position-badge:active {
+  filter: brightness(1.15);
+}
+.strip-position-badge.green {
+  background: var(--green-bg);
+  color: var(--green);
+  border-right-color: var(--green-bd);
+}
+.strip-position-badge.blue {
+  background: var(--blue-bg);
+  color: var(--blue);
+  border-right-color: var(--blue-bd);
+}
+.strip-position-badge.pink {
+  background: var(--pink-bg);
+  color: var(--pink);
+  border-right-color: var(--pink-bd);
+}
+.strip-position-badge.amber {
+  background: var(--amber-bg);
+  color: var(--amber);
+  border-right-color: var(--amber-bd);
+}
+.strip-position-badge.gray {
+  background: rgba(255,255,255,0.03);
+  color: var(--text-3);
+}
+/* Dominant variant for the 1st-only premium tier — slightly brighter */
+.strip-position-badge.dominant {
+  background: rgba(34,216,143,0.16);
+  box-shadow: inset 2px 0 0 var(--green);
+}
+.strip-row.rejected .strip-position-badge {
+  opacity: 0.55;
 }
 
 /* Cells: stacked [label] / [value] */
@@ -1180,7 +1250,7 @@ button.strip-section-head:hover {
 }
 .lc-pos.green { background: var(--green-bg); color: var(--green); border-color: var(--green-bd); }
 .lc-pos.blue { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-bd); }
-.lc-pos.purple { background: var(--purple-bg); color: var(--purple); border-color: var(--purple-bd); }
+.lc-pos.pink { background: var(--pink-bg); color: var(--pink); border-color: var(--pink-bd); }
 .lc-pos.amber { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-bd); }
 
 /* Dominant variant for 1st-position-allowed lenders — bigger, brighter, more emphasis */
@@ -1874,7 +1944,18 @@ button.strip-section-head:hover {
   /* Mobile: 2-row card stays, but stats wrap to 3 columns to fit narrow phone width.
      Right-edge chevron strip narrows so the data area gets more room. */
   .strip-main {
-    grid-template-columns: 1fr 44px;
+    grid-template-columns: 64px auto 1fr;
+  }
+  .strip-position-badge {
+    min-width: 64px;
+    padding: 8px 6px;
+  }
+  .strip-position-badge .strip-pos-context {
+    font-size: 7.5px;
+    margin-bottom: 3px;
+  }
+  .strip-position-badge .strip-pos-short {
+    font-size: 11.5px;
   }
   .strip-select-zone {
     grid-template-columns: 26px 1fr;
@@ -1891,6 +1972,7 @@ button.strip-section-head:hover {
   }
   .strip-expand-zone {
     padding: 0 8px;
+    min-width: 36px;
   }
 
   .strip-chev { width: 28px; height: 28px; }
@@ -2949,17 +3031,17 @@ document.addEventListener('click', (e) => {
 function positionColor(L){
   if (!L.position || L.position === 'any') return '';
   const ruleStr = L.position.trim();
-  // Single position: "1" only is premium green; anything else is purple
+  // Single position: "1" only is premium green; anything else is pink
   if (/^\d+$/.test(ruleStr)) {
     const p = parseInt(ruleStr);
     if (p === 1) return 'green';
-    return 'purple';
+    return 'pink';
   }
-  // Range "lo-hi": starts at 1 → blue; starts at 2+ → purple
+  // Range "lo-hi": starts at 1 → blue; starts at 2+ → pink
   if (/^\d+-\d+$/.test(ruleStr)) {
     const [lo] = ruleStr.split('-').map(s=>parseInt(s));
     if (lo === 1) return 'blue';
-    return 'purple';
+    return 'pink';
   }
   return '';
 }
@@ -3052,6 +3134,34 @@ function formatPositionPill(L){
   return ruleStr;
 }
 
+/* Compact label for the position tier badge on each card. Uses ordinals on both
+   ends of a range — "1st", "1st–4th", "2nd–9th", etc. — so you read the rank, not
+   a count. */
+function positionBadgeShort(L){
+  if (!L.position || L.position === 'any') return 'Any';
+  const r = L.position.trim();
+  if (/^\d+$/.test(r)) return `${r}${ord(r)}`;
+  if (/^\d+-\d+$/.test(r)) {
+    const [lo, hi] = r.split('-');
+    return `${lo}${ord(lo)}–${hi}${ord(hi)}`;
+  }
+  return r;
+}
+
+/* Singular "Position" for single/any, plural "Positions" for ranges */
+function positionBadgeContext(L){
+  if (!L.position || L.position === 'any') return 'Position';
+  const r = L.position.trim();
+  if (/^\d+$/.test(r)) return 'Position';
+  return 'Positions';
+}
+
+/* Color class for the badge: green/blue/pink/gray. Falls back to gray for any-position. */
+function positionBadgeClass(L){
+  const c = positionColor(L);
+  return c || 'gray';
+}
+
 function ord(n){
   const s = String(n);
   if (s.endsWith('1') && s !== '11') return 'st';
@@ -3092,8 +3202,8 @@ function renderMatches(){
   const matches = evald.filter(x => x.qualifies);
   const rejected = evald.filter(x => !x.qualifies);
 
-  // Sort matches: 1st only (green) → 1st-N range (blue) → 2nd+ (purple) → any, alphabetical within tier
-  const colorOrder = { green: 0, blue: 1, purple: 2, amber: 3, '': 4 };
+  // Sort matches: 1st only (green) → 1st-N range (blue) → 2nd+ (pink) → any, alphabetical within tier
+  const colorOrder = { green: 0, blue: 1, pink: 2, amber: 3, '': 4 };
   matches.sort((a, b) => {
     const ca = colorOrder[positionColor(a.L)] ?? 4;
     const cb = colorOrder[positionColor(b.L)] ?? 4;
@@ -3220,12 +3330,15 @@ function renderStripRow(L, isRejected, reason, failField){
   return `
     <div class="${cls.join(' ')}" data-name="${esc(L.name)}">
       <div class="strip-main">
+        <div class="strip-position-badge ${positionBadgeClass(L)}${isFirstOnly && !isRejected ? ' dominant' : ''}" data-action="select" aria-label="${esc(posLabel)}">
+          <div class="strip-pos-context">${positionBadgeContext(L)}</div>
+          <div class="strip-pos-short">${esc(positionBadgeShort(L))}</div>
+        </div>
         <div class="strip-select-zone" data-action="select">
           <div class="strip-check ${isSelected ? 'checked' : ''}"></div>
           <div class="strip-content">
             <div class="strip-name-row">
               <div class="strip-name">${esc(L.name)}</div>
-              <span class="lc-pos ${pc}${isFirstOnly && !isRejected ? ' dominant' : ''}">${esc(posLabel)}</span>
             </div>
             <div class="strip-row2">
               ${cell('Revenue', fmtMoney(L.revenue_min), 'revenue')}
@@ -3456,12 +3569,15 @@ function renderIndustryTabs(L, parsed){
 function wireStripRows(){
   document.querySelectorAll('.strip-row').forEach(row => {
     const name = row.dataset.name;
-    // Left zone (check + name + pos + first 4 stats) → SELECT
-    row.querySelector('[data-action="select"]')?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      toggleSelection(name);
+    // Left side (position badge + checkbox + name + stats) → SELECT.
+    // Multiple elements carry data-action="select" so we wire them all.
+    row.querySelectorAll('[data-action="select"]').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleSelection(name);
+      });
     });
-    // Right zone (Defaults + States + chevron) → EXPAND
+    // Right zone (empty area + chevron strip) → EXPAND
     row.querySelector('[data-action="expand"]')?.addEventListener('click', (e) => {
       e.stopPropagation();
       toggleExpand(name);
