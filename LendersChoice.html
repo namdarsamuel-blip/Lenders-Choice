@@ -487,6 +487,36 @@ button { cursor: pointer; }
   padding: 10px 4px 8px;
   font-size: 13px;
 }
+
+/* When section head is a toggle button (rejected section) */
+button.strip-section-head {
+  width: 100%;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s;
+}
+button.strip-section-head:hover {
+  background: var(--bg-1);
+  border-color: var(--border);
+}
+.ssh-chev {
+  width: 14px;
+  height: 14px;
+  color: var(--text-4);
+  flex-shrink: 0;
+  margin-left: 4px;
+  transition: transform 0.2s;
+}
+.rejected-section.expanded .ssh-chev {
+  transform: rotate(180deg);
+  color: var(--text-2);
+}
+
 .ssh-dot {
   width: 8px; height: 8px;
   border-radius: 50%;
@@ -514,9 +544,13 @@ button { cursor: pointer; }
   font-style: italic;
 }
 
-/* The whole rejected section: dimmed */
-.rejected-section { opacity: 0.7; }
-.rejected-section:hover { opacity: 1; }
+/* Rejected section: dimmed only when collapsed. When expanded, full opacity. */
+.rejected-section {
+  opacity: 1;
+  margin-top: 8px;
+}
+.rejected-section .strip-row { opacity: 0.65; }
+.rejected-section .strip-row:hover { opacity: 1; }
 
 .strip-row {
   background: var(--bg-1);
@@ -2664,6 +2698,7 @@ function ord(n){
 // Search state + expanded detail tracking
 let matchSearchQuery = '';
 let expandedLender = null;
+let rejectedSectionExpanded = false;
 
 function renderMatches(){
   const list = document.getElementById('match-list');
@@ -2723,16 +2758,33 @@ function renderMatches(){
     html += `</div>`;
   }
 
-  // Rejected section (grayed but still tappable)
+  // Rejected section — collapsed by default, expand via header tap
   if (rejected.length) {
-    html += `<div class="strip-section rejected-section">`;
-    html += `<div class="strip-section-head"><span class="ssh-dot bad"></span><span class="ssh-label">Will not qualify</span><span class="ssh-count">${rejected.length}</span><span class="ssh-hint">tap to select anyway</span></div>`;
-    html += rejected.map(x => renderStripRow(x.L, true, x.reason, x.field)).join('');
+    const expanded = rejectedSectionExpanded;
+    html += `<div class="strip-section rejected-section${expanded ? ' expanded' : ''}">`;
+    html += `<button class="strip-section-head rejected-toggle" data-action="toggle-rejected" aria-expanded="${expanded}">
+      <span class="ssh-dot bad"></span>
+      <span class="ssh-label">Will not qualify</span>
+      <span class="ssh-count">${rejected.length}</span>
+      <span class="ssh-hint">${expanded ? 'tap to hide' : 'tap to expand'}</span>
+      <svg class="ssh-chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+    </button>`;
+    if (expanded) {
+      html += rejected.map(x => renderStripRow(x.L, true, x.reason, x.field)).join('');
+    }
     html += `</div>`;
   }
 
   list.innerHTML = html;
   wireStripRows();
+  // Wire the "Will not qualify" toggle
+  document.querySelectorAll('[data-action="toggle-rejected"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      rejectedSectionExpanded = !rejectedSectionExpanded;
+      renderMatches();
+    });
+  });
   updateTopbarStats();
   updateActionBar();
 }
