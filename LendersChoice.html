@@ -596,7 +596,7 @@ button.strip-section-head:hover {
    Right edge: dedicated chevron strip for expanding details. */
 .strip-main {
   display: grid;
-  grid-template-columns: 1fr 52px;
+  grid-template-columns: auto 1fr;
   align-items: stretch;
   cursor: pointer;
 }
@@ -657,13 +657,14 @@ button.strip-section-head:hover {
   max-width: 880px;
 }
 
-/* RIGHT ZONE — full-height tappable strip with chevron centered.
-   No visible separator; reads as part of the card. */
+/* RIGHT ZONE — fills ALL space to the right of the stats grid + the chevron strip.
+   Tap anywhere in this empty area (or the chevron) → expand detail panel. Big target. */
 .strip-expand-zone {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0 14px;
+  justify-content: flex-end;
+  padding: 0 16px 0 8px;
+  min-width: 52px;
   cursor: pointer;
   position: relative;
   transition: background-color 0.12s;
