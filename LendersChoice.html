@@ -41,6 +41,9 @@
   --blue: #7CB7FF;
   --blue-bg: rgba(124,183,255,0.10);
   --blue-bd: rgba(124,183,255,0.30);
+  --purple: #C7A6FF;
+  --purple-bg: rgba(199,166,255,0.10);
+  --purple-bd: rgba(199,166,255,0.30);
 
   --accent: #FFE08A;
   --accent-dim: rgba(255,224,138,0.10);
@@ -634,19 +637,24 @@ button.strip-section-head:hover {
   flex-shrink: 0;
 }
 
-/* Row 2 — 6 stat cells in a spreadsheet-aligned grid */
+/* Row 2 — 6 stat cells in a spreadsheet-aligned grid.
+   Each column has a min AND max width so cells stay tight to their content
+   instead of stretching to fill wide viewports. Grid as a whole has a max-width
+   so on huge screens the stats stay compact on the left with empty space on
+   the right (like a real spreadsheet table). */
 .strip-row2 {
   display: grid;
   grid-template-columns:
-    minmax(80px, 1fr)        /* Revenue */
-    minmax(68px, 0.9fr)      /* FICO */
-    minmax(74px, 0.95fr)     /* TIB */
-    minmax(86px, 1.05fr)     /* Neg Days */
-    minmax(110px, 1.4fr)     /* Defaults */
-    minmax(130px, 1.7fr);    /* States */
-  column-gap: 18px;
+    minmax(76px, 96px)       /* Revenue */
+    minmax(62px, 76px)       /* FICO */
+    minmax(70px, 86px)       /* TIB */
+    minmax(78px, 96px)       /* Neg Days */
+    minmax(110px, 140px)     /* Defaults */
+    minmax(140px, 200px);    /* States */
+  column-gap: 24px;
   margin-top: 4px;
   min-width: 0;
+  max-width: 880px;
 }
 
 /* RIGHT ZONE — full-height tappable strip with chevron centered.
@@ -871,6 +879,97 @@ button.strip-section-head:hover {
 .dt-v.mono { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; }
 .dt-empty { color: var(--text-4); font-style: italic; }
 
+/* Industries section with 3 tabs (Preferred / Restricted / Prohibited) */
+.dt-tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid var(--border);
+  margin: -4px 0 12px;
+}
+.dt-tab {
+  background: transparent;
+  border: none;
+  padding: 8px 12px 9px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-4);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.12s, border-color 0.12s;
+}
+.dt-tab:hover { color: var(--text-2); }
+.dt-tab.active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+.dt-tab-count {
+  background: var(--bg-2);
+  border-radius: 999px;
+  padding: 1px 7px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-3);
+  font-family: 'JetBrains Mono', monospace;
+  min-width: 18px;
+  text-align: center;
+}
+.dt-tab.active .dt-tab-count {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.dt-tab-panel { display: none; }
+.dt-tab-panel.active { display: block; }
+
+.dt-industry-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.dt-industry-item {
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  line-height: 1.35;
+  background: var(--bg-2);
+  color: var(--text);
+}
+.dt-industry-item.preferred {
+  background: var(--green-bg);
+  color: var(--text);
+  border-left: 2px solid var(--green);
+}
+.dt-industry-item.restricted {
+  background: var(--amber-bg);
+  border-left: 2px solid var(--amber);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.dt-industry-item.restricted .dt-industry-name {
+  font-weight: 600;
+}
+.dt-industry-item.restricted .dt-industry-req {
+  font-size: 11.5px;
+  color: var(--amber);
+  font-weight: 500;
+}
+.dt-industry-item.prohibited {
+  background: var(--coral-bg);
+  color: var(--text);
+  border-left: 2px solid var(--coral);
+}
+
 /* Individual contact card within the Contacts section */
 .dt-contact {
   padding: 10px 0 8px;
@@ -1042,6 +1141,7 @@ button.strip-section-head:hover {
 }
 .lc-pos.green { background: var(--green-bg); color: var(--green); border-color: var(--green-bd); }
 .lc-pos.blue { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-bd); }
+.lc-pos.purple { background: var(--purple-bg); color: var(--purple); border-color: var(--purple-bd); }
 .lc-pos.amber { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-bd); }
 
 /* Dominant variant for 1st-position-allowed lenders — bigger, brighter, more emphasis */
@@ -2322,6 +2422,80 @@ function normalizeLender(r){
 /* ============================================================
    FILTER LOGIC — evaluate a lender against current filter
    ============================================================ */
+/* Parse compact money strings ("$50k", "100K+", "$1.5M", "$2,000,000") to a number.
+   Returns null if no parseable amount found. Used by industry-specific revenue
+   overrides where notes may use any of these formats. */
+function parseAmount(s){
+  if (s == null) return null;
+  const str = String(s).trim();
+  if (!str) return null;
+  // Match a number with optional decimal, optional k/M suffix, optional $ prefix
+  const m = str.match(/\$?\s*([\d,]+(?:\.\d+)?)\s*([kKmM])?/);
+  if (!m) return null;
+  let n = parseFloat(m[1].replace(/,/g, ''));
+  if (isNaN(n)) return null;
+  const suffix = (m[2] || '').toLowerCase();
+  if (suffix === 'k') n *= 1000;
+  else if (suffix === 'm') n *= 1000000;
+  return n;
+}
+
+/* Industry-aware requirements lookup.
+   Returns the effective {revenue_min, fico_min, tib_min, isPreferred, isProhibited}
+   for the given industry on the given lender. If the industry has a specific override
+   in the lender's notes (Construction min:, Transportation min:, etc.), the override
+   wins; otherwise base values are used.
+
+   Designed to be templatized: any "<Industry> min:" pattern parsed from notes
+   becomes a revenue override for that industry. Future PDFs may bring more
+   per-industry overrides (Trucking min, Auto Repair min, Cannabis min, etc.) and
+   those will work automatically once the parser captures them. */
+function lenderIndustryRequirements(L, industry){
+  const out = {
+    revenue_min: L.revenue_min,
+    fico_min: L.fico_min,
+    tib_min: L.tib_min,
+    isPreferred: false,
+    isProhibited: false,
+    overrideSource: null   // which industry triggered the override (for error messages)
+  };
+  if (!industry) return out;
+  const indLower = industry.toLowerCase();
+
+  // Prohibited check (existing industry_excl field)
+  if (L.industry_excl) {
+    const excl = L.industry_excl.toLowerCase().split(',').map(s=>s.trim()).filter(Boolean);
+    if (excl.includes(indLower)) { out.isProhibited = true; return out; }
+  }
+
+  // Preferred / restricted-with-override: parse from notes
+  const parsed = parseLenderNotes(L.notes || '');
+
+  // Preferred?
+  if (parsed.preferred_industries.some(p => p.toLowerCase() === indLower)) {
+    out.isPreferred = true;
+  }
+
+  // Restricted with revenue override?
+  // Currently the parser captures construction_min and transportation_min.
+  // Map common industry name aliases to these fields.
+  const overrideMap = {
+    'construction': parsed.construction_min,
+    'transportation': parsed.transportation_min,
+    'trucking': parsed.transportation_min,
+    'logistics': parsed.transportation_min
+  };
+  const overrideStr = overrideMap[indLower];
+  if (overrideStr) {
+    const overrideNum = parseAmount(overrideStr);
+    if (overrideNum != null) {
+      out.revenue_min = overrideNum;
+      out.overrideSource = industry;
+    }
+  }
+  return out;
+}
+
 function evaluateLender(L, f){
   // Returns { qualifies: bool, reason: string or null, field: 'state'|'position'|... }
   // STATE
@@ -2358,32 +2532,37 @@ function evaluateLender(L, f){
       if (dealPos < lo || dealPos > hi) return {qualifies:false, reason:`Only ${lo}-${hi} position`, field:'position'};
     }
   }
-  // INDUSTRY
-  if (f.industry && L.industry_excl) {
-    const excl = L.industry_excl.toLowerCase().split(',').map(s=>s.trim()).filter(Boolean);
-    if (excl.includes(f.industry.toLowerCase())) {
-      return {qualifies:false, reason:`Excludes ${f.industry}`, field:'industry'};
-    }
+  // INDUSTRY-AWARE REQUIREMENTS
+  // Look up the lender's effective minimums for the user's filtered industry.
+  // If the industry is prohibited → hard reject. If it has a per-industry override
+  // (e.g. construction needs $100k/mo even though base is $25k/mo) those overrides
+  // are used downstream in the revenue/fico/tib checks.
+  const reqs = lenderIndustryRequirements(L, f.industry);
+  if (reqs.isProhibited) {
+    return {qualifies:false, reason:`Excludes ${f.industry}`, field:'industry'};
   }
-  // REVENUE
-  if (f.revenue && L.revenue_min != null) {
+  // REVENUE — uses industry-overridden minimum when applicable
+  if (f.revenue && reqs.revenue_min != null) {
     const deal = Number(f.revenue);
-    if (deal < L.revenue_min) {
-      return {qualifies:false, reason:`Needs $${L.revenue_min.toLocaleString()}+ revenue`, field:'revenue'};
+    if (deal < reqs.revenue_min) {
+      const reason = reqs.overrideSource
+        ? `${reqs.overrideSource} needs $${reqs.revenue_min.toLocaleString()}+ revenue`
+        : `Needs $${reqs.revenue_min.toLocaleString()}+ revenue`;
+      return {qualifies:false, reason, field:'revenue'};
     }
   }
   // FICO
-  if (f.fico && L.fico_min != null) {
+  if (f.fico && reqs.fico_min != null) {
     const deal = Number(f.fico);
-    if (deal < L.fico_min) {
-      return {qualifies:false, reason:`Needs FICO ${L.fico_min}+`, field:'fico'};
+    if (deal < reqs.fico_min) {
+      return {qualifies:false, reason:`Needs FICO ${reqs.fico_min}+`, field:'fico'};
     }
   }
   // TIB
-  if (f.tib && L.tib_min != null) {
+  if (f.tib && reqs.tib_min != null) {
     const deal = Number(f.tib);
-    if (deal < L.tib_min) {
-      return {qualifies:false, reason:`Needs ${L.tib_min}+ months TIB`, field:'tib'};
+    if (deal < reqs.tib_min) {
+      return {qualifies:false, reason:`Needs ${reqs.tib_min}+ months TIB`, field:'tib'};
     }
   }
   // NEG DAYS
@@ -2517,7 +2696,7 @@ const FILTER_DEFS = [
       if (n >= 12 && n % 12 === 0) return (n/12) + 'yr';
       return n + 'mo';
     } },
-  { key: 'neg', label: 'Neg/mo', type: 'select', options: () => [
+  { key: 'neg', label: 'Neg Days', type: 'select', options: () => [
       {v:'',l:'any'},
       {v:'0',l:'0 (none)'},
       {v:'1',l:'1 day'},
@@ -2731,19 +2910,94 @@ document.addEventListener('click', (e) => {
 function positionColor(L){
   if (!L.position || L.position === 'any') return '';
   const ruleStr = L.position.trim();
+  // Single position: "1" only is premium green; anything else is purple
   if (/^\d+$/.test(ruleStr)) {
     const p = parseInt(ruleStr);
     if (p === 1) return 'green';
-    if (p === 2) return 'blue';
-    return 'amber';
+    return 'purple';
   }
+  // Range "lo-hi": starts at 1 → blue; starts at 2+ → purple
   if (/^\d+-\d+$/.test(ruleStr)) {
     const [lo] = ruleStr.split('-').map(s=>parseInt(s));
-    if (lo === 1) return 'green';
-    if (lo === 2) return 'blue';
-    return 'amber';
+    if (lo === 1) return 'blue';
+    return 'purple';
   }
   return '';
+}
+
+/* Parse a lender's pipe-delimited notes string into structured fields.
+   Notes contain key:value pairs like "Web: https://...", "Tier: TIER 2",
+   "Max funding: $500,000", "Paper: B,C,D", "Prefers: Healthcare, Retail",
+   "Construction min: 50k+", "Pay: Daily, Weekly", "Min ending bal: $1,000".
+   Anything that doesn't match a known key goes into `other`. */
+function parseLenderNotes(notesStr){
+  const result = {
+    website: null,
+    tier: null,
+    paper: null,
+    pay_schedule: null,
+    max_funding: null,
+    max_term: null,
+    min_ending_bal: null,
+    preferred_industries: [],
+    construction_min: null,
+    transportation_min: null,
+    other: []
+  };
+  if (!notesStr) return result;
+
+  // Split on pipes and newlines
+  const parts = notesStr.split(/[|\n]/).map(s => s.trim()).filter(Boolean);
+
+  const tryMatch = (part, regex, setter) => {
+    const m = part.match(regex);
+    if (m) { setter(m[1].trim()); return true; }
+    return false;
+  };
+
+  parts.forEach(part => {
+    // Skip "Other emails:" lines — they're already extracted to L.other_emails
+    if (/^Other\s+emails?:/i.test(part)) return;
+    // Skip stray "Phone:" / "Contact:" — already in alt_contacts
+    if (/^(Phone|Contact):/i.test(part)) return;
+
+    let matched =
+      tryMatch(part, /^Web:\s*(.+)$/i, v => {
+        // Normalize URL: ensure protocol present
+        let url = v.replace(/^https?:\/\//i, '');
+        result.website = 'https://' + url;
+      }) ||
+      tryMatch(part, /^Tier:\s*(.+)$/i, v => { result.tier = v; }) ||
+      tryMatch(part, /^Paper:\s*(.+)$/i, v => {
+        result.paper = v.replace(/\s+paper\b/gi, '').trim().replace(/,\s*$/, '');
+      }) ||
+      tryMatch(part, /^Max\s+funding:\s*(.+)$/i, v => { result.max_funding = v; }) ||
+      tryMatch(part, /^Max\s+term:\s*(.+)$/i, v => { result.max_term = v; }) ||
+      tryMatch(part, /^Pay:\s*(.+)$/i, v => { result.pay_schedule = v; }) ||
+      tryMatch(part, /^Min(?:imum)?\s+ending\s+bal(?:ance)?:\s*(.+)$/i, v => { result.min_ending_bal = v; }) ||
+      tryMatch(part, /^Construction\s+min(?:imum)?:\s*(.+)$/i, v => { result.construction_min = v; }) ||
+      tryMatch(part, /^Transportation\s+min(?:imum)?:\s*(.+)$/i, v => { result.transportation_min = v; }) ||
+      tryMatch(part, /^Prefers:\s*(.+)$/i, v => {
+        v.split(',').map(s => s.trim()).filter(Boolean).forEach(ind => {
+          if (!result.preferred_industries.some(x => x.toLowerCase() === ind.toLowerCase())) {
+            result.preferred_industries.push(ind);
+          }
+        });
+      });
+
+    if (!matched) {
+      // Catch bare paper notation like "B,C,D,F paper" (no Paper: prefix)
+      const bareMatch = part.match(/^([A-F](?:[,\s][A-F])*)\s+paper\s*$/i);
+      if (bareMatch && !result.paper) {
+        result.paper = bareMatch[1].replace(/\s+/g, '').toUpperCase();
+        matched = true;
+      }
+    }
+
+    if (!matched) result.other.push(part);
+  });
+
+  return result;
 }
 
 function formatPositionPill(L){
@@ -2799,11 +3053,11 @@ function renderMatches(){
   const matches = evald.filter(x => x.qualifies);
   const rejected = evald.filter(x => !x.qualifies);
 
-  // Sort matches: 1st-position lenders first (green), then blue, amber, then alphabetical
-  const colorOrder = { green: 0, blue: 1, amber: 2, '': 3 };
+  // Sort matches: 1st only (green) → 1st-N range (blue) → 2nd+ (purple) → any, alphabetical within tier
+  const colorOrder = { green: 0, blue: 1, purple: 2, amber: 3, '': 4 };
   matches.sort((a, b) => {
-    const ca = colorOrder[positionColor(a.L)] ?? 3;
-    const cb = colorOrder[positionColor(b.L)] ?? 3;
+    const ca = colorOrder[positionColor(a.L)] ?? 4;
+    const cb = colorOrder[positionColor(b.L)] ?? 4;
     if (ca !== cb) return ca - cb;
     return a.L.name.localeCompare(b.L.name);
   });
@@ -2868,6 +3122,9 @@ function renderStripRow(L, isRejected, reason, failField){
   const posLabel = formatPositionPill(L);
   const isFirst = (L.position && L.position !== 'any') &&
     (L.position.trim() === '1' || L.position.trim().startsWith('1-'));
+  // Only strictly "1st only" lenders get the dominant green-pill emphasis
+  // (1-N range lenders fund 1st but aren't exclusive, so they keep their blue color)
+  const isFirstOnly = L.position && L.position.trim() === '1';
 
   // Format helpers — collapsed row: dash for "no restriction", actual values otherwise.
   const fmtState = (rule) => {
@@ -2929,7 +3186,7 @@ function renderStripRow(L, isRejected, reason, failField){
           <div class="strip-content">
             <div class="strip-name-row">
               <div class="strip-name">${esc(L.name)}</div>
-              <span class="lc-pos ${pc}${isFirst && !isRejected ? ' dominant' : ''}">${esc(posLabel)}</span>
+              <span class="lc-pos ${pc}${isFirstOnly && !isRejected ? ' dominant' : ''}">${esc(posLabel)}</span>
             </div>
             <div class="strip-row2">
               ${cell('Revenue', fmtMoney(L.revenue_min), 'revenue')}
@@ -3003,6 +3260,39 @@ function renderDetailPanel(L){
       ${L.other_emails.map(e => `<div class="dt-row"><span class="dt-k">·</span><span class="dt-v mono"><a href="mailto:${esc(e)}" class="dt-link">${esc(e)}</a></span></div>`).join('')}
     </div>` : '';
 
+  // Parse the notes blob into structured fields
+  const parsed = parseLenderNotes(L.notes || '');
+  const detailRow = (label, value) => `<div class="dt-row"><span class="dt-k">${esc(label)}</span><span class="dt-v">${value}</span></div>`;
+
+  // Pretty-print a URL for display (strip protocol + trailing slash)
+  const displayUrl = (url) => {
+    if (!url) return '';
+    return url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+  };
+
+  // Build the Lender Details section if any structured fields exist
+  const hasDetails = parsed.website || parsed.tier || parsed.paper || parsed.max_funding ||
+                     parsed.max_term || parsed.pay_schedule || parsed.min_ending_bal ||
+                     parsed.preferred_industries.length || parsed.construction_min ||
+                     parsed.transportation_min;
+  const detailsHtml = hasDetails ? `
+    <div class="dt-section">
+      <div class="dt-section-head">Lender details</div>
+      ${parsed.website ? detailRow('Website', `<a href="${esc(parsed.website)}" target="_blank" rel="noopener" class="dt-link mono">${esc(displayUrl(parsed.website))}</a>`) : ''}
+      ${parsed.tier ? detailRow('Tier', esc(parsed.tier)) : ''}
+      ${parsed.paper ? detailRow('Paper', esc(parsed.paper)) : ''}
+      ${parsed.max_funding ? detailRow('Max funding', esc(parsed.max_funding)) : ''}
+      ${parsed.max_term ? detailRow('Max term', esc(parsed.max_term)) : ''}
+      ${parsed.pay_schedule ? detailRow('Pay schedule', esc(parsed.pay_schedule)) : ''}
+      ${parsed.min_ending_bal ? detailRow('Min ending bal', esc(parsed.min_ending_bal)) : ''}
+      ${parsed.preferred_industries.length ? detailRow('Prefers', esc(parsed.preferred_industries.join(', '))) : ''}
+      ${parsed.construction_min ? detailRow('Construction min', esc(parsed.construction_min)) : ''}
+      ${parsed.transportation_min ? detailRow('Transportation min', esc(parsed.transportation_min)) : ''}
+    </div>` : '';
+
+  // Render leftover notes (unstructured content that didn't match any known key)
+  const leftoverNotes = parsed.other.length ? parsed.other.join(' · ') : '';
+
   return `
     <div class="strip-detail">
       <div class="dt-grid">
@@ -3012,18 +3302,78 @@ function renderDetailPanel(L){
           ${otherEmailsHtml}
         </div>
 
+        ${detailsHtml}
+
+        ${renderIndustryTabs(L, parsed)}
+
         <div class="dt-section">
-          <div class="dt-section-head">All exclusions</div>
-          <div class="dt-row"><span class="dt-k">Industries</span><span class="dt-v">${L.industry_excl ? esc(L.industry_excl) : empty('None listed')}</span></div>
-          <div class="dt-row"><span class="dt-k">States</span><span class="dt-v">${(L.state_rule && L.state_rule.startsWith('all_except:')) ? esc(L.state_rule.slice(11)) : (L.state_rule === 'all' || !L.state_rule ? empty('None — funds all states') : esc(L.state_rule))}</span></div>
+          <div class="dt-section-head">States restrictions</div>
+          <div class="dt-row"><span class="dt-k">Excluded</span><span class="dt-v">${(L.state_rule && L.state_rule.startsWith('all_except:')) ? esc(L.state_rule.slice(11)) : (L.state_rule === 'all' || !L.state_rule ? empty('None — funds all states') : esc(L.state_rule))}</span></div>
         </div>
 
-        ${L.notes ? `
+        ${leftoverNotes ? `
         <div class="dt-section dt-section-full">
-          <div class="dt-section-head">Notes & special requirements</div>
-          <div class="dt-notes">${esc(L.notes)}</div>
+          <div class="dt-section-head">Notes</div>
+          <div class="dt-notes">${esc(leftoverNotes)}</div>
         </div>` : ''}
       </div>
+    </div>`;
+}
+
+/* Render the Industries section with three tabs: Preferred / Restricted / Prohibited.
+   All three tabs always present even when empty — each shows a friendly empty state.
+   Default active tab = Prohibited (most common matching concern). */
+function renderIndustryTabs(L, parsed){
+  // Preferred: parsed from "Prefers:" notes
+  const preferred = parsed.preferred_industries || [];
+  // Restricted: industries with per-industry revenue overrides
+  const restricted = [];
+  if (parsed.construction_min) restricted.push({ name: 'Construction', requirement: `${parsed.construction_min} revenue minimum` });
+  if (parsed.transportation_min) restricted.push({ name: 'Transportation / Trucking', requirement: `${parsed.transportation_min} revenue minimum` });
+  // Prohibited: existing industry_excl field, split into a list
+  const prohibited = L.industry_excl
+    ? L.industry_excl.split(',').map(s => s.trim()).filter(Boolean)
+    : [];
+
+  const tabBtn = (id, label, count) => `
+    <button class="dt-tab${id === 'prohibited' ? ' active' : ''}" data-tab="${id}" type="button">
+      ${label}<span class="dt-tab-count">${count}</span>
+    </button>`;
+
+  const emptyMsg = (id) => {
+    if (id === 'preferred') return 'No preferred industries listed.';
+    if (id === 'restricted') return 'No industry-specific revenue overrides.';
+    return 'No prohibited industries — funds all industries.';
+  };
+
+  const panel = (id, items, render) => `
+    <div class="dt-tab-panel${id === 'prohibited' ? ' active' : ''}" data-panel="${id}">
+      ${items.length ? render(items) : `<div class="dt-empty">${emptyMsg(id)}</div>`}
+    </div>`;
+
+  return `
+    <div class="dt-section dt-industries">
+      <div class="dt-section-head">Industries</div>
+      <div class="dt-tabs">
+        ${tabBtn('preferred', 'Preferred', preferred.length)}
+        ${tabBtn('restricted', 'Restricted', restricted.length)}
+        ${tabBtn('prohibited', 'Prohibited', prohibited.length)}
+      </div>
+      ${panel('preferred', preferred, items => `
+        <ul class="dt-industry-list">
+          ${items.map(i => `<li class="dt-industry-item preferred">${esc(i)}</li>`).join('')}
+        </ul>`)}
+      ${panel('restricted', restricted, items => `
+        <ul class="dt-industry-list">
+          ${items.map(i => `<li class="dt-industry-item restricted">
+            <span class="dt-industry-name">${esc(i.name)}</span>
+            <span class="dt-industry-req">${esc(i.requirement)}</span>
+          </li>`).join('')}
+        </ul>`)}
+      ${panel('prohibited', prohibited, items => `
+        <ul class="dt-industry-list">
+          ${items.map(i => `<li class="dt-industry-item prohibited">${esc(i)}</li>`).join('')}
+        </ul>`)}
     </div>`;
 }
 
@@ -3043,6 +3393,17 @@ function wireStripRows(){
     // Clicks inside expanded detail (links, etc.) should NOT toggle anything
     row.querySelector('.strip-detail')?.addEventListener('click', (e) => {
       e.stopPropagation();
+    });
+    // Industry tabs (Preferred / Restricted / Prohibited) inside the detail panel
+    row.querySelectorAll('.dt-tab').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const tabName = tab.dataset.tab;
+        const container = tab.closest('.dt-industries');
+        if (!container) return;
+        container.querySelectorAll('.dt-tab').forEach(t => t.classList.toggle('active', t === tab));
+        container.querySelectorAll('.dt-tab-panel').forEach(p => p.classList.toggle('active', p.dataset.panel === tabName));
+      });
     });
   });
 }
