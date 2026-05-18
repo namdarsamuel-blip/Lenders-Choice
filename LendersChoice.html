@@ -598,12 +598,14 @@ button.strip-section-head:hover {
   cursor: pointer;
 }
 
-/* LEFT ZONE — clicking anywhere here SELECTS. Contains both rows of content. */
+/* LEFT ZONE — clicking anywhere here SELECTS. Contains both rows of content.
+   2-column grid: [checkbox col, vertically centered] + [content col with name/pill/stats stacked] */
 .strip-select-zone {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 14px 16px 14px 18px;
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  align-items: center;
+  column-gap: 14px;
+  padding: 14px 16px;
   min-width: 0;
   transition: background-color 0.12s;
 }
@@ -611,12 +613,25 @@ button.strip-section-head:hover {
   background-color: rgba(255, 224, 138, 0.08);
 }
 
-/* Row 1 — identity strip */
-.strip-row1 {
+.strip-check { align-self: center; }
+
+/* Content column — name, position pill, stats grid stacked vertically */
+.strip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* Name row — lender name and position pill side-by-side */
+.strip-name-row {
   display: flex;
   align-items: center;
   gap: 12px;
   min-width: 0;
+}
+.strip-name-row .lc-pos {
+  flex-shrink: 0;
 }
 
 /* Row 2 — 6 stat cells in a spreadsheet-aligned grid */
@@ -630,7 +645,7 @@ button.strip-section-head:hover {
     minmax(110px, 1.4fr)     /* Defaults */
     minmax(130px, 1.7fr);    /* States */
   column-gap: 18px;
-  padding-left: 34px;  /* indent under checkbox */
+  margin-top: 4px;
   min-width: 0;
 }
 
@@ -691,7 +706,6 @@ button.strip-section-head:hover {
   text-overflow: ellipsis;
   flex: 0 1 auto;
 }
-.strip-row1 .lc-pos { flex-shrink: 0; }
 
 /* Cells: stacked [label] / [value] */
 .strip-cell {
@@ -1724,16 +1738,17 @@ button.strip-section-head:hover {
     grid-template-columns: 1fr 44px;
   }
   .strip-select-zone {
+    grid-template-columns: 26px 1fr;
+    column-gap: 12px;
     padding: 12px 10px 12px 14px;
-    gap: 10px;
   }
-  .strip-row1 {
-    gap: 10px;
+  .strip-content {
+    gap: 6px;
   }
   .strip-row2 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px 14px;
-    padding-left: 0;
+    margin-top: 2px;
   }
   .strip-expand-zone {
     padding: 0 8px;
@@ -2428,13 +2443,93 @@ const FILTER_DEFS = [
       return found ? found[1] : v;
     } },
   { key: 'position', label: 'Position', type: 'select', options: () => [
-      {v:'',l:'any'}, {v:'1',l:'1st'}, {v:'2',l:'2nd'}, {v:'3',l:'3rd'}, {v:'4',l:'4th'}, {v:'5',l:'5th+'}
-    ], format: (v) => ({'1':'1st','2':'2nd','3':'3rd','4':'4th','5':'5th+'})[v] || v },
+      {v:'',l:'any'},
+      {v:'1',l:'1st position'},
+      {v:'2',l:'2nd position'},
+      {v:'3',l:'3rd position'},
+      {v:'4',l:'4th position'},
+      {v:'5',l:'5th position'},
+      {v:'6',l:'6th position'},
+      {v:'7',l:'7th position'},
+      {v:'8',l:'8th position'},
+      {v:'9',l:'9th position'},
+      {v:'10',l:'10th position'}
+    ], format: (v) => {
+      const map = {'1':'1st','2':'2nd','3':'3rd','4':'4th','5':'5th','6':'6th','7':'7th','8':'8th','9':'9th','10':'10th'};
+      return map[v] || v;
+    } },
   { key: 'industry', label: 'Industry', type: 'select', options: () => [{v:'',l:'any'}, ...INDUSTRY_OPTIONS.map(i=>({v:i,l:i}))] },
-  { key: 'revenue', label: 'Revenue', type: 'number', placeholder: 'any', format: (v) => v ? '$' + Number(v).toLocaleString() : '' },
-  { key: 'fico', label: 'FICO', type: 'number', placeholder: 'any', format: (v) => v ? String(v) : '' },
-  { key: 'tib', label: 'TIB', type: 'number', placeholder: 'any', format: (v) => v ? v + 'mo' : '' },
-  { key: 'neg', label: 'Neg/mo', type: 'number', placeholder: 'any', format: (v) => v === '' ? '' : String(v) },
+  { key: 'revenue', label: 'Revenue', type: 'select', options: () => [
+      {v:'',l:'any'},
+      {v:'5000',l:'$5k+'},
+      {v:'10000',l:'$10k+'},
+      {v:'15000',l:'$15k+'},
+      {v:'20000',l:'$20k+'},
+      {v:'25000',l:'$25k+'},
+      {v:'30000',l:'$30k+'},
+      {v:'40000',l:'$40k+'},
+      {v:'50000',l:'$50k+'},
+      {v:'75000',l:'$75k+'},
+      {v:'100000',l:'$100k+'},
+      {v:'150000',l:'$150k+'},
+      {v:'200000',l:'$200k+'},
+      {v:'300000',l:'$300k+'},
+      {v:'500000',l:'$500k+'},
+      {v:'1000000',l:'$1M+'}
+    ], format: (v) => {
+      const n = Number(v);
+      if (!n) return '';
+      if (n >= 1000000) return '$' + (n/1000000) + 'M';
+      if (n >= 1000) return '$' + (n/1000) + 'k';
+      return '$' + n;
+    } },
+  { key: 'fico', label: 'FICO', type: 'select', options: () => [
+      {v:'',l:'any'},
+      {v:'400',l:'400+'},
+      {v:'450',l:'450+'},
+      {v:'500',l:'500+'},
+      {v:'525',l:'525+'},
+      {v:'550',l:'550+'},
+      {v:'575',l:'575+'},
+      {v:'600',l:'600+'},
+      {v:'625',l:'625+'},
+      {v:'650',l:'650+'},
+      {v:'675',l:'675+'},
+      {v:'700',l:'700+'},
+      {v:'725',l:'725+'},
+      {v:'750',l:'750+'}
+    ], format: (v) => v ? String(v) : '' },
+  { key: 'tib', label: 'TIB', type: 'select', options: () => [
+      {v:'',l:'any'},
+      {v:'1',l:'1+ month'},
+      {v:'3',l:'3+ months'},
+      {v:'6',l:'6+ months'},
+      {v:'9',l:'9+ months'},
+      {v:'12',l:'1+ year'},
+      {v:'18',l:'18+ months'},
+      {v:'24',l:'2+ years'},
+      {v:'36',l:'3+ years'},
+      {v:'60',l:'5+ years'},
+      {v:'120',l:'10+ years'}
+    ], format: (v) => {
+      const n = Number(v);
+      if (!n) return '';
+      if (n >= 12 && n % 12 === 0) return (n/12) + 'yr';
+      return n + 'mo';
+    } },
+  { key: 'neg', label: 'Neg/mo', type: 'select', options: () => [
+      {v:'',l:'any'},
+      {v:'0',l:'0 (none)'},
+      {v:'1',l:'1 day'},
+      {v:'2',l:'2 days'},
+      {v:'3',l:'3 days'},
+      {v:'4',l:'4 days'},
+      {v:'5',l:'5 days'},
+      {v:'7',l:'7 days'},
+      {v:'10',l:'10 days'},
+      {v:'15',l:'15 days'},
+      {v:'20',l:'20 days'}
+    ], format: (v) => v === '' ? '' : v + 'd' },
   { key: 'defaults', label: 'Defaults', type: 'select', options: () => [
       {v:'',l:'any'},
       {v:'clean',l:'Clean only'},
@@ -2655,10 +2750,11 @@ function formatPositionPill(L){
   if (!L.position || L.position === 'any') return 'Any position';
   const ruleStr = L.position.trim();
   if (/^\d+$/.test(ruleStr)) {
-    return `${ruleStr}${ord(ruleStr)} only`;
+    return `Position ${ruleStr}${ord(ruleStr)} only`;
   }
   if (/^\d+-\d+$/.test(ruleStr)) {
-    return `${ruleStr} pos`;
+    const [lo, hi] = ruleStr.split('-');
+    return `Positions ${lo}${ord(lo)}-${hi}${ord(hi)}`;
   }
   return ruleStr;
 }
@@ -2829,18 +2925,20 @@ function renderStripRow(L, isRejected, reason, failField){
     <div class="${cls.join(' ')}" data-name="${esc(L.name)}">
       <div class="strip-main">
         <div class="strip-select-zone" data-action="select">
-          <div class="strip-row1">
-            <div class="strip-check ${isSelected ? 'checked' : ''}"></div>
-            <div class="strip-name">${esc(L.name)}</div>
-            <span class="lc-pos ${pc}${isFirst && !isRejected ? ' dominant' : ''}">${esc(posLabel)}</span>
-          </div>
-          <div class="strip-row2">
-            ${cell('Revenue', fmtMoney(L.revenue_min), 'revenue')}
-            ${cell('FICO', (L.fico_min != null && L.fico_min > 0) ? L.fico_min + '+' : '<span class="strip-muted">—</span>', 'fico')}
-            ${cell('TIB', (L.tib_min != null && L.tib_min > 0) ? L.tib_min + ' mo' : '<span class="strip-muted">—</span>', 'tib')}
-            ${cell('Neg Days', (L.neg_max != null) ? L.neg_max + ' max' : '<span class="strip-muted">—</span>', 'neg')}
-            ${cell('Defaults', fmtDef(L.defaults), 'defaults')}
-            ${cell('States', fmtState(L.state_rule), 'state')}
+          <div class="strip-check ${isSelected ? 'checked' : ''}"></div>
+          <div class="strip-content">
+            <div class="strip-name-row">
+              <div class="strip-name">${esc(L.name)}</div>
+              <span class="lc-pos ${pc}${isFirst && !isRejected ? ' dominant' : ''}">${esc(posLabel)}</span>
+            </div>
+            <div class="strip-row2">
+              ${cell('Revenue', fmtMoney(L.revenue_min), 'revenue')}
+              ${cell('FICO', (L.fico_min != null && L.fico_min > 0) ? L.fico_min + '+' : '<span class="strip-muted">—</span>', 'fico')}
+              ${cell('TIB', (L.tib_min != null && L.tib_min > 0) ? L.tib_min + ' mo' : '<span class="strip-muted">—</span>', 'tib')}
+              ${cell('Neg Days', (L.neg_max != null) ? L.neg_max + ' max' : '<span class="strip-muted">—</span>', 'neg')}
+              ${cell('Defaults', fmtDef(L.defaults), 'defaults')}
+              ${cell('States', fmtState(L.state_rule), 'state')}
+            </div>
           </div>
         </div>
         <div class="strip-expand-zone" data-action="expand" aria-label="Show details" role="button" tabindex="0">
