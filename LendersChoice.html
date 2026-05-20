@@ -1101,7 +1101,7 @@ button.strip-section-head:hover {
 .strip-detail {
   border-top: 1px solid var(--border);
   background: var(--bg);
-  padding: 18px 18px 20px;
+  padding: 14px 16px 16px;
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
 }
@@ -1109,41 +1109,41 @@ button.strip-section-head:hover {
 
 .dt-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px 18px;
 }
 .dt-section { min-width: 0; }
 .dt-section-full { grid-column: 1 / -1; }
 .dt-section-head {
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-3);
-  margin-bottom: 10px;
-  padding-bottom: 6px;
+  margin-bottom: 8px;
+  padding-bottom: 5px;
   border-bottom: 1px solid var(--border);
 }
 .dt-row {
   display: grid;
-  grid-template-columns: 80px 1fr;
-  gap: 12px;
-  padding: 6px 0;
+  grid-template-columns: 90px 1fr;
+  gap: 10px;
+  padding: 4px 0;
   align-items: start;
-  font-size: 13px;
+  font-size: 12.5px;
   line-height: 1.4;
 }
 .dt-k {
   color: var(--text-3);
   font-weight: 500;
-  font-size: 12px;
+  font-size: 11.5px;
 }
 .dt-v {
   color: var(--text);
   font-weight: 500;
   word-break: break-word;
 }
-.dt-v.mono { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; }
+.dt-v.mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
 .dt-empty { color: var(--text-4); font-style: italic; }
 
 /* Industries section with 3 tabs (Preferred / Restricted / Prohibited) */
@@ -1299,12 +1299,128 @@ button.strip-section-head:hover {
   margin-bottom: 4px;
 }
 
+/* COMPACT CONTACT CARDS — primary contact is a tight hero card with name
+   on top and email + phone in a single row, no label scaffolding. */
+.dt-primary-card {
+  padding: 10px 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+.dt-primary-name {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+  line-height: 1.25;
+}
+.dt-primary-lines {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.dt-primary-lines a {
+  color: var(--text-2);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--border-2);
+  transition: color 0.12s, border-color 0.12s;
+}
+.dt-primary-lines a:hover { color: var(--accent); border-color: var(--accent); }
+.dt-primary-empty {
+  font-size: 12px;
+  color: var(--text-4);
+  font-style: italic;
+}
+
+/* ALT CONTACTS — compact one-line-per-contact list. No big labels, no
+   per-contact section dividers. Each row is dense: name (if any) on the left,
+   email + phone tucked to the right. Pulls multiple contacts into the same
+   visual footprint as one of the old labeled blocks. */
+.dt-alt-block {
+  margin-top: 6px;
+  padding: 8px 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.dt-alt-head {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 6px;
+}
+.dt-alt-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2px 10px;
+  padding: 5px 0;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+.dt-alt-row + .dt-alt-row {
+  border-top: 1px dotted var(--border);
+}
+.dt-alt-name {
+  color: var(--text);
+  font-weight: 600;
+}
+.dt-alt-contact-lines {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  color: var(--text-2);
+}
+.dt-alt-contact-lines a {
+  color: var(--text-2);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--border-2);
+}
+.dt-alt-contact-lines a:hover { color: var(--accent); border-color: var(--accent); }
+
+/* OTHER EMAILS — inline pill list rather than a separate block */
+.dt-other-emails {
+  margin-top: 8px;
+}
+.dt-other-emails-head {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 5px;
+}
+.dt-other-emails-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.dt-other-emails-list a {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-2);
+  text-decoration: none;
+  padding: 2px 0;
+  border-bottom: 1px dashed transparent;
+}
+.dt-other-emails-list a:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 /* SUBMISSION EMAILS — the addresses Sam should email when sending a deal.
    Visually distinct from "primary contact" because the people you call
    (e.g. Richard Kim) often aren't the inbox you submit to. */
 .dt-submit-block {
-  margin: 4px 0 14px;
-  padding: 10px 12px;
+  margin: 0 0 10px;
+  padding: 9px 12px;
   background: var(--accent-dim);
   border: 1px solid var(--accent-bd);
   border-radius: 8px;
@@ -1313,7 +1429,7 @@ button.strip-section-head:hover {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 .dt-submit-block .dt-submit-head svg {
   width: 13px; height: 13px;
@@ -1391,31 +1507,32 @@ button.strip-section-head:hover {
 }
 
 .dt-notes {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 0;
   background: var(--bg-2);
   border: 1px solid var(--border);
   border-radius: 8px;
   overflow: hidden;
 }
 .dt-note-item {
-  padding: 11px 14px;
+  padding: 9px 12px;
   border-bottom: 1px solid var(--border);
-  font-size: 13px;
-  line-height: 1.55;
+  border-right: 1px solid var(--border);
+  font-size: 12.5px;
+  line-height: 1.5;
   color: var(--text-2);
   word-break: break-word;
 }
-.dt-note-item:last-child {
-  border-bottom: none;
-}
+/* Remove right border on last column items via aggressive fallback */
+.dt-note-item:nth-last-child(-n+1) { border-bottom: none; }
 .dt-note-label {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.07em;
   color: var(--text-3);
-  margin-bottom: 4px;
+  margin-bottom: 3px;
   display: block;
 }
 .dt-note-value {
@@ -4567,45 +4684,48 @@ function renderDetailPanel(L){
   const empty = (placeholder) => `<span class="dt-empty">${placeholder}</span>`;
   const fmt = (v, placeholder='Not set') => v && String(v).trim() ? esc(v) : empty(placeholder);
 
-  // Build the contacts list — primary contact first, then alt contacts
-  const contacts = [];
-  // Primary contact (always shown, even if name/email/phone are missing)
-  contacts.push({
-    label: 'Primary',
-    name: L.contact_name || '',
-    email: L.contact_email || '',
-    phone: L.contact_phone || ''
-  });
-  // Alt contacts from the spreadsheet (people, alt phones, company info)
-  (L.alt_contacts || []).forEach((c, i) => {
-    contacts.push({
-      label: c.name === 'Company' ? 'Company' : `Contact ${i + 2}`,
-      name: c.name === 'Company' ? '' : c.name,
-      email: c.email,
-      phone: c.phone
-    });
-  });
+  // Build the contacts block — primary as a tight hero card, alt contacts as
+  // a single compact one-line-per-row list. This collapses what used to be
+  // five separate CONTACT 2/3/4/5 blocks into a much denser footprint
+  // without losing any data.
 
-  // Render contacts grid
-  const contactsHtml = contacts.map(c => {
-    // Skip a contact if it has no name, email, or phone
-    if (!c.name && !c.email && !c.phone) return '';
-    return `
-      <div class="dt-contact">
-        <div class="dt-contact-label">${esc(c.label)}</div>
-        ${c.name ? `<div class="dt-row"><span class="dt-k">Name</span><span class="dt-v">${esc(c.name)}</span></div>` : ''}
-        ${c.email ? `<div class="dt-row"><span class="dt-k">Email</span><span class="dt-v mono"><a href="mailto:${esc(c.email)}" class="dt-link">${esc(c.email)}</a></span></div>` : ''}
-        ${c.phone ? `<div class="dt-row"><span class="dt-k">Phone</span><span class="dt-v mono"><a href="tel:${esc(c.phone.replace(/[^\d+]/g,''))}" class="dt-link">${esc(c.phone)}</a></span></div>` : ''}
-      </div>`;
-  }).filter(Boolean).join('');
+  const primaryName  = L.contact_name  || '';
+  const primaryEmail = L.contact_email || '';
+  const primaryPhone = L.contact_phone || '';
+  const primaryHasContact = primaryEmail || primaryPhone;
 
-  // If no contacts have any data, show a single empty primary
-  const contactsBlock = contactsHtml || `
-    <div class="dt-contact">
+  const phoneTel = (p) => p ? p.replace(/[^\d+]/g,'') : '';
+
+  const primaryCard = `
+    <div class="dt-primary-card">
       <div class="dt-contact-label">Primary</div>
-      <div class="dt-row"><span class="dt-k">Name</span><span class="dt-v">${fmt(L.contact_name)}</span></div>
-      <div class="dt-row"><span class="dt-k">Email</span><span class="dt-v mono">${fmt(L.contact_email, 'No email on file')}</span></div>
+      ${primaryName
+        ? `<div class="dt-primary-name">${esc(primaryName)}</div>`
+        : (!primaryHasContact ? `<div class="dt-primary-empty">No primary contact on file</div>` : '')}
+      ${primaryHasContact ? `
+        <div class="dt-primary-lines">
+          ${primaryEmail ? `<a href="mailto:${esc(primaryEmail)}">${esc(primaryEmail)}</a>` : ''}
+          ${primaryPhone ? `<a href="tel:${esc(phoneTel(primaryPhone))}">${esc(primaryPhone)}</a>` : ''}
+        </div>` : ''}
     </div>`;
+
+  // Alt contacts — only render the block if any have actual data
+  const alts = (L.alt_contacts || []).filter(c => (c.name || c.email || c.phone));
+  const altList = alts.length ? `
+    <div class="dt-alt-block">
+      <div class="dt-alt-head">Other contacts · ${alts.length}</div>
+      ${alts.map(c => `
+        <div class="dt-alt-row">
+          ${c.name ? `<div class="dt-alt-name">${esc(c.name)}</div>` : ''}
+          ${(c.email || c.phone) ? `
+            <div class="dt-alt-contact-lines">
+              ${c.email ? `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : ''}
+              ${c.phone ? `<a href="tel:${esc(phoneTel(c.phone))}">${esc(c.phone)}</a>` : ''}
+            </div>` : ''}
+        </div>`).join('')}
+    </div>` : '';
+
+  const contactsBlock = primaryCard + altList;
 
   // Submission emails block — these are the addresses Sam should email when
   // sending a deal. Often different from the primary "who to call" contact,
@@ -4631,9 +4751,11 @@ function renderDetailPanel(L){
 
   // Other emails (general inboxes like submissions@..., etc.)
   const otherEmailsHtml = (L.other_emails && L.other_emails.length) ? `
-    <div class="dt-contact">
-      <div class="dt-contact-label">Other emails</div>
-      ${L.other_emails.map(e => `<div class="dt-row"><span class="dt-k">·</span><span class="dt-v mono"><a href="mailto:${esc(e)}" class="dt-link">${esc(e)}</a></span></div>`).join('')}
+    <div class="dt-other-emails">
+      <div class="dt-other-emails-head">Other emails · ${L.other_emails.length}</div>
+      <div class="dt-other-emails-list">
+        ${L.other_emails.map(e => `<a href="mailto:${esc(e)}">${esc(e)}</a>`).join('')}
+      </div>
     </div>` : '';
 
   // Parse the notes blob into structured fields
