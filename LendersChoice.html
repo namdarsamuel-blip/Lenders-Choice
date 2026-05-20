@@ -2627,24 +2627,14 @@ function loadAll(){
   }
 
   // ===== Migrations =====
-  // Remove "Mint Funding" — it's a duplicate of MINT
-  const MIGRATION_KEY = 'lendiago_migration_dedup_mint';
-  if (!getLS(MIGRATION_KEY)) {
-    const before = lenders.length;
-    lenders = lenders.filter(L => L.name !== 'Mint Funding');
-    if (lenders.length !== before) {
-      persistCache();
-      console.log('Migration: removed Mint Funding duplicate');
-    }
-    setLS(MIGRATION_KEY, '1');
-  }
 
-  // Migration — Originally every lender in the seed was marked status='active'
-  // (artifact of the spreadsheet import). Now only the lenders Sam has actually
-  // signed up with should be active; the rest are reference-only directory.
-  // This bumps the cached array on any device that loaded an older seed.
-  const SIGNED_UP_ONLY_KEY = 'lendiago_migration_signed_up_only_v1_2025_05';
-  if (!getLS(SIGNED_UP_ONLY_KEY)) {
+  // Migration — Sync status to match the canonical signed-up roster.
+  // Promotes signed-up lenders to 'active' (so they show in Qualifying)
+  // and demotes everyone else to 'directory' (Needs to sign up).
+  // Bumped to v2 to force re-run on devices where the v1 only-demote
+  // version had already marked its flag.
+  const SIGNED_UP_SYNC_KEY = 'lendiago_migration_signed_up_sync_v2_2026_05';
+  if (!getLS(SIGNED_UP_SYNC_KEY)) {
     const signedUp = new Set([
       'Mint Funding',
       'Pinnacle Business Funding',
@@ -2653,18 +2643,19 @@ function loadAll(){
       'Black Tie Funding',
       'Capital Haven'
     ]);
-    let demoted = 0;
+    let promoted = 0, demoted = 0;
     lenders.forEach(L => {
-      if (L.status === 'active' && !signedUp.has(L.name)) {
-        L.status = 'directory';
-        demoted++;
+      if (signedUp.has(L.name)) {
+        if (L.status !== 'active') { L.status = 'active'; promoted++; }
+      } else if (L.status === 'active') {
+        L.status = 'directory'; demoted++;
       }
     });
-    if (demoted) {
+    if (promoted || demoted) {
       persistCache();
-      console.log(`Migration: demoted ${demoted} unsigned lenders to status=directory`);
+      console.log(`Migration: signed-up sync — promoted ${promoted}, demoted ${demoted}`);
     }
-    setLS(SIGNED_UP_ONLY_KEY, '1');
+    setLS(SIGNED_UP_SYNC_KEY, '1');
   }
 
   // Update Pinnacle with real criteria from Gabriel's email (May 15, 2025)
