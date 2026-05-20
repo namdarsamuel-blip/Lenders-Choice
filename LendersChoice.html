@@ -540,6 +540,46 @@ button.strip-section-head:hover {
 .strip-row:nth-child(odd) { background: var(--bg); }
 .strip-row:hover { border-color: var(--border-3); background: var(--bg-2); }
 
+/* Per-row tier signal: a colored left edge stripe + a small labeled badge,
+   so the section a lender belongs to is recognizable at a glance even when
+   scrolled away from the section header. Colors match the section dots. */
+.strip-row { position: relative; }
+.strip-row.tier-ok      { border-left: 3px solid var(--green); }
+.strip-row.tier-bad     { border-left: 3px solid var(--coral); }
+.strip-row.tier-neutral { border-left: 3px solid var(--text-4); }
+.strip-row.tier-hold    { border-left: 3px solid var(--coral); }
+.strip-row.tier-wait    { border-left: 3px solid var(--accent); }
+
+.tier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  padding: 3px 7px 3px 6px;
+  border-radius: 999px;
+  white-space: nowrap;
+  border: 1px solid var(--border);
+  color: var(--text-3);
+  background: var(--bg-2);
+}
+.tier-badge .tier-badge-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  flex: 0 0 auto;
+}
+.tier-badge.ok      { color: var(--green); border-color: var(--green-bd); background: var(--green-bg); }
+.tier-badge.ok      .tier-badge-dot { background: var(--green); }
+.tier-badge.bad     { color: var(--coral); border-color: var(--coral-bd); background: var(--coral-bg); }
+.tier-badge.bad     .tier-badge-dot { background: var(--coral); }
+.tier-badge.neutral .tier-badge-dot { background: var(--text-4); }
+.tier-badge.hold    { color: var(--coral); border-color: var(--coral-bd); background: var(--coral-bg); }
+.tier-badge.hold    .tier-badge-dot { background: var(--coral); }
+.tier-badge.wait    { color: var(--accent); border-color: rgba(255,224,138,0.35); background: rgba(255,224,138,0.10); }
+.tier-badge.wait    .tier-badge-dot { background: var(--accent); }
+
 /* When a row is expanded, we drop overflow:hidden so the header strip can
    stick to the viewport top during scroll. The badge and detail panel pick
    up matching border-radius so the rounded card corners stay clean. */
@@ -626,6 +666,7 @@ button.strip-section-head:hover {
   align-items: center;
   gap: 12px;
   min-width: 0;
+  flex-wrap: wrap;
 }
 .strip-name-row .lc-pos {
   flex-shrink: 0;
@@ -4744,7 +4785,7 @@ function renderMatches(){
     html += `<div class="strip-section collapsible-section${expanded ? ' expanded' : ''}">`;
     html += sectionHead({ action: 'toggle-qualifying', dotClass: 'ok', label: 'Qualifying', count: matches.length, expanded });
     if (expanded) {
-      html += matches.map(x => renderStripRow(x.L, false, null, null)).join('');
+      html += matches.map(x => renderStripRow(x.L, false, null, null, false, 'qualifying')).join('');
     }
     html += `</div>`;
   }
@@ -4755,7 +4796,7 @@ function renderMatches(){
     html += `<div class="strip-section rejected-section${expanded ? ' expanded' : ''}">`;
     html += sectionHead({ action: 'toggle-rejected', dotClass: 'bad', label: 'Will not qualify', count: rejected.length, expanded });
     if (expanded) {
-      html += rejected.map(x => renderStripRow(x.L, true, x.reason, x.field)).join('');
+      html += rejected.map(x => renderStripRow(x.L, true, x.reason, x.field, false, 'rejected')).join('');
     }
     html += `</div>`;
   }
@@ -4766,7 +4807,7 @@ function renderMatches(){
     html += `<div class="strip-section collapsible-section${expanded ? ' expanded' : ''}">`;
     html += sectionHead({ action: 'toggle-signup', dotClass: 'neutral', label: 'Needs to sign up', count: signup.length, expanded });
     if (expanded) {
-      html += signup.map(x => renderStripRow(x.L, false, null, null, true)).join('');
+      html += signup.map(x => renderStripRow(x.L, false, null, null, true, 'signup')).join('');
     }
     html += `</div>`;
   }
@@ -4779,7 +4820,7 @@ function renderMatches(){
     html += `<div class="strip-section collapsible-section${expanded ? ' expanded' : ''}">`;
     html += sectionHead({ action: 'toggle-contracthold', dotClass: 'hold', label: 'Reviewing / negotiating contract', count: contractHold.length, expanded });
     if (expanded) {
-      html += contractHold.map(x => renderStripRow(x.L, false, null, null, true)).join('');
+      html += contractHold.map(x => renderStripRow(x.L, false, null, null, true, 'contracthold')).join('');
     }
     html += `</div>`;
   }
@@ -4791,7 +4832,7 @@ function renderMatches(){
     html += `<div class="strip-section collapsible-section${expanded ? ' expanded' : ''}">`;
     html += sectionHead({ action: 'toggle-notready', dotClass: 'wait', label: 'Not big enough yet', count: notReady.length, expanded });
     if (expanded) {
-      html += notReady.map(x => renderStripRow(x.L, false, null, null, true)).join('');
+      html += notReady.map(x => renderStripRow(x.L, false, null, null, true, 'notready')).join('');
     }
     html += `</div>`;
   }
@@ -4890,11 +4931,22 @@ function lenderMatchesSearch(L, query){
   return false;
 }
 
-function renderStripRow(L, isRejected, reason, failField, readOnly){
+function renderStripRow(L, isRejected, reason, failField, readOnly, tier){
   const isSelected = !readOnly && selectedLenders.has(L.name);
   const isExpanded = expandedLender === L.name;
   const pc = positionColor(L);
   const posLabel = formatPositionPill(L);
+
+  // Per-row tier indicator: colored left stripe + small badge so the section is
+  // recognizable even when scrolled away from the section header.
+  const TIER_META = {
+    qualifying:   { cls: 'ok',      label: 'Qualifying' },
+    rejected:     { cls: 'bad',     label: "Won't qualify" },
+    signup:       { cls: 'neutral', label: 'Needs sign-up' },
+    contracthold: { cls: 'hold',    label: 'Reviewing contract' },
+    notready:     { cls: 'wait',    label: 'Not big enough yet' },
+  };
+  const tierMeta = TIER_META[tier] || null;
   const isFirst = (L.position && L.position !== 'any') &&
     (L.position.trim() === '1' || L.position.trim().startsWith('1-'));
   // Only strictly "1st only" lenders get the dominant green-pill emphasis
@@ -4954,6 +5006,7 @@ function renderStripRow(L, isRejected, reason, failField, readOnly){
   if (isFirst && !isRejected) cls.push('first-position');
   if (isExpanded) cls.push('expanded');
   if (readOnly) cls.push('read-only');
+  if (tierMeta) cls.push('tier-' + tierMeta.cls);
 
   // Detail panel (only rendered if expanded)
   const detailHtml = isExpanded ? renderDetailPanel(L) : '';
