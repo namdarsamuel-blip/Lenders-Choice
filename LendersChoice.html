@@ -5072,47 +5072,52 @@ function renderMatches(){
   list.innerHTML = html;
   wireStripRows();
   // Wire section header toggles
+  // Accordion behavior — opening any section collapses all others.
+  // `key` is the var being toggled; expanding it forces every other section closed.
+  const accordionToggle = (key) => {
+    const wasOpen = {
+      qualifying: qualifyingSectionExpanded,
+      rejected: rejectedSectionExpanded,
+      signup: signupSectionExpanded,
+      notready: notReadySectionExpanded,
+      contracthold: contractHoldSectionExpanded,
+      waiting: waitingSectionExpanded,
+    }[key];
+    // Collapse everything first
+    qualifyingSectionExpanded = false;
+    rejectedSectionExpanded = false;
+    signupSectionExpanded = false;
+    notReadySectionExpanded = false;
+    contractHoldSectionExpanded = false;
+    waitingSectionExpanded = false;
+    // Then open the clicked one only if it was closed (so a second tap collapses it)
+    if (!wasOpen) {
+      if (key === 'qualifying') qualifyingSectionExpanded = true;
+      else if (key === 'rejected') rejectedSectionExpanded = true;
+      else if (key === 'signup') signupSectionExpanded = true;
+      else if (key === 'notready') notReadySectionExpanded = true;
+      else if (key === 'contracthold') contractHoldSectionExpanded = true;
+      else if (key === 'waiting') waitingSectionExpanded = true;
+    }
+    renderMatches();
+  };
   document.querySelectorAll('[data-action="toggle-qualifying"]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      qualifyingSectionExpanded = !qualifyingSectionExpanded;
-      renderMatches();
-    });
+    btn.addEventListener('click', (e) => { e.stopPropagation(); accordionToggle('qualifying'); });
   });
   document.querySelectorAll('[data-action="toggle-rejected"]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      rejectedSectionExpanded = !rejectedSectionExpanded;
-      renderMatches();
-    });
+    btn.addEventListener('click', (e) => { e.stopPropagation(); accordionToggle('rejected'); });
   });
   document.querySelectorAll('[data-action="toggle-signup"]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      signupSectionExpanded = !signupSectionExpanded;
-      renderMatches();
-    });
+    btn.addEventListener('click', (e) => { e.stopPropagation(); accordionToggle('signup'); });
   });
   document.querySelectorAll('[data-action="toggle-notready"]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      notReadySectionExpanded = !notReadySectionExpanded;
-      renderMatches();
-    });
+    btn.addEventListener('click', (e) => { e.stopPropagation(); accordionToggle('notready'); });
   });
   document.querySelectorAll('[data-action="toggle-contracthold"]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      contractHoldSectionExpanded = !contractHoldSectionExpanded;
-      renderMatches();
-    });
+    btn.addEventListener('click', (e) => { e.stopPropagation(); accordionToggle('contracthold'); });
   });
   document.querySelectorAll('[data-action="toggle-waiting"]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      waitingSectionExpanded = !waitingSectionExpanded;
-      renderMatches();
-    });
+    btn.addEventListener('click', (e) => { e.stopPropagation(); accordionToggle('waiting'); });
   });
   updateTopbarStats();
   updateActionBar();
