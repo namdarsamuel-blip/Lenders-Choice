@@ -4014,6 +4014,37 @@ function loadAll(){
     setLS(DEFAULT_MSG_MIGRATION_KEY, '1');
   }
 
+  // ===== PERMANENT RECONCILE (runs on EVERY load, NOT flag-gated) =====
+  // Root-cause fix for the recurring "only 2 qualifying on live device" bug:
+  // one-time flag-gated migrations could leave a device's cache with signed
+  // lenders stuck at 'directory'. DEFAULT_LENDERS is the source of truth for who
+  // is signed (status 'active' + verified_at). On every load we re-assert that
+  // status and the verified stamp from defaults onto the cached objects, without
+  // touching any user-editable fields. This self-heals stale caches every time.
+  try {
+    const canonicalActive = {};
+    DEFAULT_LENDERS.forEach(d => {
+      if (d.status === 'active') {
+        canonicalActive[d.name] = {
+          verified_at: d.verified_at || null,
+          verified_source: d.verified_source || '',
+          agreement_signed: d.agreement_signed === true
+        };
+      }
+    });
+    let changed = 0;
+    lenders.forEach(L => {
+      const c = canonicalActive[L.name];
+      if (c) {
+        if (L.status !== 'active') { L.status = 'active'; changed++; }
+        if (c.verified_at && L.verified_at !== c.verified_at) { L.verified_at = c.verified_at; changed++; }
+        if (c.verified_source && !L.verified_source) { L.verified_source = c.verified_source; changed++; }
+        if (c.agreement_signed && L.agreement_signed !== true) { L.agreement_signed = true; changed++; }
+      }
+    });
+    if (changed) { persistCache(); console.log(`Reconcile: re-asserted signed roster (${changed} field updates)`); }
+  } catch (e) { console.warn('Reconcile skipped:', e); }
+
   // Filters always start fresh — don't restore from storage.
   // Each new deal should be a clean slate.
   // (We still clear the storage so old persisted values don't leak.)
