@@ -586,7 +586,14 @@ button.strip-section-head:hover {
   padding: 1px 7px;
 }
 .tab-pill.active .tab-count { color: var(--text); }
-.tab-panel { padding-top: 4px; }
+.tab-panel {
+  padding-top: 4px;
+  /* Reserve at least a screenful so switching from a large tab (many rows) to a
+     small one (few rows) doesn't collapse the container and bounce the scroll
+     position. Big tabs grow past this naturally. */
+  min-height: 70vh;
+  min-height: 70dvh;
+}
 .search-group-head {
   display: flex;
   align-items: center;
@@ -633,6 +640,17 @@ button.strip-section-head:hover {
 .strip-row.tier-notready { border-left: 3px solid var(--orange); }
 .strip-row.tier-waiting  { border-left: 3px solid var(--accent); }
 
+/* When expanded, the tier color wraps the ENTIRE card (top/right/bottom/left)
+   so you can see at a glance which bucket the open lender belongs to and where
+   its expanded region begins and ends. */
+.strip-row.expanded.tier-ok       { border-color: var(--green); }
+.strip-row.expanded.tier-bad      { border-color: var(--coral); }
+.strip-row.expanded.tier-neutral  { border-color: var(--border-3); }
+.strip-row.expanded.tier-hold     { border-color: var(--coral); }
+.strip-row.expanded.tier-wait     { border-color: var(--accent); }
+.strip-row.expanded.tier-notready { border-color: var(--orange); }
+.strip-row.expanded.tier-waiting  { border-color: var(--accent); }
+
 .tier-badge {
   display: inline-flex;
   align-items: center;
@@ -672,13 +690,17 @@ button.strip-section-head:hover {
    up matching border-radius so the rounded card corners stay clean. */
 .strip-row.expanded {
   overflow: visible;
+  border-width: 2px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+  margin-bottom: 16px;
+  margin-top: 4px;
 }
 .strip-row.expanded .strip-main {
   position: sticky;
   top: calc(56px + env(safe-area-inset-top, 0px));
   z-index: 50;
-  background: var(--bg-1);
-  border-bottom: 1px solid var(--border);
+  background: var(--bg-3);
+  border-bottom: 1px solid var(--border-2);
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
 }
@@ -720,8 +742,8 @@ button.strip-section-head:hover {
   display: grid;
   grid-template-columns: 28px 1fr;
   align-items: center;
-  column-gap: 14px;
-  padding: 14px 16px;
+  column-gap: 16px;
+  padding: 14px 16px 14px 18px;
   min-width: 0;
   transition: background-color 0.12s;
 }
@@ -767,18 +789,18 @@ button.strip-section-head:hover {
 .strip-row2 {
   display: grid;
   grid-template-columns:
-    minmax(76px, 96px)       /* Revenue */
-    minmax(62px, 76px)       /* FICO */
-    minmax(70px, 86px)       /* TIB */
-    minmax(78px, 96px)       /* Neg Days */
-    minmax(110px, 140px)     /* Defaults */
-    minmax(140px, 200px);    /* States */
+    minmax(86px, 1.1fr)      /* Revenue */
+    minmax(70px, 0.85fr)     /* FICO */
+    minmax(78px, 0.95fr)     /* TIB */
+    minmax(86px, 1fr)        /* Neg Days */
+    minmax(116px, 1.3fr)     /* Defaults */
+    minmax(150px, 1.7fr);    /* States */
   column-gap: 24px;
   margin-top: 4px;
   min-width: 0;
-  /* Capped tight so the expand-zone (everything to the right) gets the empty space
-     at wide viewports instead of the stats columns ballooning out. */
-  max-width: 700px;
+  /* Spread across the available width so data uses the space instead of
+     clustering on the left with a large empty gap before the chevron. */
+  max-width: 980px;
 }
 
 /* RIGHT ZONE — fills ALL space to the right of the stats grid + the chevron strip.
@@ -787,8 +809,8 @@ button.strip-section-head:hover {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding: 0 16px 0 12px;
-  min-width: 110px;
+  padding: 0 14px 0 10px;
+  min-width: 52px;
   cursor: pointer;
   position: relative;
   transition: background-color 0.12s;
@@ -1046,8 +1068,11 @@ button.strip-section-head:hover {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-width: 92px;
-  padding: 10px 14px;
+  width: 100px;
+  min-width: 100px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  padding: 10px 8px;
   font-family: 'JetBrains Mono', monospace;
   text-align: center;
   white-space: nowrap;
@@ -1230,13 +1255,66 @@ button.strip-section-head:hover {
 /* ========== EXPANDED DETAIL PANEL ========== */
 .strip-detail {
   border-top: 1px solid var(--border);
-  background: var(--bg);
+  background: var(--bg-2);
   padding: 14px 16px 16px;
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
   user-select: text;
   -webkit-user-select: text;
   -webkit-touch-callout: default;
+}
+/* Inner sub-tab bar — Contact / Details / Industries / Notes. One pane at a
+   time so the expanded card fits in a single view instead of a long scroll. */
+.dt-subtabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+}
+.dt-subtab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-3);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 7px 12px 9px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.12s, border-color 0.12s;
+  margin-bottom: -1px;
+}
+.dt-subtab:hover { color: var(--text-2); }
+.dt-subtab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.dt-pane {
+  min-height: 320px;
+  align-content: start;
+}
+.dt-website-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 12.5px;
+}
+.dt-website-k {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.dt-state-mode {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+  margin-bottom: 8px;
 }
 .strip-row.first-position .strip-detail { background: rgba(127,219,159,0.025); }
 
@@ -1475,19 +1553,36 @@ button.strip-section-head:hover {
    visual footprint as one of the old labeled blocks. */
 .dt-alt-block {
   margin-top: 6px;
-  padding: 8px 12px;
+  padding: 4px 12px;
   background: var(--bg-2);
   border: 1px solid var(--border);
   border-radius: 8px;
 }
+.dt-alt-block.open { padding-bottom: 8px; }
 .dt-alt-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 0;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-3);
-  margin-bottom: 6px;
 }
+.dt-alt-head:hover { color: var(--text-2); }
+.dt-alt-chev {
+  width: 13px; height: 13px;
+  flex-shrink: 0;
+  transition: transform 0.18s ease;
+  opacity: 0.7;
+}
+.dt-alt-block.open .dt-alt-chev { transform: rotate(180deg); }
+.dt-alt-list { margin-top: 2px; }
 .dt-alt-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -2519,7 +2614,8 @@ button.strip-section-head:hover {
     top: calc(54px + env(safe-area-inset-top, 0px));
   }
   .strip-position-badge {
-    min-width: 64px;
+    width: 82px;
+    min-width: 82px;
     padding: 8px 6px;
   }
   .strip-position-badge .strip-pos-context {
@@ -5320,6 +5416,10 @@ let activeTab = 'qualifying';
 // Per-lender expanded state for the "Older info" archive subsection.
 // Lives in module scope so it persists across re-renders within a session.
 const archiveExpanded = new Set();
+const contactsExpanded = new Set();
+// Active sub-tab inside an expanded card's detail panel (per lender name).
+// One of: 'contact' | 'details' | 'industries' | 'notes'. Defaults to 'contact'.
+const detailTab = {};
 
 function renderMatches(){
   const list = document.getElementById('match-list');
@@ -5684,12 +5784,17 @@ function renderDetailPanel(L){
         </div>` : ''}
     </div>`;
 
-  // Alt contacts — only render the block if any have actual data
+  // Alt contacts — collapsed by default behind a "More contacts · N ⌄" caret to
+  // keep the detail view compact. Tap the header to expand the list.
   const alts = (L.alt_contacts || []).filter(c => (c.name || c.email || c.phone));
+  const altsOpen = contactsExpanded.has(L.name);
   const altList = alts.length ? `
-    <div class="dt-alt-block">
-      <div class="dt-alt-head">Other contacts · ${alts.length}</div>
-      ${alts.map(c => `
+    <div class="dt-alt-block${altsOpen ? ' open' : ''}">
+      <button class="dt-alt-head" data-action="toggle-contacts" data-lender="${esc(L.name)}" aria-expanded="${altsOpen}">
+        <span class="dt-alt-head-label">More contacts · ${alts.length}</span>
+        <svg class="dt-alt-chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+      </button>
+      ${altsOpen ? `<div class="dt-alt-list">${alts.map(c => `
         <div class="dt-alt-row">
           ${c.name ? `<div class="dt-alt-name">${esc(c.name)}</div>` : ''}
           ${(c.email || c.phone) ? `
@@ -5697,7 +5802,7 @@ function renderDetailPanel(L){
               ${c.email ? `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : ''}
               ${c.phone ? `<a href="tel:${esc(phoneTel(c.phone))}">${esc(c.phone)}</a>` : ''}
             </div>` : ''}
-        </div>`).join('')}
+        </div>`).join('')}</div>` : ''}
     </div>` : '';
 
   const contactsBlock = primaryCard + altList;
@@ -5810,59 +5915,87 @@ function renderDetailPanel(L){
        </a>`
     : '';
 
+  // Build the Notes pane content (structured leftover notes)
+  const notesPane = leftoverNotesItems.length ? `
+    <div class="dt-notes">
+      ${leftoverNotesItems.map(item => {
+        const mm = item.match(/^([A-Za-z][^:\n]{0,40}):\s+(.+)$/);
+        if (mm) {
+          return `<div class="dt-note-item">
+            <div class="dt-note-label">${esc(mm[1])}</div>
+            <div class="dt-note-value">${esc(mm[2])}</div>
+          </div>`;
+        }
+        return `<div class="dt-note-item dt-note-plain">${esc(item)}</div>`;
+      }).join('')}
+    </div>` : '';
+
+  const archiveHtml = (L.archive_notes && L.archive_notes.length) ? `
+    <div class="archive-section${archiveExpanded.has(L.name) ? ' expanded' : ''}">
+      <button class="archive-toggle" data-action="toggle-archive" data-lender="${esc(L.name)}">
+        <svg class="archive-chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+        <span>Older info</span>
+        <span class="archive-count">${L.archive_notes.length}</span>
+      </button>
+      ${archiveExpanded.has(L.name) ? `
+      <div class="archive-body">
+        ${L.archive_notes.map(n => `<div class="archive-item">${esc(n)}</div>`).join('')}
+      </div>` : ''}
+    </div>` : '';
+
+  // Website moves into the Contact pane (as a compact line under the contacts).
+  const websiteLine = parsed.website ? `
+    <div class="dt-website-line">
+      <span class="dt-website-k">Website</span>
+      <a href="${esc(parsed.website)}" target="_blank" rel="noopener" class="dt-link mono" onclick="event.stopPropagation()">${esc(displayUrl(parsed.website))}</a>
+    </div>` : '';
+
+  // Remaining lender specs (everything that was in the old Details tab EXCEPT
+  // website + states) fold into the Notes pane so nothing is lost.
+  const hasSpecs = parsed.tier || parsed.paper || parsed.max_funding || parsed.max_term ||
+                   parsed.pay_schedule || parsed.min_ending_bal || parsed.construction_min ||
+                   parsed.transportation_min;
+  const specsHtml = hasSpecs ? `
+    <div class="dt-section">
+      <div class="dt-section-head">Lender specs</div>
+      ${parsed.tier ? detailRow('Tier', esc(parsed.tier)) : ''}
+      ${parsed.paper ? detailRow('Paper', esc(parsed.paper)) : ''}
+      ${parsed.max_funding ? detailRow('Max funding', esc(parsed.max_funding)) : ''}
+      ${parsed.max_term ? detailRow('Max term', esc(parsed.max_term)) : ''}
+      ${parsed.pay_schedule ? detailRow('Pay schedule', esc(parsed.pay_schedule)) : ''}
+      ${parsed.min_ending_bal ? detailRow('Min ending bal', esc(parsed.min_ending_bal)) : ''}
+    </div>` : '';
+
+  // Pane content per sub-tab; a pane is only offered if it has content.
+  const industriesPaneHtml = specsHtml + renderIndustryTabs(L, parsed);
+
+  const contactPaneHtml = submitBlock + contactsBlock + otherEmailsHtml + websiteLine;
+  const notesPaneHtml = notesPane + archiveHtml;
+
+  const paneDefs = [
+    { key: 'contact',    label: 'Contact',    has: !!(submitBlock || contactsBlock || otherEmailsHtml || websiteLine), html: contactPaneHtml },
+    { key: 'industries', label: 'Details',    has: !!(specsHtml || industriesPaneHtml),                                html: industriesPaneHtml },
+    { key: 'notes',      label: 'Notes',      has: !!(notesPane || archiveHtml),                                       html: notesPaneHtml },
+  ].filter(p => p.has);
+
+  let active = detailTab[L.name];
+  if (!paneDefs.some(p => p.key === active)) active = paneDefs.length ? paneDefs[0].key : 'contact';
+
+  const subTabBar = paneDefs.length > 1 ? `
+    <div class="dt-subtabs" role="tablist">
+      ${paneDefs.map(p => `
+        <button class="dt-subtab${p.key === active ? ' active' : ''}" data-action="detail-subtab" data-lender="${esc(L.name)}" data-subtab="${p.key}" role="tab" aria-selected="${p.key === active}">${p.label}</button>
+      `).join('')}
+    </div>` : '';
+
+  const activePane = paneDefs.find(p => p.key === active);
+
   return `
     <div class="strip-detail">
       ${submitCta}
-      <div class="dt-grid">
-        <div class="dt-section">
-          <div class="dt-section-head">Contacts</div>
-          ${submitBlock}
-          ${contactsBlock}
-          ${otherEmailsHtml}
-        </div>
-
-        ${detailsHtml}
-
-        ${renderIndustryTabs(L, parsed)}
-
-        ${renderStateSection(L)}
-
-        ${leftoverNotesItems.length ? `
-        <div class="dt-section dt-section-full">
-          <div class="dt-section-head">Notes</div>
-          <div class="dt-notes">
-            ${leftoverNotesItems.map(item => {
-              // Try to split on first colon when the prefix looks like a short label.
-              // Limit label to ~40 chars and require it to start with a letter — that way
-              // "Required stips: DL, void check..." gets split, but
-              // "Trucking and Real Estate / Property Mgmt are SELECTIVE" (no colon)
-              // and noise like "https://..." stay plain.
-              const m = item.match(/^([A-Za-z][^:\n]{0,40}):\s+(.+)$/);
-              if (m) {
-                return `<div class="dt-note-item">
-                  <div class="dt-note-label">${esc(m[1])}</div>
-                  <div class="dt-note-value">${esc(m[2])}</div>
-                </div>`;
-              }
-              return `<div class="dt-note-item dt-note-plain">${esc(item)}</div>`;
-            }).join('')}
-          </div>
-        </div>` : ''}
-
-        ${(L.archive_notes && L.archive_notes.length) ? `
-        <div class="dt-section dt-section-full">
-          <div class="archive-section${archiveExpanded.has(L.name) ? ' expanded' : ''}">
-            <button class="archive-toggle" data-action="toggle-archive" data-lender="${esc(L.name)}">
-              <svg class="archive-chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
-              <span>Older info</span>
-              <span class="archive-count">${L.archive_notes.length}</span>
-            </button>
-            ${archiveExpanded.has(L.name) ? `
-            <div class="archive-body">
-              ${L.archive_notes.map(n => `<div class="archive-item">${esc(n)}</div>`).join('')}
-            </div>` : ''}
-          </div>
-        </div>` : ''}
+      ${subTabBar}
+      <div class="dt-pane">
+        ${activePane ? activePane.html : ''}
       </div>
       ${verifiedBanner}
     </div>`;
@@ -5908,9 +6041,8 @@ function renderStateSection(L){
     </div>`;
 }
 
-/* Render the Industries section with three tabs: Preferred / Restricted / Prohibited.
-   All three tabs always present even when empty — each shows a friendly empty state.
-   Default active tab = Prohibited (most common matching concern). */
+/* Render the Details section with four tabs: Preferred / Restricted / Prohibited
+   industries + Excluded States. One tab visible at a time. */
 function renderIndustryTabs(L, parsed){
   // Preferred: parsed from "Prefers:" notes
   const preferred = parsed.preferred_industries || [];
@@ -5923,6 +6055,13 @@ function renderIndustryTabs(L, parsed){
     ? L.industry_excl.split(',').map(s => s.trim()).filter(Boolean)
     : [];
 
+  // States — build the list + a label from state_rule
+  const rule = L.state_rule || 'all';
+  let stateList = [], stateMode = 'all';
+  if (rule.startsWith('all_except:')) { stateMode = 'excluded'; stateList = rule.slice(11).split(',').map(s => s.trim()).filter(Boolean); }
+  else if (rule.startsWith('only:'))   { stateMode = 'only';     stateList = rule.slice(5).split(',').map(s => s.trim()).filter(Boolean); }
+  const statesCount = stateList.length;
+
   const tabBtn = (id, label, count) => `
     <button class="dt-tab${id === 'prohibited' ? ' active' : ''}" data-tab="${id}" type="button">
       ${label}<span class="dt-tab-count">${count}</span>
@@ -5931,6 +6070,7 @@ function renderIndustryTabs(L, parsed){
   const emptyMsg = (id) => {
     if (id === 'preferred') return 'No preferred industries listed.';
     if (id === 'restricted') return 'No industry-specific revenue overrides.';
+    if (id === 'states') return 'Funds all states.';
     return 'No prohibited industries — funds all industries.';
   };
 
@@ -5939,13 +6079,25 @@ function renderIndustryTabs(L, parsed){
       ${items.length ? render(items) : `<div class="dt-empty">${emptyMsg(id)}</div>`}
     </div>`;
 
+  // States panel — colored pills (red × for excluded, green for only-funds)
+  const statesPanel = `
+    <div class="dt-tab-panel" data-panel="states">
+      ${stateMode === 'all'
+        ? `<div class="dt-empty">Funds all states.</div>`
+        : `<div class="dt-state-mode">${stateMode === 'excluded' ? 'Does NOT fund:' : 'Only funds in:'}</div>
+           <ul class="dt-state-list">
+             ${stateList.map(s => `<li class="dt-state-pill ${stateMode === 'excluded' ? 'excluded' : 'allowed'}">${stateMode === 'excluded' ? '<span class="dt-x">×</span>' : ''}${esc(s)}</li>`).join('')}
+           </ul>`}
+    </div>`;
+
   return `
     <div class="dt-section dt-industries">
-      <div class="dt-section-head">Industries</div>
+      <div class="dt-section-head">Details</div>
       <div class="dt-tabs">
         ${tabBtn('preferred', 'Preferred', preferred.length)}
         ${tabBtn('restricted', 'Restricted', restricted.length)}
         ${tabBtn('prohibited', 'Prohibited', prohibited.length)}
+        ${tabBtn('states', 'Excluded States', statesCount)}
       </div>
       ${panel('preferred', preferred, items => `
         <ul class="dt-industry-list">
@@ -5962,6 +6114,7 @@ function renderIndustryTabs(L, parsed){
         <ul class="dt-industry-list">
           ${items.map(i => `<li class="dt-industry-item prohibited">${esc(i)}</li>`).join('')}
         </ul>`)}
+      ${statesPanel}
     </div>`;
 }
 
@@ -6033,6 +6186,24 @@ function wireStripRows(){
         const lname = btn.dataset.lender;
         if (archiveExpanded.has(lname)) archiveExpanded.delete(lname);
         else archiveExpanded.add(lname);
+        renderMatches();
+      });
+    });
+    // "More contacts" caret — reveals alt contacts only when tapped (keeps detail compact)
+    row.querySelectorAll('[data-action="toggle-contacts"]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const lname = btn.dataset.lender;
+        if (contactsExpanded.has(lname)) contactsExpanded.delete(lname);
+        else contactsExpanded.add(lname);
+        renderMatches();
+      });
+    });
+    // Detail sub-tabs (Contact / Details / Industries / Notes) — switch the pane
+    row.querySelectorAll('[data-action="detail-subtab"]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        detailTab[btn.dataset.lender] = btn.dataset.subtab;
         renderMatches();
       });
     });
