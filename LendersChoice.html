@@ -1805,6 +1805,19 @@ button.strip-section-head:hover {
   line-height: 1.5;
   padding: 4px 0;
 }
+.dt-note-date {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 1px 7px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-4);
+  background: var(--bg-3);
+  border-radius: 4px;
+  vertical-align: 2px;
+  white-space: nowrap;
+}
 /* On narrow viewports, stack label above value (label still small/muted) */
 @media (max-width: 640px) {
   .dt-note-item {
@@ -6062,11 +6075,22 @@ function renderDetailPanel(L){
   // Build the Notes pane content (structured leftover notes)
   const notesPane = leftoverNotesItems.length ? `
     <div class="dt-notes">
-      ${leftoverNotesItems.map(item => {
+      ${leftoverNotesItems.map(rawItem => {
+        // Pull any trailing date stamp out of the body so it can render as a small
+        // muted tag at the end of the note instead of cluttering the prose. Matches
+        // "(YYYY-MM-DD)" (with optional period/comma) at the very end of the item.
+        let item = rawItem;
+        let dateTag = '';
+        const dm = item.match(/[\s]*[(\[]?(\d{4}-\d{2}-\d{2})[)\]]?\.?\s*$/);
+        if (dm) {
+          dateTag = dm[1];
+          item = item.slice(0, dm.index).replace(/[.\s—|-]+$/, '').trim();
+        }
+        const dateHtml = dateTag ? `<span class="dt-note-date">${esc(dateTag)}</span>` : '';
+
         // Only treat "Label: value" as label/value pairs when the label is a
         // SHORT tag (<=20 chars), looks like a real section header, and the value
-        // also exists. Long sentence-fragments before a colon (e.g. "*** REDLINE
-        // SENT (2026-05-28)") render as plain notes — they're prose, not tags.
+        // also exists. Long sentence-fragments before a colon render as plain notes.
         const looksLikeHeader = (label) => {
           if (!label) return false;
           if (label.length > 20) return false;
@@ -6079,10 +6103,10 @@ function renderDetailPanel(L){
         if (mm && looksLikeHeader(mm[1]) && mm[2].length >= 2) {
           return `<div class="dt-note-item">
             <div class="dt-note-label">${esc(mm[1])}</div>
-            <div class="dt-note-value">${esc(mm[2])}</div>
+            <div class="dt-note-value">${esc(mm[2])}${dateHtml}</div>
           </div>`;
         }
-        return `<div class="dt-note-item dt-note-plain">${esc(item)}</div>`;
+        return `<div class="dt-note-item dt-note-plain">${esc(item)}${dateHtml}</div>`;
       }).join('')}
     </div>` : '';
 
