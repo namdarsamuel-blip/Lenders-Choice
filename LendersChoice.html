@@ -732,7 +732,7 @@ button.strip-section-head:hover {
    Right edge: dedicated chevron strip for expanding details. */
 .strip-main {
   display: grid;
-  grid-template-columns: 100px 1fr auto;
+  grid-template-columns: 100px minmax(0, auto) 1fr;
   align-items: stretch;
   cursor: pointer;
 }
@@ -810,7 +810,7 @@ button.strip-section-head:hover {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding: 0 14px 0 10px;
+  padding: 0 16px;
   min-width: 52px;
   cursor: pointer;
   position: relative;
@@ -818,11 +818,11 @@ button.strip-section-head:hover {
   border-left: 1px solid transparent;
 }
 .strip-expand-zone:hover {
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: rgba(255, 255, 255, 0.025);
   border-left-color: var(--border);
 }
 .strip-expand-zone:active {
-  background-color: rgba(255, 255, 255, 0.04);
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .strip-check {
