@@ -911,6 +911,34 @@ button.strip-section-head:hover {
   flex-shrink: 0;
   vertical-align: middle;
 }
+/* OUTREACH PILL — shows in the "Needs to sign up" tier only. Green = intro
+   email already sent; amber = still to-do. Lets Sam see at a glance where his
+   call-down list stands. */
+.outreach-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  flex-shrink: 0;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.outreach-pill svg { width: 10px; height: 10px; display: block; }
+.outreach-pill.sent {
+  background: var(--ok-bg, rgba(80, 200, 120, 0.14));
+  color: var(--ok, #4caf72);
+  border: 1px solid var(--ok-bd, rgba(80, 200, 120, 0.4));
+}
+.outreach-pill.todo {
+  background: rgba(255, 188, 102, 0.14);
+  color: var(--amber, #ffbc66);
+  border: 1px solid rgba(255, 188, 102, 0.45);
+}
 .verified-pill.missing {
   background: rgba(255, 188, 102, 0.14);
   color: var(--amber, #ffbc66);
@@ -1564,6 +1592,51 @@ button.strip-section-head:hover {
   transition: color 0.12s, border-color 0.12s;
 }
 .dt-primary-lines a:hover { color: var(--accent); border-color: var(--accent); }
+
+/* CLICK-TO-COPY CHIPS — email/phone copy to clipboard on click instead of
+   launching a mail/dial client. Styled to match the dashed-underline links
+   they replaced. The trailing icon is the opt-in mailto:/tel: escape hatch. */
+.copy-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+}
+.copy-chip-val {
+  font: inherit;
+  color: var(--text-2);
+  background: none;
+  border: none;
+  border-bottom: 1px dashed var(--border-2);
+  padding: 0 0 1px;
+  margin: 0;
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
+  -webkit-user-select: all;
+  user-select: all;
+}
+.copy-chip-val:hover { color: var(--accent); border-color: var(--accent); }
+.copy-chip-val.copied {
+  color: var(--accent, #2e7d32);
+  border-bottom-color: transparent;
+  font-weight: 600;
+  user-select: none;
+}
+.copy-chip-val.copy-failed {
+  color: #b3261e;
+  border-bottom-color: transparent;
+  user-select: none;
+}
+.copy-chip-link {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-4);
+  opacity: 0.55;
+  flex: none;
+  transition: opacity 0.12s, color 0.12s;
+}
+.copy-chip-link:hover { opacity: 1; color: var(--accent); }
+.copy-chip-link svg { width: 13px; height: 13px; display: block; }
 .dt-primary-empty {
   font-size: 12px;
   color: var(--text-4);
@@ -4879,6 +4952,30 @@ function loadAll(){
     const byName = new Map(lenders.map(L => [L.name, L]));
     let changed = 0;
 
+    // Outreach tracking — intro emails Sam has already sent (going down the
+    // "Needs to sign up" list in order). Stamps outreach_sent (date) onto each
+    // named lender if it isn't already set. Additive only: never overwrites a
+    // value already present, so future edits/marks are safe. Self-heals from
+    // defaults on every load, same pattern as status/verified_at.
+    // 2026-05-29: emailed everyone through Olympus Capital (phone-tier of the
+    // signup list). Panthers and below are still to-do.
+    const OUTREACH_SENT_2026_05_29 = new Set([
+      "800 Funding","Accord","Ace","ALO","Alpine","Amerifi","Aquina","Bitty",
+      "Breakout Capital","Canacap","Capital Domain","Cobalt Funding","Credibly",
+      "Cromwell Capital","Cucumber Capital","East Shore Equities","eFinancial Tree",
+      "Falcon Capital Group","Family Funding Group","Finpoint","Fintap","Fora",
+      "Forest","Forever Funding","Fox","Fratello Capital","Funderial","Fundfi",
+      "Fundkite","Fundworks","Fyncap","G&G","GCM","GFE","Goose Funding","Greenbox",
+      "Headway","Highland Hill","Honest Funding","Idea Financial","Infusion","IOU",
+      "Iruka Capital","Jasper Cap","JRG","Kalamata Capital Group","Kapfi","Kapitus",
+      "Katan Capital","LCF","Lendbug","Lendini","Lexio Capital","LG","Libertas",
+      "Liberty Funding Source","Lifetime Funding (LTF)","Lionheart Funding",
+      "Logic Advance","Lynks","Madison","Mantis Funding","Meged Funding",
+      "Merchant Growth","ML Factors","MNR Capital","Monday Funding","Mr Advance",
+      "Mulligan","Newco","Newco/Capytal","Nexi","Novac Equities","Novus Capital",
+      "Olympus Capital"
+    ]);
+
     DEFAULT_LENDERS.forEach(d => {
       let L = byName.get(d.name);
       // 1. Missing lender -> add a deep copy of the default.
@@ -4897,6 +4994,11 @@ function loadAll(){
         if (d.verified_at && L.verified_at !== d.verified_at) { L.verified_at = d.verified_at; changed++; }
         if (d.verified_source && !L.verified_source) { L.verified_source = d.verified_source; changed++; }
         if (d.agreement_signed === true && L.agreement_signed !== true) { L.agreement_signed = true; changed++; }
+      }
+      // 3. Stamp outreach_sent for lenders already emailed (additive only).
+      if (!L.outreach_sent && OUTREACH_SENT_2026_05_29.has(L.name)) {
+        L.outreach_sent = '2026-05-29';
+        changed++;
       }
     });
 
@@ -5828,6 +5930,14 @@ function fmtVerifiedDate(iso){
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   return `${months[m-1]} ${d}, ${y}`;
 }
+// Compact date for the small outreach pill, e.g. "2026-05-29" -> "5/29".
+function fmtOutreachDate(iso){
+  if (!iso) return '';
+  const parts = String(iso).split('-').map(Number);
+  if (parts.length !== 3 || parts.some(isNaN)) return String(iso);
+  const [, m, d] = parts;
+  return `${m}/${d}`;
+}
 function lenderVerificationStatus(L){
   if (!L.verified_at) return { verified: false };
   return {
@@ -5972,6 +6082,11 @@ function renderStripRow(L, isRejected, reason, failField, readOnly, tier){
                 return '';
               })()}</div>
               ${L.action_needed === true ? `<span class="action-badge" title="${esc(L.action_note || 'Action needed')}">ACTION</span>` : ''}
+              ${tier === 'signup' ? (
+                L.outreach_sent
+                  ? `<span class="outreach-pill sent" title="Intro email sent ${esc(L.outreach_sent)}"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l6 4 6-4M2 4v8h12V4M2 4h12"/></svg>Emailed ${esc(fmtOutreachDate(L.outreach_sent))}</span>`
+                  : `<span class="outreach-pill todo" title="No intro email sent yet"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l6 4 6-4M2 4v8h12V4M2 4h12"/></svg>Email to-do</span>`
+              ) : ''}
             </div>
             <div class="strip-row2">
               ${cell('Revenue', fmtMoney(L.revenue_min), 'revenue')}
@@ -6010,6 +6125,22 @@ function renderDetailPanel(L){
 
   const phoneTel = (p) => p ? p.replace(/[^\d+]/g,'') : '';
 
+  // Click-to-copy chip. Default action copies the value to the clipboard (so
+  // selecting an email in browser Gmail no longer launches a mail client).
+  // A small trailing icon still offers the mailto:/tel: link for when wanted.
+  // kind: 'email' | 'phone'
+  const copyChip = (value, kind) => {
+    if (!value) return '';
+    const href = kind === 'phone' ? `tel:${esc(phoneTel(value))}` : `mailto:${esc(value)}`;
+    const icon = kind === 'phone'
+      ? `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h3l1.5 4-2 1.2a9 9 0 0 0 4.3 4.3l1.2-2 4 1.5v3a1 1 0 0 1-1.1 1A12 12 0 0 1 2 4.1 1 1 0 0 1 3 3z"/></svg>`
+      : `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l6 4 6-4M2 4v8h12V4M2 4h12"/></svg>`;
+    return `<span class="copy-chip">`
+      + `<button type="button" class="copy-chip-val" data-copy="${esc(value)}" title="Click to copy">${esc(value)}</button>`
+      + `<a class="copy-chip-link" href="${href}" title="Open ${kind === 'phone' ? 'dialer' : 'mail'}" data-noexpand="1">${icon}</a>`
+      + `</span>`;
+  };
+
   const primaryCard = `
     <div class="dt-primary-card">
       <div class="dt-contact-label">Primary</div>
@@ -6018,8 +6149,8 @@ function renderDetailPanel(L){
         : (!primaryHasContact ? `<div class="dt-primary-empty">No primary contact on file</div>` : '')}
       ${primaryHasContact ? `
         <div class="dt-primary-lines">
-          ${primaryEmail ? `<a href="mailto:${esc(primaryEmail)}">${esc(primaryEmail)}</a>` : ''}
-          ${primaryPhone ? `<a href="tel:${esc(phoneTel(primaryPhone))}">${esc(primaryPhone)}</a>` : ''}
+          ${primaryEmail ? copyChip(primaryEmail, 'email') : ''}
+          ${primaryPhone ? copyChip(primaryPhone, 'phone') : ''}
         </div>` : ''}
     </div>`;
 
@@ -6038,8 +6169,8 @@ function renderDetailPanel(L){
           ${c.name ? `<div class="dt-alt-name">${esc(c.name)}</div>` : ''}
           ${(c.email || c.phone) ? `
             <div class="dt-alt-contact-lines">
-              ${c.email ? `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : ''}
-              ${c.phone ? `<a href="tel:${esc(phoneTel(c.phone))}">${esc(c.phone)}</a>` : ''}
+              ${c.email ? copyChip(c.email, 'email') : ''}
+              ${c.phone ? copyChip(c.phone, 'phone') : ''}
             </div>` : ''}
         </div>`).join('')}</div>` : ''}
     </div>` : '';
@@ -6062,7 +6193,7 @@ function renderDetailPanel(L){
       ${submitEmails.map(e => `
         <div class="dt-submit-row">
           ${e.tag ? `<span class="dt-submit-tag">${esc(e.tag.toUpperCase())}</span>` : ''}
-          <span class="dt-submit-email"><a href="mailto:${esc(e.email)}">${esc(e.email)}</a></span>
+          <span class="dt-submit-email">${copyChip(e.email, 'email')}</span>
         </div>
       `).join('')}
       ${submitNote ? `<div class="dt-submit-note">${esc(submitNote)}</div>` : ''}
@@ -6073,7 +6204,7 @@ function renderDetailPanel(L){
     <div class="dt-other-emails">
       <div class="dt-other-emails-head">Other emails · ${L.other_emails.length}</div>
       <div class="dt-other-emails-list">
-        ${L.other_emails.map(e => `<a href="mailto:${esc(e)}">${esc(e)}</a>`).join('')}
+        ${L.other_emails.map(e => copyChip(e, 'email')).join('')}
       </div>
     </div>` : '';
 
@@ -6460,6 +6591,47 @@ function wireStripRows(){
         else contactsExpanded.add(lname);
         renderMatches();
       });
+    });
+    // Click-to-copy email/phone chips. Copies value to clipboard, flashes
+    // "Copied!" on the button, and never bubbles up to expand/collapse the row.
+    row.querySelectorAll('button.copy-chip-val[data-copy]').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const val = btn.dataset.copy || '';
+        let ok = false;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(val);
+            ok = true;
+          } else throw new Error('no clipboard api');
+        } catch (_) {
+          // Fallback for non-secure contexts / older browsers
+          try {
+            const ta = document.createElement('textarea');
+            ta.value = val;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+          } catch (__) { ok = false; }
+        }
+        if (btn._copyTimer) clearTimeout(btn._copyTimer);
+        const prev = btn.textContent;
+        btn.classList.add(ok ? 'copied' : 'copy-failed');
+        btn.textContent = ok ? 'Copied!' : 'Copy failed — select manually';
+        btn._copyTimer = setTimeout(() => {
+          btn.textContent = prev;
+          btn.classList.remove('copied', 'copy-failed');
+          btn._copyTimer = null;
+        }, 1100);
+      });
+    });
+    // The small mail/dial icon link should open the client but not toggle the row.
+    row.querySelectorAll('a.copy-chip-link').forEach(a => {
+      a.addEventListener('click', (e) => { e.stopPropagation(); });
     });
     // Detail sub-tabs (Contact / Details / Industries / Notes) — switch the pane
     row.querySelectorAll('[data-action="detail-subtab"]').forEach(btn => {
