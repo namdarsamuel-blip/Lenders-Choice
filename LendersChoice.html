@@ -1627,20 +1627,41 @@ button.strip-section-head:hover {
   border-bottom-color: transparent;
   user-select: none;
 }
-/* Website chip — derived from the email domain (cashfloit.com). Click-to-copy
-   like the email, visually lighter with a small globe icon so it reads as
-   secondary/derived info next to the address it came from. */
-.copy-chip-site { margin-left: -1px; }
-.copy-chip-val.site {
+/* Website chip — derived from the email domain (cashfloit.com). The domain is a
+   LINK that opens the site in a new tab (globe icon), with a small copy button
+   beside it to grab the bare domain. Visually lighter than the email. */
+.copy-chip-site { margin-left: 2px; gap: 3px; }
+.site-link {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   color: var(--text-4);
-  border-bottom-style: dotted;
+  text-decoration: none;
+  border-bottom: 1px dotted var(--border-2);
+  padding: 0 0 1px;
   font-size: 0.92em;
+  transition: color 0.12s, border-color 0.12s;
 }
-.copy-chip-val.site svg { width: 11px; height: 11px; display: block; flex: none; }
-.copy-chip-val.site:hover { color: var(--accent); border-color: var(--accent); }
+.site-link svg { width: 11px; height: 11px; display: block; flex: none; }
+.site-link:hover { color: var(--accent); border-color: var(--accent); }
+.copy-chip-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 1px;
+  margin: 0;
+  cursor: pointer;
+  color: var(--text-4);
+  opacity: 0.6;
+  flex: none;
+  transition: opacity 0.12s, color 0.12s;
+}
+.copy-chip-icon svg { width: 12px; height: 12px; display: block; }
+.copy-chip-icon:hover { opacity: 1; color: var(--accent); }
+.copy-chip-icon.copied { opacity: 1; color: var(--ok, #4caf72); }
+.copy-chip-icon.copy-failed { opacity: 1; color: #b3261e; }
 .dt-primary-empty {
   font-size: 12px;
   color: var(--text-4);
@@ -6147,8 +6168,9 @@ function renderDetailPanel(L){
   };
 
   // Click-to-copy chip. Clicking the value copies it to the clipboard — no
-  // mail/dial client launched. For emails, a second chip is appended showing the
-  // lender's website (the domain after the @), also click-to-copy.
+  // mail/dial client launched. For emails, a website chip is appended: the
+  // domain (after the @) is a LINK that opens the site in a new tab, with a
+  // small copy button beside it to copy the bare domain.
   // kind: 'email' | 'phone'
   const copyChip = (value, kind) => {
     if (!value) return '';
@@ -6159,9 +6181,12 @@ function renderDetailPanel(L){
     const site = domainFromEmail(value);
     if (!site) return valChip;
     const siteChip = `<span class="copy-chip copy-chip-site">`
-      + `<button type="button" class="copy-chip-val site" data-copy="${esc(site)}" title="Click to copy website">`
+      + `<a class="site-link" href="https://${esc(site)}" target="_blank" rel="noopener noreferrer" title="Open ${esc(site)} in a new tab">`
       + `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.2"/><path d="M1.8 8h12.4M8 1.8c1.8 1.7 2.8 3.9 2.8 6.2S9.8 12.5 8 14.2C6.2 12.5 5.2 10.3 5.2 8S6.2 3.5 8 1.8z"/></svg>`
-      + `${esc(site)}</button>`
+      + `${esc(site)}</a>`
+      + `<button type="button" class="copy-chip-icon" data-copy="${esc(site)}" title="Copy website" aria-label="Copy website">`
+      + `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.4"/><path d="M11 5V3.4A1.4 1.4 0 0 0 9.6 2H3.4A1.4 1.4 0 0 0 2 3.4v6.2A1.4 1.4 0 0 0 3.4 11H5"/></svg>`
+      + `</button>`
       + `</span>`;
     return valChip + siteChip;
   };
@@ -6617,9 +6642,11 @@ function wireStripRows(){
         renderMatches();
       });
     });
-    // Click-to-copy email/phone chips. Copies value to clipboard, flashes
-    // "Copied!" on the button, and never bubbles up to expand/collapse the row.
-    row.querySelectorAll('button.copy-chip-val[data-copy]').forEach(btn => {
+    // Click-to-copy chips. Copies value to clipboard and flashes confirmation,
+    // never bubbling up to expand/collapse the row. Covers both the text chips
+    // (.copy-chip-val) and the small icon copy button (.copy-chip-icon).
+    row.querySelectorAll('button.copy-chip-val[data-copy], button.copy-chip-icon[data-copy]').forEach(btn => {
+      const isIcon = btn.classList.contains('copy-chip-icon');
       btn.addEventListener('click', async (e) => {
         e.stopPropagation();
         e.preventDefault();
@@ -6646,13 +6673,24 @@ function wireStripRows(){
         if (btn._copyTimer) clearTimeout(btn._copyTimer);
         const prev = btn.innerHTML;
         btn.classList.add(ok ? 'copied' : 'copy-failed');
-        btn.textContent = ok ? 'Copied!' : 'Copy failed — select manually';
+        if (isIcon) {
+          // Small icon button: swap to a check (or × on failure), keep it compact.
+          btn.innerHTML = ok
+            ? `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l3.5 3.5L13 5"/></svg>`
+            : `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>`;
+        } else {
+          btn.textContent = ok ? 'Copied!' : 'Copy failed — select manually';
+        }
         btn._copyTimer = setTimeout(() => {
           btn.innerHTML = prev;
           btn.classList.remove('copied', 'copy-failed');
           btn._copyTimer = null;
         }, 1100);
       });
+    });
+    // Website links open in a new tab — stop the click from toggling the row.
+    row.querySelectorAll('a.site-link').forEach(a => {
+      a.addEventListener('click', (e) => { e.stopPropagation(); });
     });
     // Detail sub-tabs (Contact / Details / Industries / Notes) — switch the pane
     row.querySelectorAll('[data-action="detail-subtab"]').forEach(btn => {
