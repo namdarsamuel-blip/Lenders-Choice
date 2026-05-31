@@ -1595,7 +1595,7 @@ button.strip-section-head:hover {
 
 /* CLICK-TO-COPY CHIPS — email/phone copy to clipboard on click instead of
    launching a mail/dial client. Styled to match the dashed-underline links
-   they replaced. The trailing icon is the opt-in mailto:/tel: escape hatch. */
+   they replaced. Clicking copies the value to the clipboard. */
 .copy-chip {
   display: inline-flex;
   align-items: center;
@@ -1627,16 +1627,20 @@ button.strip-section-head:hover {
   border-bottom-color: transparent;
   user-select: none;
 }
-.copy-chip-link {
+/* Website chip — derived from the email domain (cashfloit.com). Click-to-copy
+   like the email, visually lighter with a small globe icon so it reads as
+   secondary/derived info next to the address it came from. */
+.copy-chip-site { margin-left: -1px; }
+.copy-chip-val.site {
   display: inline-flex;
   align-items: center;
+  gap: 4px;
   color: var(--text-4);
-  opacity: 0.55;
-  flex: none;
-  transition: opacity 0.12s, color 0.12s;
+  border-bottom-style: dotted;
+  font-size: 0.92em;
 }
-.copy-chip-link:hover { opacity: 1; color: var(--accent); }
-.copy-chip-link svg { width: 13px; height: 13px; display: block; }
+.copy-chip-val.site svg { width: 11px; height: 11px; display: block; flex: none; }
+.copy-chip-val.site:hover { color: var(--accent); border-color: var(--accent); }
 .dt-primary-empty {
   font-size: 12px;
   color: var(--text-4);
@@ -6125,20 +6129,41 @@ function renderDetailPanel(L){
 
   const phoneTel = (p) => p ? p.replace(/[^\d+]/g,'') : '';
 
-  // Click-to-copy chip. Default action copies the value to the clipboard (so
-  // selecting an email in browser Gmail no longer launches a mail client).
-  // A small trailing icon still offers the mailto:/tel: link for when wanted.
+  // Derive a website domain from an email address: matt@cashfloit.com -> cashfloit.com.
+  // Returns '' for generic/public inboxes (gmail, yahoo, etc.) where the domain
+  // isn't the lender's own site, so we don't show a useless "gmail.com" chip.
+  const GENERIC_EMAIL_DOMAINS = new Set([
+    'gmail.com','googlemail.com','yahoo.com','ymail.com','hotmail.com','outlook.com',
+    'live.com','msn.com','aol.com','icloud.com','me.com','mac.com','proton.me',
+    'protonmail.com','gmx.com','mail.com','comcast.net','verizon.net','att.net',
+    'sbcglobal.net','bellsouth.net','cox.net','earthlink.net','ymail.com'
+  ]);
+  const domainFromEmail = (email) => {
+    if (!email || email.indexOf('@') === -1) return '';
+    let d = email.split('@').pop().trim().toLowerCase();
+    if (!d || d.indexOf('.') === -1) return '';
+    if (GENERIC_EMAIL_DOMAINS.has(d)) return '';
+    return d;
+  };
+
+  // Click-to-copy chip. Clicking the value copies it to the clipboard — no
+  // mail/dial client launched. For emails, a second chip is appended showing the
+  // lender's website (the domain after the @), also click-to-copy.
   // kind: 'email' | 'phone'
   const copyChip = (value, kind) => {
     if (!value) return '';
-    const href = kind === 'phone' ? `tel:${esc(phoneTel(value))}` : `mailto:${esc(value)}`;
-    const icon = kind === 'phone'
-      ? `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h3l1.5 4-2 1.2a9 9 0 0 0 4.3 4.3l1.2-2 4 1.5v3a1 1 0 0 1-1.1 1A12 12 0 0 1 2 4.1 1 1 0 0 1 3 3z"/></svg>`
-      : `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l6 4 6-4M2 4v8h12V4M2 4h12"/></svg>`;
-    return `<span class="copy-chip">`
+    const valChip = `<span class="copy-chip">`
       + `<button type="button" class="copy-chip-val" data-copy="${esc(value)}" title="Click to copy">${esc(value)}</button>`
-      + `<a class="copy-chip-link" href="${href}" title="Open ${kind === 'phone' ? 'dialer' : 'mail'}" data-noexpand="1">${icon}</a>`
       + `</span>`;
+    if (kind !== 'email') return valChip;
+    const site = domainFromEmail(value);
+    if (!site) return valChip;
+    const siteChip = `<span class="copy-chip copy-chip-site">`
+      + `<button type="button" class="copy-chip-val site" data-copy="${esc(site)}" title="Click to copy website">`
+      + `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.2"/><path d="M1.8 8h12.4M8 1.8c1.8 1.7 2.8 3.9 2.8 6.2S9.8 12.5 8 14.2C6.2 12.5 5.2 10.3 5.2 8S6.2 3.5 8 1.8z"/></svg>`
+      + `${esc(site)}</button>`
+      + `</span>`;
+    return valChip + siteChip;
   };
 
   const primaryCard = `
@@ -6619,19 +6644,15 @@ function wireStripRows(){
           } catch (__) { ok = false; }
         }
         if (btn._copyTimer) clearTimeout(btn._copyTimer);
-        const prev = btn.textContent;
+        const prev = btn.innerHTML;
         btn.classList.add(ok ? 'copied' : 'copy-failed');
         btn.textContent = ok ? 'Copied!' : 'Copy failed — select manually';
         btn._copyTimer = setTimeout(() => {
-          btn.textContent = prev;
+          btn.innerHTML = prev;
           btn.classList.remove('copied', 'copy-failed');
           btn._copyTimer = null;
         }, 1100);
       });
-    });
-    // The small mail/dial icon link should open the client but not toggle the row.
-    row.querySelectorAll('a.copy-chip-link').forEach(a => {
-      a.addEventListener('click', (e) => { e.stopPropagation(); });
     });
     // Detail sub-tabs (Contact / Details / Industries / Notes) — switch the pane
     row.querySelectorAll('[data-action="detail-subtab"]').forEach(btn => {
