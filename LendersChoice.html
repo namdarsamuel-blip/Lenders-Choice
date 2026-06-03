@@ -2880,7 +2880,8 @@ button.strip-section-head:hover {
 
   /* Filter chips — sticky position needs to clear the topbar including its safe-area */
   .filter-bar {
-    padding: 10px 12px;
+    padding: 9px 12px;
+    gap: 6px;
     top: calc(54px + env(safe-area-inset-top));
   }
   .filter-summary {
@@ -2888,13 +2889,15 @@ button.strip-section-head:hover {
   }
   .filter-grid { gap: 8px; }
   .chip {
-    flex: 1 1 calc(50% - 4px);
+    flex: 0 1 auto;
     min-width: 0;
-    justify-content: space-between;
-    padding: 11px 12px;
+    max-width: 100%;
+    padding: 7px 11px;
     font-size: 13px;
-    min-height: 44px;
+    min-height: 34px;
   }
+  /* A chip with a selection grows to its content so the value shows in full */
+  .chip.has-value { flex: 0 0 auto; }
   .hide-filters-btn { padding: 11px 14px; font-size: 13px; min-height: 42px; }
   .clear-btn { padding: 11px 14px; font-size: 13px; min-height: 42px; }
   .filter-summary { padding: 13px 14px; font-size: 14px; top: 54px; min-height: 48px; }
