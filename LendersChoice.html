@@ -2038,6 +2038,42 @@ button.strip-section-head:hover {
 .dt-bk { color: var(--text); font-weight: 700; }
 .dt-callout .dt-bullets { margin-top: 2px; }
 
+/* Spreadsheet-style cell grid for multi-fact note bodies: fills the panel width
+   with hairline-divided cells (key/value where a label exists) so a long list of
+   one-liners becomes a few short rows instead of a tall single column. */
+.dt-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1px;
+  background: var(--border-2);
+  border: 1px solid var(--border-2);
+  border-radius: 7px;
+  overflow: hidden;
+  margin-top: 5px;
+}
+.dt-cell {
+  background: var(--bg-3);
+  padding: 7px 10px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-2);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.dt-cell .dt-ck {
+  display: block;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--text-4); margin-bottom: 3px;
+}
+.dt-cell .dt-cv { color: var(--text-2); }
+.dt-cell.dt-cell-wide { grid-column: span 2; }
+.dt-cell.dt-cell-full { grid-column: 1 / -1; }
+.dt-callout .dt-grid { margin-top: 7px; }
+@media (max-width: 720px) {
+  .dt-grid { grid-template-columns: 1fr 1fr; }
+  .dt-cell.dt-cell-wide, .dt-cell.dt-cell-full { grid-column: 1 / -1; }
+}
+
 @media (max-width: 640px) {
   .dt-note-item { padding: 3px 0 5px; }
   .dt-qf-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
@@ -7741,15 +7777,25 @@ function renderDetailPanel(L){
     }
     return esc(seg);
   };
-  // Break a long body into logical bullet lines on sentence boundaries so dense
-  // status/contract blobs read as a scannable list instead of a wall of text.
+  // Break a long body into a spreadsheet-style cell grid (fills width, fewer
+  // rows). Segments with a leading "Label:" become key/value cells; longer
+  // values span more columns so rows stay balanced.
+  const noteCell = (seg) => {
+    const m = seg.match(/^([A-Z][A-Za-z0-9 \/&'\u2019()+.-]{1,26}?):\s+([\s\S]+)$/);
+    let key = '', val = seg;
+    if (m && m[1].split(/\s+/).length <= 3) { key = m[1]; val = m[2]; }
+    const len = val.length;
+    const span = len > 150 ? ' dt-cell-full' : (len > 64 ? ' dt-cell-wide' : '');
+    const keyHtml = key ? `<span class="dt-ck">${esc(key)}</span>` : '';
+    return `<div class="dt-cell${span}">${keyHtml}<span class="dt-cv">${esc(val)}</span></div>`;
+  };
   const formatNoteBody = (text) => {
     const tx = (text || '').trim();
     if (!tx) return '';
     let segs = tx.split(/\.\s+(?=[A-Z0-9$"'(\u201c])/).map(s => s.trim()).filter(Boolean);
     segs = segs.map((s, idx) => (idx < segs.length - 1 && !/[.!?:]$/.test(s)) ? s + '.' : s);
     if (segs.length <= 1) return fmtInlineLabel(tx);
-    return `<ul class="dt-bullets">${segs.map(s => `<li>${fmtInlineLabel(s)}</li>`).join('')}</ul>`;
+    return `<div class="dt-grid">${segs.map(noteCell).join('')}</div>`;
   };
   const renderNoteBlock = (label, body, dateHtml) => {
     const headHtml = label ? `<div class="dt-block-head">${esc(label)}</div>` : '';
@@ -9098,5 +9144,291 @@ function init(){
 
 init();
 </script>
+<style>
+/* ===== Deal Match feature ===== */
+#dm-fab{position:fixed;right:20px;bottom:20px;z-index:9000;display:inline-flex;align-items:center;gap:8px;
+  padding:12px 18px;border-radius:999px;border:1px solid var(--blue-bd,rgba(124,183,255,.3));
+  background:var(--blue,#7CB7FF);color:#0b0b0f;font-weight:700;font-size:13.5px;cursor:pointer;
+  box-shadow:0 6px 24px rgba(0,0,0,.45);transition:transform .12s ease,filter .12s ease;font-family:inherit;}
+#dm-fab:hover{transform:translateY(-1px);filter:brightness(1.06);}
+#dm-overlay{position:fixed;inset:0;z-index:9001;background:rgba(0,0,0,.62);backdrop-filter:blur(3px);
+  display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:28px 16px;}
+#dm-overlay.open{display:flex;}
+.dm-panel{width:100%;max-width:1080px;background:var(--bg-2,#17171B);border:1px solid var(--border-2,rgba(255,255,255,.1));
+  border-radius:16px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.6);}
+.dm-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;
+  border-bottom:1px solid var(--border,rgba(255,255,255,.06));background:var(--bg-3,#1F1F24);}
+.dm-head h2{margin:0;font-size:15px;font-weight:700;color:var(--text,#B4B4BB);letter-spacing:.01em;}
+.dm-head .dm-sub{font-size:11.5px;color:var(--text-3,#71717A);margin-top:2px;font-weight:400;}
+.dm-x{background:none;border:none;color:var(--text-3,#71717A);font-size:22px;cursor:pointer;line-height:1;padding:2px 6px;border-radius:6px;}
+.dm-x:hover{color:var(--text,#B4B4BB);background:var(--bg-4,#2A2A30);}
+.dm-body{padding:18px 20px;}
+.dm-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;}
+.dm-field{display:flex;flex-direction:column;gap:4px;min-width:0;}
+.dm-field label{font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-4,#52525B);}
+.dm-field input,.dm-field select{background:var(--bg-1,#111114);border:1px solid var(--border-2,rgba(255,255,255,.1));
+  border-radius:8px;color:var(--text,#B4B4BB);font-size:13px;padding:8px 10px;font-family:inherit;outline:none;}
+.dm-field input:focus,.dm-field select:focus{border-color:var(--blue,#7CB7FF);}
+.dm-opts{display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin-top:14px;}
+.dm-toggle{display:inline-flex;border:1px solid var(--border-2,rgba(255,255,255,.1));border-radius:8px;overflow:hidden;}
+.dm-toggle button{background:var(--bg-1,#111114);border:none;color:var(--text-3,#71717A);font-size:12px;font-weight:600;
+  padding:7px 14px;cursor:pointer;font-family:inherit;}
+.dm-toggle button.on{background:var(--blue,#7CB7FF);color:#0b0b0f;}
+.dm-check{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text-2,#9b9ba3);cursor:pointer;}
+.dm-check input{width:15px;height:15px;accent-color:var(--blue,#7CB7FF);}
+.dm-go{margin-top:16px;width:100%;padding:11px;border-radius:9px;border:1px solid var(--blue-bd,rgba(124,183,255,.3));
+  background:var(--blue,#7CB7FF);color:#0b0b0f;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;}
+.dm-go:hover{filter:brightness(1.06);}
+.dm-results{margin-top:18px;}
+.dm-summary{font-size:12.5px;color:var(--text-2,#9b9ba3);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+.dm-summary .dm-mini{background:none;border:1px solid var(--border-2,rgba(255,255,255,.1));color:var(--text-2,#9b9ba3);
+  font-size:11px;padding:5px 10px;border-radius:7px;cursor:pointer;font-family:inherit;}
+.dm-mini:hover{border-color:var(--blue,#7CB7FF);color:var(--text,#B4B4BB);}
+.dm-sec-h{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-4,#52525B);margin:14px 0 7px;}
+.dm-row{display:flex;gap:11px;align-items:flex-start;padding:10px 12px;border:1px solid var(--border,rgba(255,255,255,.06));
+  border-radius:9px;margin-bottom:7px;background:var(--bg-1,#111114);}
+.dm-row.miss{opacity:.92;border-style:dashed;}
+.dm-row input.dm-pick{width:16px;height:16px;margin-top:2px;accent-color:var(--green,#22D88F);flex:none;}
+.dm-row .dm-main{flex:1;min-width:0;}
+.dm-row .dm-name{font-size:13.5px;font-weight:700;color:var(--text,#B4B4BB);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.dm-pill{font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border-radius:5px;}
+.dm-pill.active{background:var(--green-bg,rgba(34,216,143,.12));color:var(--green,#22D88F);}
+.dm-pill.direct{background:var(--bg-4,#2A2A30);color:var(--text-3,#71717A);}
+.dm-em{font-size:11.5px;color:var(--blue,#7CB7FF);margin-top:3px;word-break:break-all;}
+.dm-note{font-size:11px;color:var(--text-3,#71717A);margin-top:3px;line-height:1.4;}
+.dm-fails{font-size:11px;color:var(--amber,#FFC76A);margin-top:4px;line-height:1.45;}
+.dm-mailbtn{flex:none;align-self:center;background:var(--bg-3,#1F1F24);border:1px solid var(--border-2,rgba(255,255,255,.12));
+  color:var(--text,#B4B4BB);font-size:11.5px;font-weight:600;padding:7px 12px;border-radius:8px;cursor:pointer;
+  text-decoration:none;font-family:inherit;white-space:nowrap;}
+.dm-mailbtn:hover{border-color:var(--green,#22D88F);color:var(--green,#22D88F);}
+.dm-empty{font-size:12.5px;color:var(--text-3,#71717A);padding:14px;text-align:center;border:1px dashed var(--border-2,rgba(255,255,255,.1));border-radius:9px;}
+.dm-foot{position:sticky;bottom:0;margin-top:14px;padding-top:12px;border-top:1px solid var(--border,rgba(255,255,255,.06));
+  display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--bg-2,#17171B);}
+.dm-foot .dm-count{font-size:12px;color:var(--text-2,#9b9ba3);margin-right:auto;}
+.dm-foot button{font-family:inherit;cursor:pointer;border-radius:8px;font-weight:600;font-size:12.5px;padding:8px 14px;}
+.dm-foot .dm-copy{background:var(--bg-3,#1F1F24);border:1px solid var(--border-2,rgba(255,255,255,.12));color:var(--text,#B4B4BB);}
+.dm-foot .dm-copy:hover{border-color:var(--blue,#7CB7FF);}
+@media (max-width:640px){.dm-row{flex-wrap:wrap;}.dm-mailbtn{width:100%;text-align:center;}}
+</style>
+<button id="dm-fab" title="Match a deal to funders">⚡ Match a deal</button>
+<div id="dm-overlay">
+  <div class="dm-panel" role="dialog" aria-modal="true">
+    <div class="dm-head">
+      <div>
+        <h2>Match a deal to funders</h2>
+        <div class="dm-sub">Enter the merchant's profile — see which funders fit, then email the package.</div>
+      </div>
+      <button class="dm-x" id="dm-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="dm-body">
+      <div class="dm-form" id="dm-form"></div>
+      <div class="dm-opts">
+        <div class="dm-toggle" id="dm-strict">
+          <button data-v="strict" class="on">Strict</button>
+          <button data-v="loose">Loose (show near-misses)</button>
+        </div>
+        <label class="dm-check"><input type="checkbox" id="dm-onboarded" checked> Only funders I can submit to now</label>
+      </div>
+      <button class="dm-go" id="dm-go">Find funders</button>
+      <div class="dm-results" id="dm-results"></div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  "use strict";
+  var SRC = function(){ try{ return (typeof lenders!=='undefined' && lenders && lenders.length) ? lenders : DEFAULT_LENDERS; }catch(e){ return (typeof DEFAULT_LENDERS!=='undefined')?DEFAULT_LENDERS:[]; } };
+  var STATES = (typeof US_STATES!=='undefined') ? US_STATES.map(function(s){return s[1];}) : [];
+
+  // ---- industry synonym matching ----
+  var SYN = [
+    ['trucking','transportation','logistics','freight','hauling','carrier','limousine','taxi','towing'],
+    ['auto sales','automotive sales','car dealer','auto dealer','dealership','car sales','used car','new car','boat sales','motorcycle','auto dealerships'],
+    ['auto repair','automotive repair','mechanic','body shop'],
+    ['cannabis','marijuana','vape','cbd','dispensary','smoke shop','thc','hookah'],
+    ['attorney','lawyer','law firm','legal','law offices'],
+    ['real estate','realtor','realty','property management','real estate brokerage','house flip','real estate investment'],
+    ['financial services','financial institution','investment','brokerage','wealth management','banking','crypto','digital assets','factoring','equipment financing','mortgage','stock broker'],
+    ['restaurant','cafe','diner','bakery','bar','night club'],
+    ['construction','contractor','contracting','builder','home builder'],
+    ['non-profit','nonprofit','charity','religion','church','temple'],
+    ['gas station','fuel','oil'],
+    ['nail salon','hair salon','salon','barber'],
+    ['casino','gambling','gaming','lottery'],
+    ['check cashing'],['pawn'],['bail bond'],
+    ['firearms','guns','weapons','ammo','firearm'],
+    ['adult','xxx'],
+    ['collection agency','debt collection','collections','debt consolidation'],
+    ['credit repair'],['insurance'],['staffing'],['solar'],['jewelry'],
+    ['farming','agriculture','livestock','ranch','seafood'],
+    ['childcare','child care','daycare','pre-school','preschool'],
+    ['travel agency','travel agent'],
+    ['accounting','cpa','bookkeeping'],
+    ['vending'],['cell phone','wireless'],['auto rental','car rental'],
+    ['recycling'],['food truck'],['title company'],['precious metals'],['consulting']
+  ];
+  var GENERIC = {sales:1,service:1,services:1,group:1,company:1,store:1,stores:1,shop:1,shops:1,llc:1,inc:1,and:1,the:1,for:1,business:1,center:1,general:1,sevices:1,companies:1,agents:1};
+  function indTokens(phrase){
+    var p=(phrase||'').toLowerCase(), groups={}, hit=false, i;
+    for(i=0;i<SYN.length;i++){ var grp=SYN[i]; for(var j=0;j<grp.length;j++){ if(p.indexOf(grp[j])>-1){ groups['#'+i]=1; hit=true; break; } } }
+    if(hit) return groups;
+    var words=p.split(/[^a-z]+/), out={};
+    for(i=0;i<words.length;i++){ var w=words[i]; if(w.length>2 && !GENERIC[w]) out[w]=1; }
+    return out;
+  }
+  function industryExcluded(dealInd, excl){
+    if(!dealInd||!excl) return null;
+    var d=indTokens(dealInd), toks=excl.split(','), i, k;
+    for(i=0;i<toks.length;i++){ var t=toks[i].trim(); if(!t) continue; var tt=indTokens(t); for(k in tt){ if(d[k]) return t; } }
+    return null;
+  }
+  // ---- per-criterion match ----
+  function parseRange(pr){ pr=(pr||'').toString().trim().toLowerCase(); if(!pr||pr==='any')return null;
+    if(pr.indexOf('-')>-1){ var a=pr.split('-'); return [parseInt(a[0],10),parseInt(a[1],10)]; } var n=parseInt(pr,10); return isNaN(n)?null:[n,n]; }
+  function evalDeal(deal, L){
+    var fails=[];
+    if(deal.state){ var sr=(L.state_rule||'all').trim(), ds=deal.state.toLowerCase();
+      if(sr.indexOf('only:')===0){ var only=sr.slice(5).split(',').map(function(s){return s.trim().toLowerCase();});
+        if(only.indexOf(ds)<0) fails.push('Only funds '+sr.slice(5).trim()); }
+      else if(sr.indexOf('all_except:')===0){ var ex=sr.slice(11).split(',').map(function(s){return s.trim().toLowerCase();});
+        if(ex.indexOf(ds)>-1) fails.push('Excludes '+deal.state); } }
+    if(deal.position){ var r=parseRange(L.position); if(r){ if(deal.position<r[0]||deal.position>r[1]) fails.push('Position '+(L.position)+' (deal '+deal.position+')'); } }
+    if(deal.revenue!=null && L.revenue_min!=null && deal.revenue<L.revenue_min) fails.push('Min rev $'+Number(L.revenue_min).toLocaleString());
+    if(deal.fico!=null && L.fico_min!=null && deal.fico<L.fico_min) fails.push('Min FICO '+L.fico_min);
+    if(deal.tib!=null && L.tib_min!=null && deal.tib<L.tib_min) fails.push('Min TIB '+L.tib_min+'mo');
+    if(deal.neg!=null && L.neg_max!=null && deal.neg>L.neg_max) fails.push('Max '+L.neg_max+' neg days');
+    if(deal.defaults && L.defaults){ var dr={none:0,settled:1,open:2}[deal.defaults], la={clean:0,satisfied:1,open:2}[L.defaults];
+      if(dr!=null && la!=null && dr>la) fails.push(L.defaults==='clean'?'No prior defaults':'Settled defaults only'); }
+    var ix=industryExcluded(deal.industry, L.industry_excl); if(ix) fails.push('Excludes '+ix);
+    return fails;
+  }
+  // ---- submission emails ----
+  function subEmails(L){
+    var to=[], cc=[];
+    var se=L.submission_emails;
+    if(se && se.length){ for(var i=0;i<se.length;i++){ var e=se[i]; if(typeof e==='string'){ if(e)to.push(e); } else if(e&&e.email){ (e.tag==='cc'?cc:to).push(e.email); } } }
+    if(!to.length && L.contact_email) to.push(L.contact_email);
+    return {to:to, cc:cc};
+  }
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // ---- build form ----
+  var form=document.getElementById('dm-form');
+  var stateOpts='<option value="">— any —</option>'+STATES.map(function(s){return '<option>'+esc(s)+'</option>';}).join('');
+  var posOpts='<option value="">— any —</option>'; for(var p=1;p<=10;p++) posOpts+='<option value="'+p+'">'+p+(p===1?'st':p===2?'nd':p===3?'rd':'th')+' position</option>';
+  var defOpts='<option value="">— unknown —</option><option value="none">No prior defaults</option><option value="settled">Prior, settled</option><option value="open">Open default</option>';
+  form.innerHTML=''
+    +fld('Merchant / business name','<input id="dm-merchant" placeholder="optional — used in email">')
+    +fld('State','<select id="dm-state">'+stateOpts+'</select>')
+    +fld('Position','<select id="dm-pos">'+posOpts+'</select>')
+    +fld('Monthly revenue ($)','<input id="dm-rev" type="number" inputmode="numeric" placeholder="e.g. 60000">')
+    +fld('FICO','<input id="dm-fico" type="number" inputmode="numeric" placeholder="e.g. 600">')
+    +fld('Time in business (months)','<input id="dm-tib" type="number" inputmode="numeric" placeholder="e.g. 18">')
+    +fld('Industry','<input id="dm-ind" placeholder="e.g. restaurant, trucking, auto repair">')
+    +fld('Negative days / mo','<input id="dm-neg" type="number" inputmode="numeric" placeholder="optional">')
+    +fld('Prior defaults','<select id="dm-def">'+defOpts+'</select>');
+  function fld(label,inner){ return '<div class="dm-field"><label>'+label+'</label>'+inner+'</div>'; }
+
+  var strictMode='strict';
+  var stEl=document.getElementById('dm-strict');
+  stEl.addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b)return;
+    strictMode=b.getAttribute('data-v'); Array.prototype.forEach.call(stEl.children,function(c){c.classList.toggle('on',c===b);}); });
+
+  function num(id){ var v=document.getElementById(id).value.trim(); return v===''?null:Number(v); }
+  function readDeal(){ return {
+    merchant:document.getElementById('dm-merchant').value.trim(),
+    state:document.getElementById('dm-state').value,
+    position:num('dm-pos'), revenue:num('dm-rev'), fico:num('dm-fico'),
+    tib:num('dm-tib'), neg:num('dm-neg'), industry:document.getElementById('dm-ind').value.trim(),
+    defaults:document.getElementById('dm-def').value
+  }; }
+
+  function mailtoFor(L, deal){
+    var em=subEmails(L); if(!em.to.length) return null;
+    var subj='New Submission — '+(deal.merchant||'Merchant');
+    var lines=['New deal submission from Lendiago Capital Solutions.',''];
+    if(deal.merchant) lines.push('Merchant: '+deal.merchant);
+    if(deal.state) lines.push('State: '+deal.state);
+    if(deal.position) lines.push('Position: '+deal.position);
+    if(deal.revenue!=null) lines.push('Monthly revenue: $'+Number(deal.revenue).toLocaleString());
+    if(deal.fico!=null) lines.push('FICO: '+deal.fico);
+    if(deal.tib!=null) lines.push('Time in business: '+deal.tib+' months');
+    if(deal.industry) lines.push('Industry: '+deal.industry);
+    if(deal.defaults) lines.push('Prior defaults: '+deal.defaults);
+    lines.push('','Attached: last 3 months bank statements + signed application.','',
+      'Thanks,','Sam Jones','Lendiago Capital Solutions LLC','sam@lendiago.com  •  (516) 835-0757');
+    var url='mailto:'+encodeURIComponent(em.to.join(','))+'?';
+    if(em.cc.length) url+='cc='+encodeURIComponent(em.cc.join(','))+'&';
+    url+='subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(lines.join('\r\n'));
+    return url;
+  }
+
+  var resultsEl=document.getElementById('dm-results');
+  function run(){
+    var deal=readDeal(), onboardedOnly=document.getElementById('dm-onboarded').checked;
+    var src=SRC(), matches=[], near=[];
+    for(var i=0;i<src.length;i++){ var L=src[i];
+      if(onboardedOnly && L.status!=='active') continue;
+      var fails=evalDeal(deal,L);
+      if(fails.length===0) matches.push(L);
+      else if(fails.length<=2) near.push({L:L,fails:fails});
+    }
+    matches.sort(byName); near.sort(function(a,b){return byName(a.L,b.L);});
+    var html='';
+    var anyFilter=deal.state||deal.position||deal.revenue!=null||deal.fico!=null||deal.tib!=null||deal.neg!=null||deal.industry||deal.defaults;
+    html+='<div class="dm-summary"><span><b style="color:var(--text)">'+matches.length+'</b> funder'+(matches.length===1?'':'s')+' match'+(anyFilter?'':' (no criteria entered — showing all)')+(onboardedOnly?' · onboarded only':'')+'</span>'
+      +'<button class="dm-mini" id="dm-selall">Select all</button></div>';
+    if(matches.length){ matches.forEach(function(L){ html+=row(L,deal,false,null); }); }
+    else html+='<div class="dm-empty">No funders pass every criterion. Try Loose mode or widen the deal.</div>';
+    if(strictMode==='loose' && near.length){
+      html+='<div class="dm-sec-h">Near misses ('+near.length+') — one or two criteria off</div>';
+      near.forEach(function(n){ html+=row(n.L,deal,true,n.fails); });
+    }
+    html+='<div class="dm-foot"><span class="dm-count" id="dm-count">0 selected</span>'
+      +'<button class="dm-copy" id="dm-copyall">Copy all TO emails</button></div>';
+    resultsEl.innerHTML=html;
+    wire(deal);
+  }
+  function byName(a,b){ return a.name<b.name?-1:a.name>b.name?1:0; }
+  function row(L,deal,miss,fails){
+    var em=subEmails(L), to=em.to.join(', ')+(em.cc.length?'  ·  cc '+em.cc.join(', '):'');
+    var mt=mailtoFor(L,deal);
+    var pill=L.status==='active'?'<span class="dm-pill active">Active</span>':'<span class="dm-pill direct">Not onboarded</span>';
+    var note=L.submission_note?'<div class="dm-note">'+esc(L.submission_note)+'</div>':(L.submission_url?'<div class="dm-note">Submit via portal: '+esc(L.submission_url)+'</div>':'');
+    var failHtml=fails?'<div class="dm-fails">⚠ '+fails.map(esc).join(' · ')+'</div>':'';
+    var pickAttr='data-em="'+esc(em.to.join(','))+'"';
+    return '<div class="dm-row'+(miss?' miss':'')+'">'
+      +'<input type="checkbox" class="dm-pick" '+pickAttr+(miss?'':' checked')+'>'
+      +'<div class="dm-main"><div class="dm-name">'+esc(L.name)+' '+pill+'</div>'
+      +(to?'<div class="dm-em">'+esc(to)+'</div>':'<div class="dm-note">No submission email on file</div>')
+      +note+failHtml+'</div>'
+      +(mt?'<a class="dm-mailbtn" href="'+mt+'">✉ Email</a>':'')
+      +'</div>';
+  }
+  function wire(deal){
+    var picks=Array.prototype.slice.call(resultsEl.querySelectorAll('.dm-pick'));
+    var countEl=document.getElementById('dm-count');
+    function upd(){ var n=picks.filter(function(p){return p.checked;}).length; countEl.textContent=n+' selected'; }
+    picks.forEach(function(p){ p.addEventListener('change',upd); }); upd();
+    var selall=document.getElementById('dm-selall');
+    if(selall) selall.addEventListener('click',function(){ var all=picks.every(function(p){return p.checked;}); picks.forEach(function(p){p.checked=!all;}); upd(); });
+    var copyall=document.getElementById('dm-copyall');
+    if(copyall) copyall.addEventListener('click',function(){
+      var ems=[]; picks.forEach(function(p){ if(p.checked){ var e=p.getAttribute('data-em'); if(e) e.split(',').forEach(function(x){ if(x&&ems.indexOf(x)<0)ems.push(x); }); } });
+      var txt=ems.join(', ');
+      if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(function(){ copyall.textContent='Copied '+ems.length+' emails ✓'; setTimeout(function(){copyall.textContent='Copy all TO emails';},1600); }); }
+      else { copyall.textContent=txt; }
+    });
+  }
+
+  var overlay=document.getElementById('dm-overlay');
+  document.getElementById('dm-fab').addEventListener('click',function(){ overlay.classList.add('open'); });
+  document.getElementById('dm-close').addEventListener('click',function(){ overlay.classList.remove('open'); });
+  overlay.addEventListener('click',function(e){ if(e.target===overlay) overlay.classList.remove('open'); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') overlay.classList.remove('open'); });
+  document.getElementById('dm-go').addEventListener('click',run);
+})();
+</script>
+
 </body>
 </html>
