@@ -646,7 +646,7 @@ button.strip-section-head:hover {
 .strip-row.tier-hold    { border-left: 3px solid var(--coral); }
 .strip-row.tier-wait    { border-left: 3px solid var(--accent); }
 .strip-row.tier-notready { border-left: 3px solid var(--orange); }
-.strip-row.tier-waiting  { border-left: 3px solid var(--accent); }
+.strip-row.tier-waiting  { border-left: 3px solid var(--coral); }
 
 /* When expanded, the tier color wraps the ENTIRE card (top/right/bottom/left)
    so you can see at a glance which bucket the open lender belongs to and where
@@ -657,7 +657,7 @@ button.strip-section-head:hover {
 .strip-row.expanded.tier-hold     { border-color: var(--coral); }
 .strip-row.expanded.tier-wait     { border-color: var(--accent); }
 .strip-row.expanded.tier-notready { border-color: var(--orange); }
-.strip-row.expanded.tier-waiting  { border-color: var(--accent); }
+.strip-row.expanded.tier-waiting  { border-color: var(--coral); }
 
 .tier-badge {
   display: inline-flex;
@@ -7397,7 +7397,7 @@ function renderMatches(){
   // Each: key, label, dotClass, the data array, and the renderStripRow args.
   const tabDefs = [
     { key: 'qualifying',   label: 'Active',                dot: 'ok',       data: matches,      rejected: false, reasonFromX: false, readonly: false },
-    { key: 'pending',      label: 'Contract too aggressive', dot: 'waiting', data: waiting.concat(contractHold), rejected: false, reasonFromX: false, readonly: true },
+    { key: 'pending',      label: 'Contract too aggressive', dot: 'hold', data: waiting.concat(contractHold), rejected: false, reasonFromX: false, readonly: true },
     { key: 'signup',       label: 'Needs to sign up',      dot: 'neutral',  data: signup,       rejected: false, reasonFromX: false, readonly: true  },
     { key: 'notready',     label: 'Not big enough yet',    dot: 'notready', data: notReady,     rejected: false, reasonFromX: false, readonly: true  },
     { key: 'rejected',     label: 'Will not qualify',      dot: 'bad',      data: rejected,     rejected: true,  reasonFromX: true,  readonly: false },
@@ -7493,8 +7493,12 @@ function fmtVerifiedDate(iso){
   const parts = iso.split('-').map(Number);
   if (parts.length !== 3 || parts.some(isNaN)) return iso;
   const [y, m, d] = parts;
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return `${d} ${months[m-1]} ${y}`;
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${pad(m)}/${pad(d)}/${y}`;
+}
+// Convert any embedded ISO date (2026-05-26) in a string to US MM/DD/YYYY.
+function usDates(s){
+  return String(s).replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g, (_, y, m, d) => `${m}/${d}/${y}`);
 }
 // Compact date for the small outreach pill, e.g. "2026-05-29" -> "5/29".
 function fmtOutreachDate(iso){
@@ -7559,10 +7563,11 @@ function waitingBlurb(L){
   }
   s = s.replace(/\*+/g, ' ').replace(/\s+/g, ' ').trim();
   if (!s) return '';
-  if (s.length > 150) {
-    let cut = s.slice(0, 150);
+  s = usDates(s);
+  if (s.length > 200) {
+    let cut = s.slice(0, 200);
     const p = cut.lastIndexOf('. ');
-    if (p > 70) cut = cut.slice(0, p + 1);
+    if (p > 90) cut = cut.slice(0, p + 1);
     else cut = cut.replace(/\s+\S*$/, '') + '…';
     s = cut;
   }
@@ -8007,7 +8012,7 @@ function renderDetailPanel(L){
     return `<div class="dt-row no-k"><span class="dt-row-v">${esc(seg)}</span></div>`;
   };
   const formatNoteBody = (text) => {
-    const tx = (text || '').trim();
+    const tx = usDates((text || '').trim());
     if (!tx) return '';
     let segs = tx.split(/\.\s+(?=[A-Z0-9$"'(\u201c])/).map(s => s.trim()).filter(Boolean);
     segs = segs.map((s, idx) => (idx < segs.length - 1 && !/[.!?:]$/.test(s)) ? s + '.' : s);
@@ -8083,6 +8088,9 @@ function renderDetailPanel(L){
     // Contact tab — don't repeat them in Notes. (Phone:/Contact: are already
     // dropped upstream; this also catches Office:/Fax:/Cell:/Direct:/etc.)
     if (/^(office|fax|phone|cell|tel|telephone|direct|mobile|e-?mail|hotline|contact|whatsapp)\s*:/i.test(item)) return;
+
+    // "Waiting: …" status is surfaced as the red status line on the row — don't repeat it in Notes.
+    if (/^waiting\s*:/i.test(item)) return;
 
     // Contract / signing / onboarding → Agreement tab (kept out of Notes).
     if (isAgreementItem(item)) { pushAgreement(item, dateHtml); return; }
