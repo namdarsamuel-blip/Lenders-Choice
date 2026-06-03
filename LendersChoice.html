@@ -16,47 +16,45 @@
 <style>
 /* ========== DESIGN TOKENS ========== */
 :root {
-  /* iOS system dark surfaces — true-black base with elevated systemGray fills */
-  --bg: #000000;
-  --bg-1: #1C1C1E;
-  --bg-2: #2C2C2E;
-  --bg-3: #3A3A3C;
-  --bg-4: #48484A;
-  --border: rgba(255,255,255,0.08);
-  --border-2: rgba(255,255,255,0.13);
-  --border-3: rgba(255,255,255,0.20);
-  --text: #FFFFFF;
-  --text-2: #C7C7CC;
-  --text-3: #98989F;
-  --text-4: #68686E;
+  --bg: #0A0A0B;
+  --bg-1: #111114;
+  --bg-2: #17171B;
+  --bg-3: #1F1F24;
+  --bg-4: #2A2A30;
+  --border: rgba(255,255,255,0.06);
+  --border-2: rgba(255,255,255,0.10);
+  --border-3: rgba(255,255,255,0.16);
+  --text: #F4F4F5;
+  --text-2: #B4B4BB;
+  --text-3: #71717A;
+  --text-4: #52525B;
 
-  /* iOS system colors */
-  --green: #30D158;
-  --green-bg: rgba(48,209,88,0.13);
-  --green-bd: rgba(48,209,88,0.34);
-  --amber: #FFD60A;
-  --amber-bg: rgba(255,214,10,0.12);
-  --amber-bd: rgba(255,214,10,0.32);
-  --orange: #FF9F0A;
-  --orange-bg: rgba(255,159,10,0.12);
-  --orange-bd: rgba(255,159,10,0.34);
-  --coral: #FF453A;
-  --coral-bg: rgba(255,69,58,0.12);
-  --coral-bd: rgba(255,69,58,0.32);
-  --blue: #0A84FF;
-  --blue-bg: rgba(10,132,255,0.14);
-  --blue-bd: rgba(10,132,255,0.36);
-  --pink: #FF375F;
-  --pink-bg: rgba(255,55,95,0.12);
-  --pink-bd: rgba(255,55,95,0.32);
+  --green: #22D88F;
+  --green-bg: rgba(34,216,143,0.10);
+  --green-bd: rgba(34,216,143,0.30);
+  --amber: #FFC76A;
+  --amber-bg: rgba(255,199,106,0.10);
+  --amber-bd: rgba(255,199,106,0.30);
+  --orange: #FF9F45;
+  --orange-bg: rgba(255,159,69,0.10);
+  --orange-bd: rgba(255,159,69,0.32);
+  --coral: #F87171;
+  --coral-bg: rgba(248,113,113,0.10);
+  --coral-bd: rgba(248,113,113,0.30);
+  --blue: #7CB7FF;
+  --blue-bg: rgba(124,183,255,0.10);
+  --blue-bd: rgba(124,183,255,0.30);
+  --pink: #F472B6;
+  --pink-bg: rgba(244,114,182,0.10);
+  --pink-bd: rgba(244,114,182,0.30);
 
   --accent: #FFE08A;
-  --accent-dim: rgba(255,224,138,0.12);
-  --accent-bd: rgba(255,224,138,0.32);
+  --accent-dim: rgba(255,224,138,0.10);
+  --accent-bd: rgba(255,224,138,0.30);
 
-  --rad: 12px;
+  --rad: 10px;
   --rad-pill: 999px;
-  --shadow-pop: 0 16px 50px rgba(0,0,0,0.55), 0 3px 12px rgba(0,0,0,0.4);
+  --shadow-pop: 0 20px 60px rgba(0,0,0,0.55), 0 4px 16px rgba(0,0,0,0.4);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -92,7 +90,7 @@ button { cursor: pointer; }
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(0,0,0,0.72);
+  background: rgba(10,10,11,0.72);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   backdrop-filter: saturate(180%) blur(20px);
   border-bottom: 1px solid var(--border);
@@ -112,7 +110,7 @@ button { cursor: pointer; }
   left: 0;
   right: 0;
   height: env(safe-area-inset-top);
-  background: rgba(0,0,0,0.72);
+  background: rgba(10,10,11,0.72);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   backdrop-filter: saturate(180%) blur(20px);
   pointer-events: none;
@@ -262,15 +260,15 @@ button { cursor: pointer; }
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   background: var(--bg-1);
   border: 1px solid var(--border-2);
   border-radius: 11px;
-  padding: 6px 11px;
-  font-size: 12.5px;
+  padding: 9px 14px;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.12s;
-  min-height: 32px;
+  min-height: 40px;
 }
 .chip:hover { border-color: var(--border-3); background: var(--bg-2); }
 .chip.has-value { border-color: var(--accent-bd); background: var(--accent-dim); }
@@ -323,9 +321,9 @@ button { cursor: pointer; }
 }
 .chip-search:focus { border-color: var(--accent-bd); }
 .chip-opt {
-  padding: 8px 10px;
-  border-radius: 6px;
-  font-size: 13px;
+  padding: 11px 12px;
+  border-radius: 7px;
+  font-size: 13.5px;
   white-space: nowrap;
 }
 .chip-opt:hover { background: var(--bg-3); color: var(--accent); }
@@ -635,8 +633,8 @@ button.strip-section-head:hover {
   transition: all 0.18s ease;
   overflow: hidden;
 }
-.strip-row:nth-child(odd) { background: var(--bg); }
-.strip-row:hover { border-color: var(--border-3); background: var(--bg-2); }
+.strip-row:nth-child(odd) { background: var(--bg-1); }
+.strip-row:hover { border-color: var(--border-2); background: var(--bg-2); }
 
 /* Per-row tier signal: a colored left edge stripe + a small labeled badge,
    so the section a lender belongs to is recognizable at a glance even when
@@ -1172,17 +1170,17 @@ button.strip-section-head:hover {
   border-bottom-left-radius: 0;
 }
 .strip-position-badge .strip-pos-context {
-  font-size: 8.5px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
-  opacity: 0.6;
-  margin-bottom: 4px;
+  opacity: 0.55;
+  margin-bottom: 5px;
 }
 .strip-position-badge .strip-pos-short {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
   line-height: 1;
 }
 .strip-position-badge:active {
@@ -1225,28 +1223,32 @@ button.strip-section-head:hover {
 .strip-cell {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
   min-width: 0;
   padding: 0;
   border-radius: 5px;
   transition: all 0.15s;
 }
+/* Empty metric = "no requirement" — recede it so populated specs pop */
+.strip-cell--empty .strip-k { color: var(--text-4); opacity: 0.5; }
+.strip-cell--empty .strip-v { font-weight: 400; }
+.strip-na { color: var(--text-4); opacity: 0.4; font-weight: 400; }
 .strip-k {
-  font-size: 9.5px;
+  font-size: 9px;
   font-weight: 600;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--text-4);
   line-height: 1;
   white-space: nowrap;
 }
 .strip-v {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', system-ui, sans-serif;
   font-weight: 600;
   font-size: 13.5px;
   color: var(--text);
-  line-height: 1.35;
-  letter-spacing: -0.005em;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1961,8 +1963,8 @@ button.strip-section-head:hover {
   vertical-align: 1px;
   white-space: nowrap;
 }
-/* ===== Notes pane — iOS grouped-inset presentation ===== */
-.dt-notes2 { display: flex; flex-direction: column; gap: 12px; }
+/* ===== Notes pane — iOS grouped-inset presentation (compact) ===== */
+.dt-notes2 { display: flex; flex-direction: column; gap: 9px; }
 
 /* Quick facts — inset grouped list, hairline-separated cells in one rounded card */
 .dt-qf-grid {
@@ -1974,28 +1976,28 @@ button.strip-section-head:hover {
   border-radius: 14px;
   overflow: hidden;
 }
-.dt-qf-cell { background: var(--bg-1); padding: 10px 14px; min-width: 0; }
+.dt-qf-cell { background: var(--bg-1); padding: 7px 12px; min-width: 0; }
 .dt-qf-k {
   display: block; font-size: 11px; font-weight: 500; letter-spacing: 0.01em;
   color: var(--text-3); margin-bottom: 2px;
 }
 .dt-qf-v {
-  display: block; font-size: 14px; color: var(--text); font-weight: 500;
-  line-height: 1.4; word-break: break-word; letter-spacing: -0.01em;
+  display: block; font-size: 13px; color: var(--text); font-weight: 500;
+  line-height: 1.35; word-break: break-word; letter-spacing: -0.01em;
 }
 
 /* Callout cards — status / contract / bonus, color-coded by tone */
 .dt-callout {
   border: 1px solid var(--border);
   background: var(--bg-1);
-  border-radius: 14px;
-  padding: 13px 15px;
-  font-size: 14px; line-height: 1.5; color: var(--text-2);
+  border-radius: 13px;
+  padding: 10px 13px;
+  font-size: 13px; line-height: 1.45; color: var(--text-2);
   word-break: break-word; overflow-wrap: anywhere;
 }
 .dt-callout .co-title {
-  display: block; font-size: 12px; font-weight: 700; letter-spacing: -0.01em;
-  color: var(--text); margin-bottom: 6px;
+  display: block; font-size: 11.5px; font-weight: 700; letter-spacing: -0.01em;
+  color: var(--text); margin-bottom: 5px;
 }
 .dt-callout.tone-green { background: var(--green-bg); border-color: var(--green-bd); }
 .dt-callout.tone-green .co-title { color: var(--green); }
@@ -2007,14 +2009,14 @@ button.strip-section-head:hover {
 .dt-callout.tone-mute .co-title { color: var(--text-3); }
 
 /* Detail sections — guidelines / submit / stips / prose; long ones collapse */
-.dt-block { border: 1px solid var(--border); border-radius: 14px; background: var(--bg-1); padding: 12px 15px; }
+.dt-block { border: 1px solid var(--border); border-radius: 13px; background: var(--bg-1); padding: 10px 13px; }
 .dt-block-head {
   font-size: 11px; font-weight: 600; letter-spacing: 0.02em;
   text-transform: uppercase; color: var(--text-3); margin-bottom: 7px;
 }
-.dt-block-body { font-size: 14px; line-height: 1.55; color: var(--text-2); word-break: break-word; overflow-wrap: anywhere; }
+.dt-block-body { font-size: 13px; line-height: 1.5; color: var(--text-2); word-break: break-word; overflow-wrap: anywhere; }
 .dt-block details > summary {
-  list-style: none; cursor: pointer; font-size: 14px;
+  list-style: none; cursor: pointer; font-size: 13px;
   display: flex; align-items: center; gap: 8px;
 }
 .dt-block details > summary::-webkit-details-marker { display: none; }
@@ -2022,12 +2024,12 @@ button.strip-section-head:hover {
 .dt-block details[open] > summary .co-chev { transform: rotate(90deg); }
 .dt-block details > summary .co-sum { color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .dt-block details[open] > summary .co-sum { color: var(--text-2); white-space: normal; }
-.dt-block details .co-full { margin-top: 10px; font-size: 14px; line-height: 1.55; color: var(--text-2); word-break: break-word; overflow-wrap: anywhere; }
+.dt-block details .co-full { margin-top: 9px; font-size: 13px; line-height: 1.5; color: var(--text-2); word-break: break-word; overflow-wrap: anywhere; }
 
 /* Misc — leftover short fragments grouped into one inset card */
-.dt-misc { border: 1px solid var(--border); border-radius: 14px; background: var(--bg-1); padding: 2px 15px; }
+.dt-misc { border: 1px solid var(--border); border-radius: 13px; background: var(--bg-1); padding: 2px 13px; }
 .dt-misc-line {
-  padding: 10px 0; font-size: 14px; line-height: 1.5; color: var(--text-2);
+  padding: 7px 0; font-size: 13px; line-height: 1.45; color: var(--text-2);
   word-break: break-word; overflow-wrap: anywhere;
 }
 .dt-misc-line + .dt-misc-line { border-top: 1px solid var(--border); }
@@ -2042,7 +2044,7 @@ button.strip-section-head:hover {
 .dt-callout .dt-bullets { margin-top: 2px; }
 
 /* Single-sentence note body */
-.dt-prose { font-size: 14px; line-height: 1.55; color: var(--text-2); word-break: break-word; overflow-wrap: anywhere; }
+.dt-prose { font-size: 13px; line-height: 1.5; color: var(--text-2); word-break: break-word; overflow-wrap: anywhere; }
 
 /* Multi-fact note body — iOS grouped rows: one rounded card with hairline-
    separated label/value rows in a single readable column (replaces cell grid) */
@@ -2052,18 +2054,18 @@ button.strip-section-head:hover {
   border: 1px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
-  margin-top: 8px;
+  margin-top: 6px;
 }
 .dt-row {
-  display: flex; gap: 14px; align-items: baseline;
-  padding: 9px 14px;
-  font-size: 13.5px; line-height: 1.5;
+  display: flex; gap: 12px; align-items: baseline;
+  padding: 7px 12px;
+  font-size: 12.5px; line-height: 1.45;
   min-width: 0;
 }
 .dt-row + .dt-row { border-top: 1px solid var(--border); }
 .dt-row-k {
   flex: none; min-width: 96px; max-width: 44%;
-  font-size: 12.5px; font-weight: 500; color: var(--text-3);
+  font-size: 12px; font-weight: 500; color: var(--text-3);
   word-break: break-word;
 }
 .dt-row-v { flex: 1; min-width: 0; color: var(--text); font-weight: 500; word-break: break-word; overflow-wrap: anywhere; letter-spacing: -0.01em; }
@@ -2963,7 +2965,7 @@ button.strip-section-head:hover {
 
   .strip-reason { padding: 0 14px 10px 14px; font-size: 11.5px; }
   .strip-detail { padding: 14px 14px 16px; }
-  .dt-rows .dt-row { padding: 11px 16px; }
+  .dt-rows .dt-row { padding: 9px 14px; }
   .dt-row { grid-template-columns: 76px 1fr; font-size: 12.5px; }
 
   /* Section heading */
@@ -7427,7 +7429,7 @@ function fmtVerifiedDate(iso){
   if (parts.length !== 3 || parts.some(isNaN)) return iso;
   const [y, m, d] = parts;
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return `${months[m-1]} ${d}, ${y}`;
+  return `${d} ${months[m-1]} ${y}`;
 }
 // Compact date for the small outreach pill, e.g. "2026-05-29" -> "5/29".
 function fmtOutreachDate(iso){
@@ -7506,17 +7508,17 @@ function renderStripRow(L, isRejected, reason, failField, readOnly, tier){
 
   // Format helpers — collapsed row: dash for "no restriction", actual values otherwise.
   const fmtState = (rule) => {
-    if (!rule || rule === 'all') return '<span class="strip-muted">—</span>';
+    if (!rule || rule === 'all') return '';
     if (rule.startsWith('only:')) {
       const list = rule.slice(5).split(',').map(s => s.trim()).filter(Boolean);
-      if (list.length === 0) return '<span class="strip-muted">—</span>';
+      if (list.length === 0) return '';
       if (list.length === 1) return esc(list[0]);
       if (list.length <= 3) return list.map(s => esc(s)).join(', ');
       return `${esc(list[0])}, ${esc(list[1])} <span class="strip-more">+${list.length - 2}</span>`;
     }
     if (rule.startsWith('all_except:')) {
       const list = rule.slice(11).split(',').map(s => s.trim()).filter(Boolean);
-      if (list.length === 0) return '<span class="strip-muted">—</span>';
+      if (list.length === 0) return '';
       if (list.length === 1) return `<span class="strip-x">×</span> ${esc(list[0])}`;
       return `<span class="strip-x">×</span> ${esc(list[0])}, ${esc(list[1])}${list.length > 2 ? ` <span class="strip-more">+${list.length - 2}</span>` : ''}`;
     }
@@ -7524,13 +7526,13 @@ function renderStripRow(L, isRejected, reason, failField, readOnly, tier){
   };
   const fmtDef = (d) => {
     // No restriction = dash. "open" / "Would fund" means lender accepts all defaults — that's NO restriction, so dash.
-    if (!d || d === 'open') return '<span class="strip-muted">—</span>';
-    return ({clean:'Not allowed', satisfied:'Satisfied'})[d] || '<span class="strip-muted">—</span>';
+    if (!d || d === 'open') return '';
+    return ({clean:'Not allowed', satisfied:'Satisfied'})[d] || '';
   };
 
   // Compact money: $20k, $1.5M, $100k — no truncation, no commas
   const fmtMoney = (n) => {
-    if (n == null || n <= 0) return '<span class="strip-muted">—</span>';
+    if (n == null || n <= 0) return '';
     if (n >= 1000000) {
       const v = n / 1000000;
       return '$' + (v === Math.floor(v) ? v.toString() : v.toFixed(1)) + 'M';
@@ -7545,7 +7547,10 @@ function renderStripRow(L, isRejected, reason, failField, readOnly, tier){
   // Build cell with failed-field highlighting
   const cell = (label, content, fieldKey) => {
     const failClass = (isRejected && failField === fieldKey) ? ' fail' : '';
-    return `<div class="strip-cell${failClass}"><div class="strip-k">${label}</div><div class="strip-v">${content}</div></div>`;
+    const isEmpty = !content;
+    const cls = 'strip-cell' + failClass + (isEmpty ? ' strip-cell--empty' : '');
+    const v = isEmpty ? '<span class="strip-na">–</span>' : content;
+    return `<div class="${cls}"><div class="strip-k">${label}</div><div class="strip-v">${v}</div></div>`;
   };
 
   const cls = ['strip-row'];
@@ -7584,9 +7589,9 @@ function renderStripRow(L, isRejected, reason, failField, readOnly, tier){
             </div>
             <div class="strip-row2">
               ${cell('Revenue', fmtMoney(L.revenue_min), 'revenue')}
-              ${cell('FICO', (L.fico_min != null && L.fico_min > 0) ? L.fico_min + '+' : '<span class="strip-muted">—</span>', 'fico')}
-              ${cell('TIB', (L.tib_min != null && L.tib_min > 0) ? L.tib_min + ' mo' : '<span class="strip-muted">—</span>', 'tib')}
-              ${cell('Neg Days', (L.neg_max != null) ? L.neg_max + ' max' : '<span class="strip-muted">—</span>', 'neg')}
+              ${cell('FICO', (L.fico_min != null && L.fico_min > 0) ? L.fico_min + '+' : '', 'fico')}
+              ${cell('TIB', (L.tib_min != null && L.tib_min > 0) ? L.tib_min + ' mo' : '', 'tib')}
+              ${cell('Neg Days', (L.neg_max != null) ? L.neg_max + ' max' : '', 'neg')}
               ${cell('Defaults', fmtDef(L.defaults), 'defaults')}
               ${cell('States', fmtState(L.state_rule), 'state')}
             </div>
@@ -7932,6 +7937,33 @@ function renderDetailPanel(L){
   const calloutsHtml = [];
   const blocksHtml = [];
   const miscLines = [];
+  const agreementItemsHtml = [];
+
+  // Contract / signing / onboarding content gets its own "Agreement" tab — it
+  // documents the ISO agreement, redlines, and onboarding docs, none of which
+  // help evaluate or match a lender to a deal. Notes stays the buy-box facts.
+  const isAgreementItem = (s) => {
+    // Keep merchant-submission stips in Notes ("To generate offer/contract", "Submit", "Stips").
+    if (/^(to generate|submit|submissions?|stips?|required stips?)\b/i.test(s)) return false;
+    return /\bISO[\s-]?AGREEMENT|ISO-FUNDER|SALES AGENT AGREEMENT|MARKETING AGREEMENT|REFERRAL AGREEMENT|INDEPENDENT SALES OFFICE|CONTRACT REVIEW|REDLINE|PERSONAL GUARANT|\bGUARANT(Y|EE|OR)\b|NON-SOLICIT|NON-COMPET|NON-INTERFERENCE|CLAWBACK|SECURITY INTEREST|\bUCC\b|DOCUSIGN|HELLOSIGN|SIGNNOW|PUSHBACK|PG-REMOVAL|ENTITY-ONLY|\bONBOARD|REVIEW \+ SIGN|REVIEW AND SIGN|SIGN THE ISO|SIGNED .{0,30}ISO|SIGNED AND (WAS )?ONBOARD|SAM SIGNED|AGREEMENT STATUS|AGREEMENT:|\bSECTION \d|\bPARAGRAPH \d|\bPARA \d|\bW-?9\b|VOIDED CHECK|\bAWAITING\b.{0,40}(RESPONSE|REVISED|REDLINE|AGREEMENT|LEGAL)/i.test(s);
+  };
+  const pushAgreement = (item, dateHtml) => {
+    if (/\*\*\*/.test(item)) {
+      let body = item.replace(/\*\*\*/g, '').trim();
+      let title = '';
+      const hm = body.match(/^([A-Z0-9][A-Z0-9 ,/&'\u2019()$%+.-]{2,46}?)(?::|\s+\u2014| -|\.)\s+([\s\S]+)$/);
+      if (hm && /[A-Z]{3,}/.test(hm[1])) { title = hm[1].trim().replace(/[.\s-]+$/, ''); body = hm[2].trim(); }
+      const tone = noteToneFor(item);
+      agreementItemsHtml.push(`<div class="dt-callout${tone ? ' tone-' + tone : ''}">${title ? `<span class="co-title">${esc(title)}</span>` : ''}${formatNoteBody(body)}${dateHtml}</div>`);
+      return;
+    }
+    const mm = item.match(/^([A-Za-z][^:\n]{0,22}):\s+([\s\S]+)$/);
+    if (mm && looksLikeHeader(mm[1]) && mm[2].length >= 2) {
+      agreementItemsHtml.push(renderNoteBlock(mm[1].trim(), mm[2].trim(), dateHtml));
+    } else {
+      agreementItemsHtml.push(renderNoteBlock('', item, dateHtml));
+    }
+  };
 
   leftoverNotesItems.forEach(rawItem => {
     // The "what to do next" lives in the action banner up top — strip any
@@ -7943,12 +7975,15 @@ function renderDetailPanel(L){
     const dm = item.match(/[\s]*[(\[]?(\d{4}-\d{2}-\d{2})[)\]]?\.?\s*$/);
     if (dm) { dateTag = dm[1]; item = item.slice(0, dm.index).replace(/[.\s\u2014|-]+$/, '').trim(); }
     if (!item) return;
-    const dateHtml = dateTag ? `<span class="dt-note-date">${esc(dateTag)}</span>` : '';
+    const dateHtml = dateTag ? `<span class="dt-note-date">${esc(fmtVerifiedDate(dateTag))}</span>` : '';
 
     // Contact-type fields (office, fax, phone, cell, email…) belong in the
     // Contact tab — don't repeat them in Notes. (Phone:/Contact: are already
     // dropped upstream; this also catches Office:/Fax:/Cell:/Direct:/etc.)
     if (/^(office|fax|phone|cell|tel|telephone|direct|mobile|e-?mail|hotline|contact|whatsapp)\s*:/i.test(item)) return;
+
+    // Contract / signing / onboarding → Agreement tab (kept out of Notes).
+    if (isAgreementItem(item)) { pushAgreement(item, dateHtml); return; }
 
     // (1) CALLOUT — any chunk carrying a *** … *** marker
     if (/\*\*\*/.test(item)) {
@@ -7987,6 +8022,10 @@ function renderDetailPanel(L){
   const miscHtml = miscLines.length ? `<div class="dt-misc">${miscLines.join('')}</div>` : '';
   const notesPane = (calloutsHtml.length || qfGridHtml || blocksHtml.length || miscHtml)
     ? `<div class="dt-notes2">${calloutsHtml.join('')}${qfGridHtml}${blocksHtml.join('')}${miscHtml}</div>`
+    : '';
+
+  const agreementPane = agreementItemsHtml.length
+    ? `<div class="dt-notes2">${agreementItemsHtml.join('')}</div>`
     : '';
 
   const archiveHtml = (L.archive_notes && L.archive_notes.length) ? `
@@ -8035,6 +8074,7 @@ function renderDetailPanel(L){
     { key: 'contact',    label: 'Contact',    has: !!(submitBlock || contactsBlock || otherEmailsHtml || websiteLine), html: contactPaneHtml },
     { key: 'industries', label: 'Details',    has: !!(specsHtml || industriesPaneHtml),                                html: industriesPaneHtml },
     { key: 'notes',      label: 'Notes',      has: !!(notesPane || archiveHtml),                                       html: notesPaneHtml },
+    { key: 'agreement',  label: 'Agreement',  has: !!agreementPane,                                                    html: agreementPane },
   ].filter(p => p.has);
 
   let active = detailTab[L.name];
