@@ -7995,9 +7995,18 @@ function renderDetailPanel(L){
   // documents the ISO agreement, redlines, and onboarding docs, none of which
   // help evaluate or match a lender to a deal. Notes stays the buy-box facts.
   const isAgreementItem = (s) => {
-    // Keep merchant-submission stips in Notes ("To generate offer/contract", "Submit", "Stips").
+    // Keep merchant-submission stips in Notes.
     if (/^(to generate|submit|submissions?|stips?|required stips?)\b/i.test(s)) return false;
-    return /\bISO[\s-]?AGREEMENT|ISO-FUNDER|SALES AGENT AGREEMENT|MARKETING AGREEMENT|REFERRAL AGREEMENT|INDEPENDENT SALES OFFICE|CONTRACT REVIEW|REDLINE|PERSONAL GUARANT|\bGUARANT(Y|EE|OR)\b|NON-SOLICIT|NON-COMPET|NON-INTERFERENCE|CLAWBACK|SECURITY INTEREST|\bUCC\b|DOCUSIGN|HELLOSIGN|SIGNNOW|PUSHBACK|PG-REMOVAL|ENTITY-ONLY|\bONBOARD|REVIEW \+ SIGN|REVIEW AND SIGN|SIGN THE ISO|SIGNED .{0,30}ISO|SIGNED AND (WAS )?ONBOARD|SAM SIGNED|AGREEMENT STATUS|AGREEMENT:|\bSECTION \d|\bPARAGRAPH \d|\bPARA \d|\bW-?9\b|VOIDED CHECK|\bAWAITING\b.{0,40}(RESPONSE|REVISED|REDLINE|AGREEMENT|LEGAL)/i.test(s);
+    // Only strong contract/signing signals route to Agreement.
+    const strong = /\bISO[\s-]?AGREEMENT|SALES AGENT AGREEMENT|MARKETING AGREEMENT|REFERRAL AGREEMENT|CONTRACT REVIEW|\bREDLINE\b|CONTRACT HOLD|PERSONAL GUARANT|\bGUARANT(Y|EE|OR)\b|NON-SOLICIT|NON-COMPET|NON-INTERFERENCE|CLAWBACK|SECURITY INTEREST|\bUCC\b|DOCUSIGN|HELLOSIGN|SIGNNOW|PUSHBACK|PG-REMOVAL|REVIEW \+ SIGN|REVIEW AND SIGN|SIGN THE ISO|SIGNED .{0,30}ISO|SAM SIGNED|AGREEMENT SIGNED|AGREEMENT STATUS|\bSECTION \d|\bPARAGRAPH \d|\bPARA \d/i.test(s);
+    if (!strong) return false;
+    // A long guidelines / buy-box blob that merely mentions a keyword is NOT
+    // agreement — keep it in Notes (it describes how the lender funds, not signing).
+    if (!/\*\*\*/.test(s) && s.length > 320 &&
+        (s.match(/\b(revenue|FICO|TIB|position|deposit|commission|points?|funding|term|preferred|broker terms|submit|process)\b/gi) || []).length >= 3) {
+      return false;
+    }
+    return true;
   };
   const pushAgreement = (item, dateHtml) => {
     if (/\*\*\*/.test(item)) {
@@ -8009,12 +8018,12 @@ function renderDetailPanel(L){
       agreementItemsHtml.push(`<div class="dt-callout${tone ? ' tone-' + tone : ''}">${title ? `<span class="co-title">${esc(title)}</span>` : ''}${formatNoteBody(body)}${dateHtml}</div>`);
       return;
     }
+    // Always render inline — no nested collapse inside the Agreement section.
     const mm = item.match(/^([A-Za-z][^:\n]{0,22}):\s+([\s\S]+)$/);
-    if (mm && looksLikeHeader(mm[1]) && mm[2].length >= 2) {
-      agreementItemsHtml.push(renderNoteBlock(mm[1].trim(), mm[2].trim(), dateHtml));
-    } else {
-      agreementItemsHtml.push(renderNoteBlock('', item, dateHtml));
-    }
+    let head = '', body = item;
+    if (mm && looksLikeHeader(mm[1]) && mm[2].length >= 2) { head = mm[1].trim(); body = mm[2].trim(); }
+    const headHtml = head ? `<div class="dt-block-head">${esc(head)}</div>` : '';
+    agreementItemsHtml.push(`<div class="dt-block">${headHtml}<div class="dt-block-body">${formatNoteBody(body)}${dateHtml}</div></div>`);
   };
 
   leftoverNotesItems.forEach(rawItem => {
