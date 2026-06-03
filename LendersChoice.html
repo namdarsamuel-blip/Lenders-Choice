@@ -1989,6 +1989,12 @@ button.strip-section-head:hover {
 .dt-agreement-badge.tone-mute  { color: var(--text-3); }
 .dt-agreement-body { display: flex; flex-direction: column; gap: 9px; padding: 2px 0 10px; }
 
+/* Merged Waiting section — sub-group headers + the quick "waiting for" line */
+.strip-subhead { display: flex; align-items: center; gap: 8px; padding: 16px 4px 7px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-3); }
+.strip-subhead:first-child { padding-top: 4px; }
+.strip-subhead-n { font-size: 11px; font-weight: 600; color: var(--text-3); background: var(--bg-2); border: 1px solid var(--border); border-radius: 999px; padding: 1px 8px; }
+.strip-waitnote { margin-top: 5px; font-size: 12.5px; line-height: 1.45; color: var(--amber); background: var(--amber-bg); border: 1px solid var(--amber-bd); border-radius: 8px; padding: 5px 10px; }
+
 /* Quick facts — inset grouped list, hairline-separated cells in one rounded card */
 .dt-qf-grid {
   display: grid;
@@ -7391,13 +7397,14 @@ function renderMatches(){
   // Each: key, label, dotClass, the data array, and the renderStripRow args.
   const tabDefs = [
     { key: 'qualifying',   label: 'Active',                dot: 'ok',       data: matches,      rejected: false, reasonFromX: false, readonly: false },
-    { key: 'waiting',      label: 'Waiting',               dot: 'waiting',  data: waiting,      rejected: false, reasonFromX: false, readonly: true  },
+    { key: 'pending',      label: 'Waiting',               dot: 'waiting',  data: waiting.concat(contractHold), rejected: false, reasonFromX: false, readonly: true },
     { key: 'signup',       label: 'Needs to sign up',      dot: 'neutral',  data: signup,       rejected: false, reasonFromX: false, readonly: true  },
-    { key: 'contracthold', label: 'Too Aggressive Contract', dot: 'hold',   data: contractHold, rejected: false, reasonFromX: false, readonly: true  },
     { key: 'notready',     label: 'Not big enough yet',    dot: 'notready', data: notReady,     rejected: false, reasonFromX: false, readonly: true  },
     { key: 'rejected',     label: 'Will not qualify',      dot: 'bad',      data: rejected,     rejected: true,  reasonFromX: true,  readonly: false },
   ].filter(t => t.data.length > 0);
 
+  // Old split keys now map to the merged "Waiting" pill.
+  if (activeTab === 'waiting' || activeTab === 'contracthold') activeTab = 'pending';
   // If the active tab is empty/missing (e.g. filters changed), fall back to the first available.
   if (!tabDefs.some(t => t.key === activeTab)) {
     activeTab = tabDefs.length ? tabDefs[0].key : 'qualifying';
@@ -7418,7 +7425,7 @@ function renderMatches(){
         t.reasonFromX ? x.reason : null,
         t.reasonFromX ? x.field : null,
         t.readonly,
-        t.key
+        t.key === 'pending' ? (x.L.waiting === true ? 'waiting' : 'contracthold') : t.key
       )).join('');
     });
     html += `</div>`;
@@ -7442,7 +7449,16 @@ function renderMatches(){
   // Content panel — rows for the active tab only.
   const active = tabDefs.find(t => t.key === activeTab);
   html += `<div class="tab-panel" role="tabpanel">`;
-  if (active) {
+  if (active && active.key === 'pending') {
+    // Merged section: pending / awaiting-a-reply on top, contract-too-aggressive
+    // (funder hasn't budged) at the bottom. Each row shows a quick status note.
+    const grp = (label, arr, tierKey) => arr.length ? (
+      `<div class="strip-subhead"><span>${label}</span><span class="strip-subhead-n">${arr.length}</span></div>` +
+      arr.map(x => renderStripRow(x.L, false, null, null, true, tierKey)).join('')
+    ) : '';
+    html += grp('Waiting on a reply', waiting, 'waiting');
+    html += grp('Contract too aggressive', contractHold, 'contracthold');
+  } else if (active) {
     html += active.data.map(x => renderStripRow(
       x.L,
       active.rejected,
@@ -7527,6 +7543,30 @@ function lenderMatchesSearch(L, query){
     }
   }
   return false;
+}
+
+// A short "what we're waiting for" line for the merged Waiting section — pulls
+// from action_note first, else the Waiting:/ACTION/ONBOARDING/AWAITING note text.
+function waitingBlurb(L){
+  let s = (L.action_note || '').trim();
+  if (!s) {
+    const n = (L.notes || '').replace(/\n/g, ' ');
+    const m = n.match(/Waiting:\s*([^|*]+)/i)
+           || n.match(/\*\*\*\s*ACTION[^:]*:\s*([^*|]+)/i)
+           || n.match(/ONBOARDING[^:]*:\s*([^*|]+)/i)
+           || n.match(/AWAITING[^.*|]*\.?/i);
+    if (m) s = (m[1] || m[0] || '');
+  }
+  s = s.replace(/\*+/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!s) return '';
+  if (s.length > 150) {
+    let cut = s.slice(0, 150);
+    const p = cut.lastIndexOf('. ');
+    if (p > 70) cut = cut.slice(0, p + 1);
+    else cut = cut.replace(/\s+\S*$/, '') + '…';
+    s = cut;
+  }
+  return s;
 }
 
 function renderStripRow(L, isRejected, reason, failField, readOnly, tier){
@@ -7636,6 +7676,7 @@ function renderStripRow(L, isRejected, reason, failField, readOnly, tier){
               })()}</div>
               ${L.action_needed === true ? `<span class="action-badge" title="${esc(L.action_note || 'Action needed')}">ACTION</span>` : ''}
             </div>
+            ${(tier === 'waiting' || tier === 'contracthold') ? (() => { const b = waitingBlurb(L); return b ? `<div class="strip-waitnote">${esc(b)}</div>` : ''; })() : ''}
             <div class="strip-row2">
               ${cell('Revenue', fmtMoney(L.revenue_min), 'revenue')}
               ${cell('FICO', (L.fico_min != null && L.fico_min > 0) ? L.fico_min + '+' : '', 'fico')}
