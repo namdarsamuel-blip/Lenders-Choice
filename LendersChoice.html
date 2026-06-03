@@ -8429,8 +8429,30 @@ function wireStripRows(){
 }
 
 function toggleExpand(name){
-  expandedLender = (expandedLender === name) ? null : name;
+  const wasExpanded = (expandedLender === name);
+  expandedLender = wasExpanded ? null : name;
   renderMatches();
+  // When OPENING a card, bring it into view so what you just opened is right
+  // there — aligned just under the sticky header stack — instead of stranded
+  // off-screen because you were scrolled elsewhere when you tapped it.
+  if (!wasExpanded) {
+    requestAnimationFrame(() => {
+      const row = document.querySelector(`.strip-row.expanded[data-name="${cssEsc(name)}"]`);
+      if (!row) return;
+      // Bottom edge of the lowest currently-visible sticky header.
+      let stickyBottom = 0;
+      ['.topbar', '.filter-bar', '.filter-summary.show', '.match-search-row'].forEach(sel => {
+        document.querySelectorAll(sel).forEach(el => {
+          if (!el.offsetParent && getComputedStyle(el).position !== 'sticky') return;
+          if (getComputedStyle(el).position !== 'sticky') return;
+          const b = el.getBoundingClientRect().bottom;
+          if (b > 0 && b < window.innerHeight && b > stickyBottom) stickyBottom = b;
+        });
+      });
+      const delta = row.getBoundingClientRect().top - stickyBottom - 12;
+      if (Math.abs(delta) > 4) window.scrollBy({ top: delta, behavior: 'smooth' });
+    });
+  }
 }
 
 function toggleSelection(name){
