@@ -2592,7 +2592,7 @@ button.strip-section-head:hover {
   font-size: 12.5px;
   line-height: 1.5;
   margin-bottom: 3px;
-  align-items: flex-start;
+  align-items: center;
 }
 .sl-label {
   color: var(--text-3);
@@ -2601,15 +2601,33 @@ button.strip-section-head:hover {
   font-size: 10.5px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding-top: 2px;
 }
-.sl-val {
+.sl-email-text {
   color: var(--text-2);
   font-family: 'JetBrains Mono', monospace;
   word-break: break-all;
   flex: 1;
   font-size: 12px;
 }
+.sl-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  background: var(--bg-3);
+  border: 1px solid var(--border-2);
+  color: var(--text-2);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  white-space: nowrap;
+}
+.sl-copy-btn svg { width: 11px; height: 11px; flex-shrink: 0; }
+.sl-copy-btn:hover { background: var(--bg-4, var(--bg-3)); color: var(--text); }
+.sl-copy-btn.copied { background: var(--green-bg); color: var(--green); border-color: var(--green-bd); }
 .sl-msg-row { margin-top: 6px; border-top: 1px solid var(--border); padding-top: 7px; }
 .sl-msg {
   color: var(--text-3);
@@ -9088,6 +9106,7 @@ function renderSubmitPage(){
       emailsEl.innerHTML = '<span class="placeholder">No lenders selected.</span>';
     } else {
       const msg = (settings.default_message || DEFAULT_MESSAGE).trim();
+      const copyIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="9" height="9" rx="1.5"/><path d="M11 4V3a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h1"/></svg>`;
       const html = selected.map(L => {
         let toList = [], ccList = [];
         if (L.submission_emails && L.submission_emails.length) {
@@ -9096,12 +9115,14 @@ function renderSubmitPage(){
         } else if (L.contact_email) {
           toList = [L.contact_email];
         }
-        const toStr  = toList.length ? toList.join(', ') : '<span class="missing-email">⚠ no email on file</span>';
-        const ccHtml = ccList.length ? `<div class="sl-row"><span class="sl-label">CC</span><span class="sl-val">${ccList.join(', ')}</span></div>` : '';
+        const toVal  = toList.join(', ');
+        const toStr  = toList.length ? `<span class="sl-email-text">${esc(toVal)}</span>` : '<span class="missing-email">⚠ no email on file</span>';
+        const toCopy = toList.length ? `<button class="sl-copy-btn" data-copy="${esc(toVal)}" title="Copy To">${copyIcon}<span>Copy</span></button>` : '';
+        const ccVal  = ccList.join(', ');
+        const ccHtml = ccList.length ? `<div class="sl-row"><span class="sl-label">CC</span><span class="sl-email-text">${esc(ccVal)}</span><button class="sl-copy-btn" data-copy="${esc(ccVal)}" title="Copy CC">${copyIcon}<span>Copy</span></button></div>` : '';
         return `<div class="submit-lender-block">
 <div class="sl-name">${esc(L.name)}</div>
-<div class="sl-row"><span class="sl-label">To</span><span class="sl-val">${toStr}</span></div>${ccHtml}
-<div class="sl-row sl-msg-row"><span class="sl-label">Msg</span><span class="sl-val sl-msg">${esc(msg)}</span></div>
+<div class="sl-row"><span class="sl-label">To</span>${toStr}${toCopy}</div>${ccHtml}
 </div>`;
       }).join('');
       emailsEl.innerHTML = html;
@@ -9798,6 +9819,23 @@ document.getElementById('btn-copy-emails-page').addEventListener('click', async 
     toast(`Copied ${selected.length} email${selected.length===1?'':'s'} — paste into Gmail "To" or "Bcc"`);
   } else {
     toast('Copy failed — long-press the emails to select manually', true);
+  }
+});
+
+// Per-lender inline copy buttons (To / CC)
+document.getElementById('submit-emails-display').addEventListener('click', async (e) => {
+  const btn = e.target.closest('.sl-copy-btn');
+  if (!btn) return;
+  const text = btn.dataset.copy;
+  if (!text) return;
+  const ok = await copyToClipboard(text);
+  if (ok) {
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<span>Copied!</span>';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 1800);
+  } else {
+    toast('Copy failed — long-press to select manually', true);
   }
 });
 
