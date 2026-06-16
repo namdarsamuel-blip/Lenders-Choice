@@ -2530,8 +2530,8 @@ button.strip-section-head:hover {
   line-height: 1.7;
   min-height: 50px;
   word-break: break-all;
-  user-select: all;
-  -webkit-user-select: all;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .submit-emails .placeholder {
   color: var(--text-4);
@@ -2579,6 +2579,8 @@ button.strip-section-head:hover {
   padding: 16px 16px 12px;
   margin-bottom: 12px;
   transition: opacity 0.25s, border-color 0.25s;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .submit-lender-block.sl-sent {
   opacity: 0.45;
@@ -2652,6 +2654,8 @@ button.strip-section-head:hover {
   flex: 1;
   font-size: 12.5px;
   line-height: 1.4;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .sl-copy-btn {
   display: inline-flex;
@@ -2673,8 +2677,22 @@ button.strip-section-head:hover {
 .sl-copy-btn svg { width: 12px; height: 12px; flex-shrink: 0; }
 .sl-copy-btn:hover { background: #FFE89B; }
 .sl-copy-btn:active { transform: scale(0.97); }
-.sl-copy-btn.copied { background: var(--green); color: #0A0A0B; }
-.sl-copy-btn.copied svg { display: none; }
+.sl-copy-btn.copied {
+  background: var(--green-bg);
+  color: var(--green);
+  border: 1px solid var(--green-bd);
+  cursor: default;
+}
+.sl-copy-btn.copied:hover { background: var(--green-bg); }
+.sl-copy-btn.copied svg { display: inline; }
+.sl-msg-row { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 6px; }
+.sl-msg-text {
+  font-family: -apple-system, sans-serif !important;
+  font-size: 12px !important;
+  color: var(--text-3) !important;
+  word-break: normal;
+  white-space: pre-wrap;
+}
 .missing-email { color: var(--coral); font-family: inherit; }
 
 .submit-message {
@@ -9162,13 +9180,15 @@ function renderSubmitPage(){
         const ccRow = ccList.length
           ? `<div class="sl-row"><span class="sl-label">CC</span><span class="sl-email-text">${esc(ccVal)}</span><button class="sl-copy-btn" data-copy="${esc(ccVal)}">${copyIcon} Copy CC</button></div>`
           : '';
+        const msgVal = (settings.default_message || DEFAULT_MESSAGE).trim();
+        const msgRow = `<div class="sl-row sl-msg-row"><span class="sl-label">Msg</span><span class="sl-email-text sl-msg-text">${esc(msgVal)}</span><button class="sl-copy-btn" data-copy="${esc(msgVal)}">${copyIcon} Copy Msg</button></div>`;
         return `<div class="submit-lender-block" data-lender="${esc(L.name)}">
 <div class="sl-header">
   <span class="sl-name">${esc(L.name)}</span>
   <span class="sl-sent-badge">${checkIcon} Sent</span>
   <button class="sl-mark-sent" data-lender="${esc(L.name)}">${checkIcon} Mark sent</button>
 </div>
-<div class="sl-email-rows">${toRow}${ccRow}</div>
+<div class="sl-email-rows">${toRow}${ccRow}${msgRow}</div>
 </div>`;
       }).join('');
       emailsEl.innerHTML = html;
@@ -9868,18 +9888,33 @@ document.getElementById('btn-copy-emails-page').addEventListener('click', async 
   }
 });
 
-// Per-lender inline copy buttons (To / CC)
+// Per-lender inline copy buttons (To / CC / Msg) — sticky copied state
+const CHECK_ICON_SVG = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 8 6.5 12 13 4"/></svg>';
+
+function checkAutoMarkSent(block) {
+  // Mark block as sent once every copy button in it has been copied
+  const btns = [...block.querySelectorAll('.sl-copy-btn')];
+  if (btns.length && btns.every(b => b.classList.contains('copied'))) {
+    block.classList.add('sl-sent');
+  }
+}
+
 document.getElementById('submit-emails-display').addEventListener('click', async (e) => {
   const copyBtn = e.target.closest('.sl-copy-btn');
   if (copyBtn) {
     const text = copyBtn.dataset.copy;
     if (!text) return;
+    // If already copied, copy again silently but keep state
+    const alreadyCopied = copyBtn.classList.contains('copied');
     const ok = await copyToClipboard(text);
     if (ok) {
-      const orig = copyBtn.innerHTML;
-      copyBtn.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 8 6.5 12 13 4"/></svg> Copied!';
+      // Sticky — set copied and never revert automatically
+      copyBtn.innerHTML = CHECK_ICON_SVG + ' Copied';
       copyBtn.classList.add('copied');
-      setTimeout(() => { copyBtn.innerHTML = orig; copyBtn.classList.remove('copied'); }, 1800);
+      if (!alreadyCopied) {
+        const block = copyBtn.closest('.submit-lender-block');
+        if (block) checkAutoMarkSent(block);
+      }
     } else {
       toast('Copy failed — long-press to select manually', true);
     }
