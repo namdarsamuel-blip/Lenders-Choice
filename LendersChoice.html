@@ -3542,6 +3542,7 @@ function loadAll(){
       agreement_signed: d.agreement_signed,
       contract_hold: d.contract_hold,
       waiting: d.waiting,
+      not_ready: d.not_ready,
       verified_at: d.verified_at,
     }));
   });
@@ -7177,18 +7178,23 @@ function loadAll(){
         changed++;
         return;
       }
-      // 2. Default says signed/active -> re-assert status + verification stamp.
-      //    These are the only fields the reconcile owns; everything else is the
-      //    user's to edit freely.
+      // 2. Re-assert authoritative fields from DEFAULT_LENDERS.
+      //    Active lenders: re-assert status + verification stamp.
+      //    All lenders: re-assert contract_hold, not_ready, waiting (bucket routing).
       if (d.status === 'active') {
         if (L.status !== 'active') { L.status = 'active'; changed++; }
         if (d.verified_at && L.verified_at !== d.verified_at) { L.verified_at = d.verified_at; changed++; }
         if (d.verified_source && !L.verified_source) { L.verified_source = d.verified_source; changed++; }
         if (d.agreement_signed === true && L.agreement_signed !== true) { L.agreement_signed = true; changed++; }
         if (d.agreement_signed === false && L.agreement_signed !== false) { L.agreement_signed = false; changed++; }
-        if (d.contract_hold === true && !L.contract_hold) { L.contract_hold = true; changed++; }
-        if (d.contract_hold === false && L.contract_hold) { L.contract_hold = false; changed++; }
+      } else {
+        // Directory lender: keep status as-is but re-assert bucket routing.
+        if (L.status === 'active') { L.status = d.status || 'directory'; changed++; }
       }
+      // Always re-assert bucket flags from DEFAULT_LENDERS.
+      if (!!d.contract_hold !== !!L.contract_hold) { L.contract_hold = !!d.contract_hold; changed++; }
+      if (!!d.not_ready !== !!L.not_ready) { L.not_ready = !!d.not_ready; changed++; }
+      if (!!d.waiting !== !!L.waiting) { L.waiting = !!d.waiting; changed++; }
       // 3. Stamp outreach_sent for lenders already emailed (additive only).
       if (!L.outreach_sent && OUTREACH_SENT_2026_05_29.has(L.name)) {
         L.outreach_sent = '2026-05-29';
@@ -8038,10 +8044,11 @@ function renderMatches(){
   //  - contractHold: agreement received but terms too aggressive (Capitalize, Aspire, TSM)
   //  - notReady:     funder wants a track record Sam doesn't have yet
   //  - signup:       everyone else (just needs outreach)
-  const waiting = allEvaluated.filter(x => x.L.status !== 'active' && x.qualifies && x.L.waiting === true);
-  const contractHold = allEvaluated.filter(x => x.L.status !== 'active' && x.qualifies && x.L.contract_hold === true && x.L.waiting !== true);
-  const notReady = allEvaluated.filter(x => x.L.status !== 'active' && x.qualifies && x.L.not_ready === true && x.L.contract_hold !== true && x.L.waiting !== true);
-  const signup   = allEvaluated.filter(x => x.L.status !== 'active' && x.qualifies && x.L.not_ready !== true && x.L.contract_hold !== true && x.L.waiting !== true);
+  // Directory lenders show on their tabs regardless of filters — filters only affect Active tab.
+  const waiting = allEvaluated.filter(x => x.L.status !== 'active' && x.L.waiting === true);
+  const contractHold = allEvaluated.filter(x => x.L.status !== 'active' && x.L.contract_hold === true && x.L.waiting !== true);
+  const notReady = allEvaluated.filter(x => x.L.status !== 'active' && x.L.not_ready === true && x.L.contract_hold !== true && x.L.waiting !== true);
+  const signup   = allEvaluated.filter(x => x.L.status !== 'active' && x.L.not_ready !== true && x.L.contract_hold !== true && x.L.waiting !== true);
 
   // "Action Needed" is a CROSS-CUTTING view: any lender flagged action_needed:true
   // shows here regardless of which bucket it lives in. It surfaces everything where
