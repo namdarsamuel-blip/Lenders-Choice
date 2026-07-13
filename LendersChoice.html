@@ -2476,6 +2476,22 @@ button.strip-section-head:hover {
 .submit-head .page-title { font-size: 24px; }
 .submit-head .page-sub { font-size: 14px; margin-top: 4px; }
 
+.submit-deal-input {
+  width: 100%;
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+  letter-spacing: -0.005em;
+}
+.submit-deal-input:focus { border-color: var(--accent); }
+.submit-deal-input::placeholder { color: var(--text-3); font-weight: 400; }
+
 .submit-card {
   background: var(--bg-1);
   border: 1px solid var(--border);
@@ -3407,7 +3423,14 @@ button.strip-section-head:hover {
 
     <div class="submit-head">
       <h1 class="page-title">Send submission</h1>
-      <p class="page-sub"><span id="submit-count">0</span> lenders selected — each block has the To, CC, and message ready to copy.</p>
+      <p class="page-sub"><span id="submit-count">0</span> lenders selected — each block has the To, CC, subject, and message ready to copy.</p>
+    </div>
+
+    <div class="submit-card">
+      <div class="submit-field-head">
+        <label>Deal Name</label>
+      </div>
+      <input type="text" id="submit-deal-name" class="submit-deal-input" placeholder="e.g. Sam's Taco Stand LLC" autocomplete="off" spellcheck="false">
     </div>
 
     <div class="submit-card">
@@ -3419,17 +3442,6 @@ button.strip-section-head:hover {
         </button>
       </div>
       <div class="submit-emails" id="submit-emails-display"></div>
-    </div>
-
-    <div class="submit-card">
-      <div class="submit-field-head">
-        <label>Message</label>
-        <button class="sub-copy-btn" id="btn-copy-message-page">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="9" height="9" rx="1.5"/><path d="M11 4V3a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h1"/></svg>
-          Copy message
-        </button>
-      </div>
-      <textarea class="submit-message" id="submit-message" rows="8" placeholder="Hi, this is Samuel Namdar with Lendiago Capital Solutions..."></textarea>
     </div>
 
     <div class="submit-actions">
@@ -3496,6 +3508,7 @@ let lenders = [];
 let settings = {};
 let currentPage = 'match';
 let selectedLenders = new Set();
+let lastSelectedName = null; // for shift-click range selection
 let editingName = null; // null = adding, set = editing this lender
 
 // Filter state for Match Deal
@@ -9097,7 +9110,26 @@ function wireStripRows(){
       el.addEventListener('click', (e) => {
         e.stopPropagation();
         if (isSelectingGesture(e)) return;
+        if (e.shiftKey && lastSelectedName) {
+          const allRows = Array.from(document.querySelectorAll('.strip-row[data-name]'));
+          const idxA = allRows.findIndex(r => r.dataset.name === lastSelectedName);
+          const idxB = allRows.findIndex(r => r.dataset.name === name);
+          if (idxA !== -1 && idxB !== -1) {
+            const lo = Math.min(idxA, idxB), hi = Math.max(idxA, idxB);
+            const targetState = !selectedLenders.has(name);
+            for (let i = lo; i <= hi; i++) {
+              const n = allRows[i].dataset.name;
+              if (targetState) selectedLenders.add(n); else selectedLenders.delete(n);
+              allRows[i].classList.toggle('selected', targetState);
+              allRows[i].querySelector('.strip-check')?.classList.toggle('checked', targetState);
+            }
+            updateTopbarStats();
+            updateActionBar();
+            return;
+          }
+        }
         toggleSelection(name);
+        lastSelectedName = name;
       });
     });
     // Expand zones. In read-only mode the badge + select-zone also carry
@@ -9235,7 +9267,7 @@ function toggleExpand(name){
 
 function toggleSelection(name){
   if (selectedLenders.has(name)) selectedLenders.delete(name);
-  else selectedLenders.add(name);
+  else { selectedLenders.add(name); lastSelectedName = name; }
   // Update strip-row visuals
   document.querySelectorAll(`.strip-row[data-name="${cssEsc(name)}"]`).forEach(row => {
     row.classList.toggle('selected', selectedLenders.has(name));
@@ -9282,6 +9314,18 @@ function renderSubmitPage(){
     .map(name => lenders.find(L => L.name === name))
     .filter(Boolean);
 
+  // Wire deal name input to re-render subject rows live
+  const dealNameEl = document.getElementById('submit-deal-name');
+  if (dealNameEl && !dealNameEl._wired) {
+    dealNameEl._wired = true;
+    dealNameEl.addEventListener('input', () => {
+      const dealName = dealNameEl.value.trim();
+      const subjectVal = dealName ? `NEW DEAL: ${dealName}` : 'NEW DEAL:';
+      document.querySelectorAll('.sl-subject-text').forEach(el => { el.textContent = subjectVal; });
+      document.querySelectorAll('.sl-copy-btn[data-subject]').forEach(btn => { btn.dataset.copy = subjectVal; });
+    });
+  }
+
   // Per-lender email blocks
   const emailsEl = document.getElementById('submit-emails-display');
   if (emailsEl) {
@@ -9290,6 +9334,8 @@ function renderSubmitPage(){
     } else {
       const copyIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="9" height="9" rx="1.5"/><path d="M11 4V3a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h1"/></svg>`;
       const checkIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 8 6.5 12 13 4"/></svg>`;
+      const dealName = dealNameEl ? dealNameEl.value.trim() : '';
+      const subjectVal = dealName ? `NEW DEAL: ${dealName}` : 'NEW DEAL:';
       const html = selected.map(L => {
         let toList = [], ccList = [];
         if (L.submission_emails && L.submission_emails.length) {
@@ -9306,6 +9352,7 @@ function renderSubmitPage(){
         const ccRow = ccList.length
           ? `<div class="sl-row"><span class="sl-label">CC</span><span class="sl-email-text">${esc(ccVal)}</span><button class="sl-copy-btn" data-copy="${esc(ccVal)}">${copyIcon} Copy CC</button></div>`
           : '';
+        const subjRow = `<div class="sl-row"><span class="sl-label">Subj</span><span class="sl-email-text sl-subject-text">${esc(subjectVal)}</span><button class="sl-copy-btn" data-copy="${esc(subjectVal)}" data-subject="1">${copyIcon} Copy Subj</button></div>`;
         const msgVal = (settings.default_message || DEFAULT_MESSAGE).trim();
         const msgRow = `<div class="sl-row sl-msg-row"><span class="sl-label">Msg</span><span class="sl-email-text sl-msg-text">${esc(msgVal)}</span><button class="sl-copy-btn" data-copy="${esc(msgVal)}">${copyIcon} Copy Msg</button></div>`;
         return `<div class="submit-lender-block" data-lender="${esc(L.name)}">
@@ -9314,17 +9361,11 @@ function renderSubmitPage(){
   <span class="sl-sent-badge">${checkIcon} Sent</span>
   <button class="sl-mark-sent" data-lender="${esc(L.name)}">${checkIcon} Mark sent</button>
 </div>
-<div class="sl-email-rows">${toRow}${ccRow}${msgRow}</div>
+<div class="sl-email-rows">${toRow}${ccRow}${subjRow}${msgRow}</div>
 </div>`;
       }).join('');
       emailsEl.innerHTML = html;
     }
-  }
-
-  // Pre-fill message textarea if empty
-  const msgEl = document.getElementById('submit-message');
-  if (msgEl && !msgEl.value.trim()) {
-    msgEl.value = settings.default_message || DEFAULT_MESSAGE;
   }
 }
 
@@ -9976,8 +10017,6 @@ document.getElementById('btn-submit-back').addEventListener('click', () => {
 document.getElementById('btn-done-submit').addEventListener('click', () => {
   toast('Submission completed');
   selectedLenders.clear();
-  document.getElementById('submit-message').value = '';
-  setLS('lendiago_last_message_v1', '');
   nav('match');
   renderMatches();
   updateTopbarStats();
@@ -9987,8 +10026,6 @@ document.getElementById('btn-done-submit').addEventListener('click', () => {
 // Clear & back from submit page
 document.getElementById('btn-clear-and-back').addEventListener('click', () => {
   selectedLenders.clear();
-  document.getElementById('submit-message').value = '';
-  setLS('lendiago_last_message_v1', '');
   nav('match');
   renderMatches();
   updateTopbarStats();
@@ -10054,24 +10091,7 @@ document.getElementById('submit-emails-display').addEventListener('click', async
   }
 });
 
-// Copy message on submission page
-document.getElementById('btn-copy-message-page').addEventListener('click', async (e) => {
-  const msgEl = document.getElementById('submit-message');
-  const msg = msgEl.value.trim();
-  if (!msg) { toast('Message is empty', true); return; }
-  const ok = await copyToClipboard(msg);
-  if (ok) {
-    flashCopied(e.currentTarget, 'Copy message');
-    toast('Message copied — paste into Gmail body');
-  } else {
-    toast('Copy failed', true);
-  }
-});
-
-// Persist message as user types (so it survives reloads but stays editable per deal)
-document.getElementById('submit-message').addEventListener('input', (e) => {
-  setLS('lendiago_last_message_v1', e.target.value);
-});
+// Copy message on submission page — handled per-lender via sl-copy-btn[data-copy]
 
 /* ============================================================
    TOPBAR + NAV WIRING
@@ -10192,12 +10212,6 @@ function init(){
     observeFilterBarForBalancing();
     initStickySearchRow();
   });
-  // Load last typed message (or default) into the submission page message field
-  const lastMsg = getLS('lendiago_last_message_v1');
-  const msgEl = document.getElementById('submit-message');
-  if (msgEl) {
-    msgEl.value = lastMsg || settings.default_message || DEFAULT_MESSAGE;
-  }
   // Tap the summary bar to expand filters back
   document.getElementById('filter-summary').addEventListener('click', () => {
     setFilterBarCollapsed(false);
