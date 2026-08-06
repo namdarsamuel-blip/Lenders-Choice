@@ -2492,6 +2492,36 @@ button.strip-section-head:hover {
 .submit-deal-input:focus { border-color: var(--accent); }
 .submit-deal-input::placeholder { color: var(--text-3); font-weight: 400; }
 
+.lf-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.lf-preset-btn {
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  border-radius: 20px;
+  color: var(--text-2);
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 4px 11px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  letter-spacing: 0.01em;
+}
+.lf-preset-btn:hover {
+  background: var(--bg-3);
+  border-color: var(--accent);
+  color: var(--text);
+}
+.lf-preset-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+  font-weight: 600;
+}
+
 .submit-card {
   background: var(--bg-1);
   border: 1px solid var(--border);
@@ -3438,6 +3468,20 @@ button.strip-section-head:hover {
         <label>What is the merchant looking for?</label>
       </div>
       <input type="text" id="submit-looking-for" class="submit-deal-input" placeholder="e.g. $75K working capital to expand to a second location" autocomplete="off" spellcheck="false">
+      <div class="lf-presets">
+        <button class="lf-preset-btn" data-preset="working capital to expand the business">expand business</button>
+        <button class="lf-preset-btn" data-preset="working capital to cover payroll and operating expenses">cover payroll</button>
+        <button class="lf-preset-btn" data-preset="working capital to purchase inventory">buy inventory</button>
+        <button class="lf-preset-btn" data-preset="working capital to hire additional staff">hire staff</button>
+        <button class="lf-preset-btn" data-preset="working capital to purchase equipment">buy equipment</button>
+        <button class="lf-preset-btn" data-preset="working capital for marketing and advertising">marketing</button>
+        <button class="lf-preset-btn" data-preset="working capital to cover a tax lien">cover tax lien</button>
+        <button class="lf-preset-btn" data-preset="working capital for renovations">renovations</button>
+        <button class="lf-preset-btn" data-preset="working capital for a slow season bridge">slow season bridge</button>
+        <button class="lf-preset-btn" data-preset="working capital to open a second location">second location</button>
+        <button class="lf-preset-btn" data-preset="a debt consolidation / reverse consolidation">consolidation</button>
+        <button class="lf-preset-btn" data-preset="working capital for general business needs">general working capital</button>
+      </div>
     </div>
 
     <div class="submit-card">
@@ -9355,8 +9399,29 @@ function renderSubmitPage(){
       const msgVal = buildMsg();
       document.querySelectorAll('.sl-msg-text').forEach(el => { el.textContent = msgVal; });
       document.querySelectorAll('.sl-copy-btn[data-msg]').forEach(btn => { btn.dataset.copy = msgVal; });
+      // sync active state on presets
+      document.querySelectorAll('.lf-preset-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.preset === lookingForEl.value);
+      });
     });
   }
+
+  // Wire preset chips
+  document.querySelectorAll('.lf-preset-btn').forEach(btn => {
+    if (btn._wired) return;
+    btn._wired = true;
+    btn.addEventListener('click', () => {
+      const el = document.getElementById('submit-looking-for');
+      if (!el) return;
+      // Toggle: click active preset → clear field; click new → set it
+      if (el.value === btn.dataset.preset) {
+        el.value = '';
+      } else {
+        el.value = btn.dataset.preset;
+      }
+      el.dispatchEvent(new Event('input'));
+    });
+  });
 
   // Per-lender email blocks
   const emailsEl = document.getElementById('submit-emails-display');
