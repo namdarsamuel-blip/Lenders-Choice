@@ -3676,6 +3676,22 @@ function loadAll(){
     setLS(SUBMISSION_EMAILS_KEY, '1');
   }
 
+  // Migration — Mint Funding submission emails corrected.
+  // Old cached data had Rafael@mintfunding.com as the To address.
+  // Correct: To deals@mintfunding.com, CC john@mintfunding.com.
+  const MINT_EMAILS_KEY = 'lendiago_migration_mint_submission_emails_v1_2026_07';
+  if (!getLS(MINT_EMAILS_KEY)) {
+    const mint = lenders.find(L => L.name === 'Mint Funding');
+    if (mint) {
+      mint.submission_emails = [
+        { email: 'deals@mintfunding.com', tag: 'to' },
+        { email: 'john@mintfunding.com', tag: 'cc' }
+      ];
+      saveAll();
+    }
+    setLS(MINT_EMAILS_KEY, '1');
+  }
+
   // Migration — Essential Funding signed up (Sam signed ISO May 20, 2026).
   // Refreshed criteria from their March 2026 Underwriting Guidelines PDF and
   // Richard Kim onboarding email. Old criteria pushed to archive_notes.
