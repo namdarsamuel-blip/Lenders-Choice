@@ -2492,11 +2492,39 @@ button.strip-section-head:hover {
 .submit-deal-input:focus { border-color: var(--accent); }
 .submit-deal-input::placeholder { color: var(--text-3); font-weight: 400; }
 
+.lf-preview-label {
+  font-size: 10.5px;
+  color: var(--text-3);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.lf-row-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.lf-field-pair { display: flex; flex-direction: column; gap: 5px; }
+.lf-sublabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-2);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.lf-sublabel-hint {
+  font-weight: 400;
+  color: var(--text-3);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 10.5px;
+}
+.lf-input { margin-top: 2px; }
+
 .lf-presets {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 .lf-preset-btn {
   background: var(--bg-2);
@@ -2508,18 +2536,86 @@ button.strip-section-head:hover {
   padding: 4px 11px;
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s, color 0.12s;
-  letter-spacing: 0.01em;
 }
-.lf-preset-btn:hover {
-  background: var(--bg-3);
-  border-color: var(--accent);
+.lf-preset-btn:hover { background: var(--bg-3); border-color: var(--accent); color: var(--text); }
+.lf-preset-btn.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 600; }
+
+.lf-balances-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.lf-add-row-btn {
+  background: none;
+  border: 1px solid var(--border-2);
+  border-radius: 6px;
+  color: var(--text-2);
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 3px 9px;
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s;
+}
+.lf-add-row-btn:hover { border-color: var(--accent); color: var(--text); }
+
+.lf-bal-row {
+  display: grid;
+  grid-template-columns: 1fr 100px 100px 28px;
+  gap: 6px;
+  margin-bottom: 5px;
+  align-items: center;
+}
+.lf-bal-row input {
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 12.5px;
   color: var(--text);
+  outline: none;
+  width: 100%;
+  transition: border-color 0.12s;
 }
-.lf-preset-btn.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #000;
-  font-weight: 600;
+.lf-bal-row input:focus { border-color: var(--accent); }
+.lf-bal-row input::placeholder { color: var(--text-3); }
+.lf-bal-remove {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lf-bal-remove:hover { color: var(--text); }
+.lf-bal-headers {
+  display: grid;
+  grid-template-columns: 1fr 100px 100px 28px;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.lf-bal-headers span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.lf-msg-preview {
+  margin-top: 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.5;
+  font-style: italic;
 }
 
 .submit-card {
@@ -3465,23 +3561,49 @@ button.strip-section-head:hover {
 
     <div class="submit-card">
       <div class="submit-field-head">
-        <label>What is the merchant looking for?</label>
+        <label>Deal Details</label>
+        <span class="lf-preview-label">Live message preview below ↓</span>
       </div>
-      <input type="text" id="submit-looking-for" class="submit-deal-input" placeholder="e.g. $75K working capital to expand to a second location" autocomplete="off" spellcheck="false">
-      <div class="lf-presets">
-        <button class="lf-preset-btn" data-preset="working capital to expand the business">expand business</button>
-        <button class="lf-preset-btn" data-preset="working capital to cover payroll and operating expenses">cover payroll</button>
-        <button class="lf-preset-btn" data-preset="working capital to purchase inventory">buy inventory</button>
-        <button class="lf-preset-btn" data-preset="working capital to hire additional staff">hire staff</button>
-        <button class="lf-preset-btn" data-preset="working capital to purchase equipment">buy equipment</button>
-        <button class="lf-preset-btn" data-preset="working capital for marketing and advertising">marketing</button>
-        <button class="lf-preset-btn" data-preset="working capital to cover a tax lien">cover tax lien</button>
-        <button class="lf-preset-btn" data-preset="working capital for renovations">renovations</button>
-        <button class="lf-preset-btn" data-preset="working capital for a slow season bridge">slow season bridge</button>
-        <button class="lf-preset-btn" data-preset="working capital to open a second location">second location</button>
-        <button class="lf-preset-btn" data-preset="a debt consolidation / reverse consolidation">consolidation</button>
-        <button class="lf-preset-btn" data-preset="working capital for general business needs">general working capital</button>
+
+      <div class="lf-row-group">
+        <div class="lf-field-pair">
+          <label class="lf-sublabel">Amount requested</label>
+          <input type="text" id="lf-amount" class="submit-deal-input lf-input" placeholder="e.g. $150K" autocomplete="off">
+        </div>
+        <div class="lf-field-pair">
+          <label class="lf-sublabel">Position #</label>
+          <input type="text" id="lf-position" class="submit-deal-input lf-input" placeholder="e.g. 2nd" autocomplete="off">
+        </div>
       </div>
+
+      <div class="lf-field-pair" style="margin-top:10px;">
+        <label class="lf-sublabel">Purpose <span class="lf-sublabel-hint">(pick one or type custom)</span></label>
+        <input type="text" id="lf-purpose-text" class="submit-deal-input lf-input" placeholder="e.g. expand the business" autocomplete="off">
+        <div class="lf-presets" id="lf-purpose-chips">
+          <button class="lf-preset-btn" data-purpose="expand the business">expand business</button>
+          <button class="lf-preset-btn" data-purpose="cover payroll and operating expenses">cover payroll</button>
+          <button class="lf-preset-btn" data-purpose="purchase inventory">buy inventory</button>
+          <button class="lf-preset-btn" data-purpose="hire additional staff">hire staff</button>
+          <button class="lf-preset-btn" data-purpose="purchase equipment">buy equipment</button>
+          <button class="lf-preset-btn" data-purpose="marketing and advertising">marketing</button>
+          <button class="lf-preset-btn" data-purpose="cover a tax lien">cover tax lien</button>
+          <button class="lf-preset-btn" data-purpose="renovations">renovations</button>
+          <button class="lf-preset-btn" data-purpose="a slow season bridge">slow season</button>
+          <button class="lf-preset-btn" data-purpose="open a second location">second location</button>
+          <button class="lf-preset-btn" data-purpose="a debt consolidation / reverse consolidation">consolidation</button>
+          <button class="lf-preset-btn" data-purpose="general business needs">general working capital</button>
+        </div>
+      </div>
+
+      <div class="lf-field-pair" style="margin-top:12px;">
+        <div class="lf-balances-head">
+          <label class="lf-sublabel">Current positions / balances <span class="lf-sublabel-hint">(from application)</span></label>
+          <button class="lf-add-row-btn" id="lf-add-balance-row">+ Add position</button>
+        </div>
+        <div id="lf-balance-rows"></div>
+      </div>
+
+      <div class="lf-msg-preview" id="lf-msg-preview">Hey team, please underwrite the attached deal. Thank you.</div>
     </div>
 
     <div class="submit-card">
@@ -9393,51 +9515,137 @@ function renderSubmitPage(){
     });
   }
 
-  // Helper: build the message string from current field values
+  // ── Deal Details: structured fields that build the message ──────────────
   function buildMsg() {
-    const lf = (document.getElementById('submit-looking-for') || {}).value || '';
+    const amount  = (document.getElementById('lf-amount')       ||{}).value.trim();
+    const pos     = (document.getElementById('lf-position')     ||{}).value.trim();
+    const purpose = (document.getElementById('lf-purpose-text') ||{}).value.trim();
+
+    // Collect balance rows
+    const balRows = [...document.querySelectorAll('.lf-bal-row')].map(row => {
+      const inputs = row.querySelectorAll('input');
+      return { lender: inputs[0]&&inputs[0].value.trim(), init: inputs[1]&&inputs[1].value.trim(), bal: inputs[2]&&inputs[2].value.trim() };
+    }).filter(r => r.lender || r.init || r.bal);
+
     const base = (settings.default_message || DEFAULT_MESSAGE).trim();
-    // base ends with ". Thank you." — insert looking-for before Thank you if present
-    if (!lf.trim()) return base;
-    // Insert "Merchant is looking for X." before "Thank you."
-    const thankIdx = base.lastIndexOf('Thank you');
-    if (thankIdx !== -1) {
-      return base.slice(0, thankIdx) + `Merchant is looking for ${lf.trim()}. ` + base.slice(thankIdx);
+    // Build the "Merchant is looking for…" clause
+    let clause = '';
+    if (amount && purpose) clause = `${amount} for ${purpose}`;
+    else if (amount)        clause = `${amount} in working capital`;
+    else if (purpose)       clause = `working capital for ${purpose}`;
+
+    // Build position line
+    let posLine = '';
+    if (pos) posLine = `This would be their ${pos} position.`;
+
+    // Build balances line
+    let balLine = '';
+    if (balRows.length) {
+      const parts = balRows.map(r => {
+        if (r.lender && r.bal) return `${r.lender} ($${r.bal} remaining${r.init ? ` of $${r.init} original` : ''})`;
+        if (r.lender && r.init) return `${r.lender} ($${r.init})`;
+        return r.lender || '';
+      }).filter(Boolean);
+      if (parts.length) balLine = `Current positions: ${parts.join(', ')}.`;
     }
-    return base + ` Merchant is looking for ${lf.trim()}.`;
+
+    // Stitch together
+    const extras = [posLine, balLine].filter(Boolean).join(' ');
+    const thankIdx = base.lastIndexOf('Thank you');
+    let msg = base;
+    if (clause) {
+      const insert = `Merchant is looking for ${clause}. `;
+      msg = thankIdx !== -1
+        ? base.slice(0, thankIdx) + insert + base.slice(thankIdx)
+        : base + ' ' + insert.trim();
+    }
+    if (extras) {
+      const tIdx = msg.lastIndexOf('Thank you');
+      msg = tIdx !== -1
+        ? msg.slice(0, tIdx) + extras + ' ' + msg.slice(tIdx)
+        : msg + ' ' + extras;
+    }
+    return msg;
   }
 
-  // Wire looking-for input to update all message rows live
-  const lookingForEl = document.getElementById('submit-looking-for');
-  if (lookingForEl && !lookingForEl._wired) {
-    lookingForEl._wired = true;
-    lookingForEl.addEventListener('input', () => {
-      const msgVal = buildMsg();
-      document.querySelectorAll('.sl-msg-text').forEach(el => { el.textContent = msgVal; });
-      document.querySelectorAll('.sl-copy-btn[data-msg]').forEach(btn => { btn.dataset.copy = msgVal; });
-      // sync active state on presets
-      document.querySelectorAll('.lf-preset-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.preset === lookingForEl.value);
+  function refreshMsg() {
+    const msgVal = buildMsg();
+    document.querySelectorAll('.sl-msg-text').forEach(el => { el.textContent = msgVal; });
+    document.querySelectorAll('.sl-copy-btn[data-msg]').forEach(btn => { btn.dataset.copy = msgVal; });
+    const preview = document.getElementById('lf-msg-preview');
+    if (preview) preview.textContent = msgVal;
+  }
+
+  // Wire amount + position inputs
+  ['lf-amount','lf-position','lf-purpose-text'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el._wired) { el._wired = true; el.addEventListener('input', refreshMsg); }
+  });
+
+  // Wire purpose chips
+  document.querySelectorAll('.lf-preset-btn[data-purpose]').forEach(btn => {
+    if (btn._wired) return;
+    btn._wired = true;
+    btn.addEventListener('click', () => {
+      const tf = document.getElementById('lf-purpose-text');
+      if (!tf) return;
+      tf.value = tf.value === btn.dataset.purpose ? '' : btn.dataset.purpose;
+      document.querySelectorAll('.lf-preset-btn[data-purpose]').forEach(b => {
+        b.classList.toggle('active', b.dataset.purpose === tf.value);
+      });
+      refreshMsg();
+    });
+  });
+
+  // Wire purpose text → sync chip active state
+  const purposeEl = document.getElementById('lf-purpose-text');
+  if (purposeEl && !purposeEl._chipSync) {
+    purposeEl._chipSync = true;
+    purposeEl.addEventListener('input', () => {
+      document.querySelectorAll('.lf-preset-btn[data-purpose]').forEach(b => {
+        b.classList.toggle('active', b.dataset.purpose === purposeEl.value);
       });
     });
   }
 
-  // Wire preset chips
-  document.querySelectorAll('.lf-preset-btn').forEach(btn => {
-    if (btn._wired) return;
-    btn._wired = true;
-    btn.addEventListener('click', () => {
-      const el = document.getElementById('submit-looking-for');
-      if (!el) return;
-      // Toggle: click active preset → clear field; click new → set it
-      if (el.value === btn.dataset.preset) {
-        el.value = '';
-      } else {
-        el.value = btn.dataset.preset;
-      }
-      el.dispatchEvent(new Event('input'));
+  // Wire "+ Add position" button
+  function addBalanceRow(lender='', init='', bal='') {
+    const container = document.getElementById('lf-balance-rows');
+    if (!container) return;
+    // Add headers if first row
+    if (!container.querySelector('.lf-bal-headers')) {
+      const hdr = document.createElement('div');
+      hdr.className = 'lf-bal-headers';
+      hdr.innerHTML = '<span>Lender</span><span>Original</span><span>Balance</span><span></span>';
+      container.insertBefore(hdr, container.firstChild);
+    }
+    const row = document.createElement('div');
+    row.className = 'lf-bal-row';
+    row.innerHTML = `
+      <input type="text" placeholder="e.g. Cooper" value="${lender}" autocomplete="off">
+      <input type="text" placeholder="$20,000" value="${init}" autocomplete="off">
+      <input type="text" placeholder="$4,000" value="${bal}" autocomplete="off">
+      <button class="lf-bal-remove" title="Remove">×</button>`;
+    row.querySelectorAll('input').forEach(i => i.addEventListener('input', refreshMsg));
+    row.querySelector('.lf-bal-remove').addEventListener('click', () => {
+      row.remove();
+      // Remove header if no rows left
+      const c = document.getElementById('lf-balance-rows');
+      if (c && !c.querySelector('.lf-bal-row')) { const h = c.querySelector('.lf-bal-headers'); if(h) h.remove(); }
+      refreshMsg();
     });
-  });
+    container.appendChild(row);
+    refreshMsg();
+  }
+
+  const addBalBtn = document.getElementById('lf-add-balance-row');
+  if (addBalBtn && !addBalBtn._wired) {
+    addBalBtn._wired = true;
+    addBalBtn.addEventListener('click', () => addBalanceRow());
+  }
+
+  // Init preview
+  refreshMsg();
 
   // Per-lender email blocks
   const emailsEl = document.getElementById('submit-emails-display');
