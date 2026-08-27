@@ -3717,21 +3717,40 @@ function loadAll(){
     const cached = c ? (JSON.parse(c) || []) : [];
     cached.forEach(l => { cached_map[l.name] = l; });
   } catch {}
-  // Rebuild lenders from DEFAULT_LENDERS, merging in any cached user edits
+  // Rebuild lenders from DEFAULT_LENDERS, merging in any cached user edits.
+  // Fields listed here are ALWAYS authoritative from DEFAULT_LENDERS — cache can never override them.
+  // User-editable fields (notes edits, sent/mark-sent flags) are preserved from cache.
   lenders = DEFAULT_LENDERS.map(d => {
     const cached = cached_map[d.name];
     if (!cached) return normalizeLender(Object.assign({}, d));
-    // Keep DEFAULT_LENDERS authoritative for status/agreement_signed/contract_hold
-    // but preserve user-editable fields from cache
     return normalizeLender(Object.assign({}, cached, {
-      status: d.status,
-      agreement_signed: d.agreement_signed,
-      contract_hold: d.contract_hold,
-      waiting: d.waiting,
-      not_ready: d.not_ready,
-      verified_at: d.verified_at,
+      // Status / contract fields
+      status:            d.status,
+      agreement_signed:  d.agreement_signed,
+      contract_hold:     d.contract_hold,
+      waiting:           d.waiting,
+      not_ready:         d.not_ready,
+      // Submission contact info — always use what's in the code
       submission_emails: d.submission_emails,
-      submission_note: d.submission_note,
+      submission_note:   d.submission_note,
+      // Underwriting criteria — always use what's in the code
+      state_rule:        d.state_rule,
+      position:          d.position,
+      revenue_min:       d.revenue_min,
+      fico_min:          d.fico_min,
+      tib_min:           d.tib_min,
+      neg_max:           d.neg_max,
+      defaults:          d.defaults,
+      industry_excl:     d.industry_excl,
+      // Verification stamps
+      verified_at:       d.verified_at,
+      verified_source:   d.verified_source,
+      // Contact info
+      contact_email:     d.contact_email,
+      contact_name:      d.contact_name,
+      contact_phone:     d.contact_phone,
+      other_emails:      d.other_emails,
+      alt_contacts:      d.alt_contacts,
     }));
   });
   if (!getLS(STORAGE.seeded)) {
@@ -3800,21 +3819,26 @@ function loadAll(){
     setLS(SUBMISSION_EMAILS_KEY, '1');
   }
 
-  // Migration — Mint Funding submission emails corrected.
-  // Old cached data had Rafael@mintfunding.com as the To address.
-  // Correct: To deals@mintfunding.com, CC john@mintfunding.com.
-  const MINT_EMAILS_KEY = 'lendiago_migration_mint_submission_emails_v1_2026_07';
-  if (!getLS(MINT_EMAILS_KEY)) {
-    const mint = lenders.find(L => L.name === 'Mint Funding');
-    if (mint) {
-      mint.submission_emails = [
-        { email: 'deals@mintfunding.com', tag: 'to' },
-        { email: 'john@mintfunding.com', tag: 'cc' }
-      ];
-      persistCache();
-    }
-    setLS(MINT_EMAILS_KEY, '1');
-  }
+  // PERMANENT reconcile — always force submission_emails from DEFAULT_LENDERS.
+  // Runs every load. Ensures no cached version can ever override submission emails.
+  (function forceSubmissionEmails() {
+    const defaultMap = {};
+    DEFAULT_LENDERS.forEach(d => { defaultMap[d.name] = d; });
+    let changed = false;
+    lenders.forEach(L => {
+      const d = defaultMap[L.name];
+      if (!d) return;
+      if (JSON.stringify(L.submission_emails) !== JSON.stringify(d.submission_emails)) {
+        L.submission_emails = d.submission_emails;
+        changed = true;
+      }
+      if (d.submission_note && L.submission_note !== d.submission_note) {
+        L.submission_note = d.submission_note;
+        changed = true;
+      }
+    });
+    if (changed) persistCache();
+  })();
 
   // Migration — Essential Funding signed up (Sam signed ISO May 20, 2026).
   // Refreshed criteria from their March 2026 Underwriting Guidelines PDF and
