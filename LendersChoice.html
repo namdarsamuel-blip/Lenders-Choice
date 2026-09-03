@@ -2728,61 +2728,99 @@ button.strip-section-head:hover {
   opacity: 0.45;
   border-color: var(--green-bd);
 }
-.sl-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.submit-step-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
 }
-.sl-gmail-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  background: #1a73e8;
-  color: #fff;
-  border: none;
-  border-radius: 7px;
-  font-size: 11.5px;
-  font-weight: 600;
-  padding: 5px 11px;
+.step-hint {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--text-3);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.input-stack { display: flex; flex-direction: column; gap: 8px; }
+
+/* Attachments drop zone */
+.att-drop-zone {
+  border: 1.5px dashed var(--border-2);
+  border-radius: 10px;
+  padding: 18px 16px;
+  text-align: center;
   cursor: pointer;
-  text-decoration: none;
-  letter-spacing: 0.01em;
-  transition: background 0.12s, opacity 0.12s;
+  transition: border-color 0.15s, background 0.15s;
+}
+.att-drop-zone:hover, .att-drop-zone.drag-over {
+  border-color: var(--accent);
+  background: rgba(255,217,81,0.04);
+}
+.att-drop-icon { font-size: 24px; margin-bottom: 5px; }
+.att-drop-text { font-size: 13px; color: var(--text-2); }
+.att-drop-link { color: var(--accent); text-decoration: underline; cursor: pointer; }
+.att-drop-sub { font-size: 11px; color: var(--text-3); margin-top: 3px; }
+.att-file-list { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+.att-file-item {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg-2); border: 1px solid var(--border-2); border-radius: 7px;
+  padding: 7px 10px; font-size: 12px;
+}
+.att-file-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+.att-file-size { color: var(--text-3); font-size: 11px; flex-shrink: 0; }
+.att-file-rm { background: none; border: none; color: var(--text-3); cursor: pointer; font-size: 17px; line-height: 1; padding: 0 2px; flex-shrink: 0; }
+.att-file-rm:hover { color: var(--text); }
+
+/* Send step */
+.submit-card-send { background: var(--bg-1); }
+.send-lender-chips {
+  display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px;
+}
+.send-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--bg-2); border: 1px solid var(--border-2); border-radius: 20px;
+  font-size: 11.5px; font-weight: 500; color: var(--text-2);
+  padding: 4px 10px 4px 8px; cursor: pointer;
+  transition: border-color 0.1s, color 0.1s, background 0.1s;
+}
+.send-chip:hover { border-color: var(--accent); color: var(--text); }
+.send-chip.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 700; }
+.send-chip.active .chip-check { opacity: 1; }
+.chip-check { opacity: 0; font-size: 10px; }
+
+.btn-open-all-gmail {
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  width: 100%;
+  background: #1a73e8; color: #fff; border: none; border-radius: 10px;
+  font-size: 15px; font-weight: 800; padding: 13px 18px; cursor: pointer;
+  transition: background 0.12s; letter-spacing: -0.01em;
+}
+.btn-open-all-gmail:hover { background: #1557b0; }
+.btn-open-all-gmail:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-open-all-gmail svg { width: 18px; height: 18px; flex-shrink: 0; }
+.open-all-note {
+  font-size: 11.5px; color: var(--text-3); line-height: 1.5;
+  margin-top: 10px; text-align: center;
+}
+.per-lender-toggle-wrap { margin-top: 14px; text-align: center; }
+.per-lender-toggle {
+  background: none; border: none; color: var(--text-3); font-size: 11.5px;
+  cursor: pointer; padding: 4px 8px;
+}
+.per-lender-toggle:hover { color: var(--text-2); }
+
+/* Individual lender block inside details */
+.sl-gmail-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: #1a73e8; color: #fff; border: none; border-radius: 7px;
+  font-size: 11.5px; font-weight: 600; padding: 5px 11px; cursor: pointer;
+  text-decoration: none; transition: background 0.12s;
 }
 .sl-gmail-btn:hover { background: #1557b0; }
 .sl-gmail-btn svg { width: 13px; height: 13px; }
-
-.open-all-gmail-wrap {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
-}
-.btn-open-all-gmail {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: #1a73e8;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 700;
-  padding: 9px 18px;
-  cursor: pointer;
-  white-space: nowrap;
-  letter-spacing: 0.01em;
-  transition: background 0.12s;
-}
-.btn-open-all-gmail:hover { background: #1557b0; }
-.btn-open-all-gmail svg { width: 16px; height: 16px; }
-.open-all-note {
-  font-size: 11.5px;
-  color: var(--text-3);
-  line-height: 1.4;
-}
+.sl-header-actions { display: flex; align-items: center; gap: 8px; }
 
 .sl-header {
   display: flex;
@@ -3605,21 +3643,21 @@ button.strip-section-head:hover {
 
     <div class="submit-head">
       <h1 class="page-title">Send submission</h1>
-      <p class="page-sub"><span id="submit-count">0</span> lenders selected — each block has the To, CC, subject, and message ready to copy.</p>
+      <p class="page-sub"><span id="submit-count">0</span> lenders selected</p>
     </div>
 
+    <!-- STEP 1: Deal Info -->
     <div class="submit-card">
-      <div class="submit-field-head">
-        <label>Deal Name</label>
+      <div class="submit-step-label">1 — Deal Info</div>
+      <div class="input-stack">
+        <input type="text" id="submit-deal-name" class="submit-deal-input" placeholder="Business name — e.g. Sam's Taco Stand LLC" autocomplete="off" spellcheck="false">
+        <input type="text" id="submit-deal-subject" class="submit-deal-input" placeholder="Subject — auto-fills from name above" autocomplete="off" spellcheck="false">
       </div>
-      <input type="text" id="submit-deal-name" class="submit-deal-input" placeholder="e.g. Sam's Taco Stand LLC" autocomplete="off" spellcheck="false">
     </div>
 
+    <!-- STEP 2: Deal Details + message builder -->
     <div class="submit-card">
-      <div class="submit-field-head">
-        <label>Deal Details</label>
-        <span class="lf-preview-label">Live message preview below ↓</span>
-      </div>
+      <div class="submit-step-label">2 — Deal Details <span class="step-hint">(builds your message automatically)</span></div>
 
       <div class="lf-row-group">
         <div class="lf-field-pair">
@@ -3633,7 +3671,7 @@ button.strip-section-head:hover {
       </div>
 
       <div class="lf-field-pair" style="margin-top:10px;">
-        <label class="lf-sublabel">Purpose <span class="lf-sublabel-hint">(pick one or type custom)</span></label>
+        <label class="lf-sublabel">Purpose <span class="lf-sublabel-hint">(pick one or type)</span></label>
         <input type="text" id="lf-purpose-text" class="submit-deal-input lf-input" placeholder="e.g. expand the business" autocomplete="off">
         <div class="lf-presets" id="lf-purpose-chips">
           <button class="lf-preset-btn" data-purpose="expand the business">expand business</button>
@@ -3662,21 +3700,32 @@ button.strip-section-head:hover {
       <div class="lf-msg-preview" id="lf-msg-preview">Hey team, please underwrite the attached deal. Thank you.</div>
     </div>
 
+    <!-- STEP 3: Attachments -->
     <div class="submit-card">
-      <div class="submit-field-head">
-        <label>Per-Lender Emails</label>
-        <button class="sub-copy-btn" id="btn-copy-emails-page">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="9" height="9" rx="1.5"/><path d="M11 4V3a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h1"/></svg>
-          Copy emails
-        </button>
+      <div class="submit-step-label">3 — Attachments <span class="step-hint">upload once, goes to every lender</span></div>
+      <div class="att-drop-zone" id="att-drop-zone">
+        <input type="file" id="att-file-input" multiple style="display:none">
+        <div class="att-drop-icon">📎</div>
+        <div class="att-drop-text">Drop files here or <span class="att-drop-link">click to browse</span></div>
+        <div class="att-drop-sub">Bank statements, application, ID, voided check</div>
       </div>
-      <div class="submit-emails" id="submit-emails-display"></div>
-      <div class="open-all-gmail-wrap">
-        <button class="btn-open-all-gmail" id="btn-open-all-gmail">
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><polyline points="2 5 10 11 18 5"/></svg>
-          Open All in Gmail
-        </button>
-        <span class="open-all-note">Opens one Gmail compose tab per lender — just attach your files and hit Send on each</span>
+      <div class="att-file-list" id="att-file-list"></div>
+    </div>
+
+    <!-- STEP 4: Send -->
+    <div class="submit-card submit-card-send">
+      <div class="submit-step-label">4 — Send</div>
+      <div class="send-lender-chips" id="send-lender-chips"></div>
+      <button class="btn-open-all-gmail" id="btn-open-all-gmail">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><polyline points="2 5 10 11 18 5"/></svg>
+        <span id="btn-open-all-label">Open All in Gmail</span>
+      </button>
+      <p class="open-all-note">Opens one Gmail compose tab per lender with To, CC, subject, and message pre-filled. Each tab will have a paperclip icon to attach your files — just click it, attach, and send.</p>
+      <div class="per-lender-toggle-wrap">
+        <button class="per-lender-toggle" id="per-lender-toggle">▾ Show individual lender details</button>
+      </div>
+      <div class="per-lender-details" id="per-lender-details" style="display:none">
+        <div class="submit-emails" id="submit-emails-display"></div>
       </div>
     </div>
 
@@ -9586,48 +9635,32 @@ function updateActionBar(){
 // Called when you navigate to it via the Continue button.
 function renderSubmitPage(){
   const countEl = document.getElementById('submit-count');
-  if (countEl) countEl.textContent = selectedLenders.size;
-
   const selected = [...selectedLenders]
     .map(name => lenders.find(L => L.name === name))
     .filter(Boolean);
+  if (countEl) countEl.textContent = selected.length;
 
-  // Wire deal name input to update subject rows live
-  const dealNameEl = document.getElementById('submit-deal-name');
-  if (dealNameEl && !dealNameEl._wired) {
-    dealNameEl._wired = true;
-    dealNameEl.addEventListener('input', () => {
-      const dealName = dealNameEl.value.trim();
-      const subjectVal = dealName ? `NEW DEAL: ${dealName}` : 'NEW DEAL:';
-      document.querySelectorAll('.sl-subject-text').forEach(el => { el.textContent = subjectVal; });
-      document.querySelectorAll('.sl-copy-btn[data-subject]').forEach(btn => { btn.dataset.copy = subjectVal; });
-    });
-  }
+  // ── Attachment state (persists while on submit page) ─────────────────────
+  if (!renderSubmitPage._atts) renderSubmitPage._atts = [];
+  const atts = renderSubmitPage._atts;
 
-  // ── Deal Details: structured fields that build the message ──────────────
+  // ── Helpers ───────────────────────────────────────────────────────────────
   function buildMsg() {
     const amount  = (document.getElementById('lf-amount')       ||{}).value.trim();
     const pos     = (document.getElementById('lf-position')     ||{}).value.trim();
     const purpose = (document.getElementById('lf-purpose-text') ||{}).value.trim();
-
-    // Collect balance rows
     const balRows = [...document.querySelectorAll('.lf-bal-row')].map(row => {
       const inputs = row.querySelectorAll('input');
       return { lender: inputs[0]&&inputs[0].value.trim(), init: inputs[1]&&inputs[1].value.trim(), bal: inputs[2]&&inputs[2].value.trim() };
     }).filter(r => r.lender || r.init || r.bal);
 
     const base = (settings.default_message || DEFAULT_MESSAGE).trim();
-    // Build the "Merchant is looking for…" clause
     let clause = '';
     if (amount && purpose) clause = `${amount} for ${purpose}`;
     else if (amount)        clause = `${amount} in working capital`;
     else if (purpose)       clause = `working capital for ${purpose}`;
 
-    // Build position line
-    let posLine = '';
-    if (pos) posLine = `This would be their ${pos} position.`;
-
-    // Build balances line
+    let posLine = pos ? `This would be their ${pos} position.` : '';
     let balLine = '';
     if (balRows.length) {
       const parts = balRows.map(r => {
@@ -9638,51 +9671,101 @@ function renderSubmitPage(){
       if (parts.length) balLine = `Current positions: ${parts.join(', ')}.`;
     }
 
-    // Stitch together
     const extras = [posLine, balLine].filter(Boolean).join(' ');
     const thankIdx = base.lastIndexOf('Thank you');
     let msg = base;
     if (clause) {
       const insert = `Merchant is looking for ${clause}. `;
-      msg = thankIdx !== -1
-        ? base.slice(0, thankIdx) + insert + base.slice(thankIdx)
-        : base + ' ' + insert.trim();
+      msg = thankIdx !== -1 ? base.slice(0, thankIdx) + insert + base.slice(thankIdx) : base + ' ' + insert.trim();
     }
     if (extras) {
       const tIdx = msg.lastIndexOf('Thank you');
-      msg = tIdx !== -1
-        ? msg.slice(0, tIdx) + extras + ' ' + msg.slice(tIdx)
-        : msg + ' ' + extras;
+      msg = tIdx !== -1 ? msg.slice(0, tIdx) + extras + ' ' + msg.slice(tIdx) : msg + ' ' + extras;
     }
     return msg;
   }
 
-  function refreshMsg() {
-    const msgVal = buildMsg();
-    document.querySelectorAll('.sl-msg-text').forEach(el => { el.textContent = msgVal; });
-    document.querySelectorAll('.sl-copy-btn[data-msg]').forEach(btn => { btn.dataset.copy = msgVal; });
-    // Sync data-msg on blocks for Open All button
-    document.querySelectorAll('.submit-lender-block[data-msg]').forEach(el => { el.dataset.msg = msgVal; });
-    // Sync Gmail button hrefs
-    document.querySelectorAll('.submit-lender-block').forEach(block => {
-      const btn = block.querySelector('.sl-gmail-btn');
-      if (!btn) return;
-      const toArr = (block.dataset.to || '').split(',').filter(Boolean);
-      const ccArr = (block.dataset.cc || '').split(',').filter(Boolean);
-      const subj  = block.dataset.subject || '';
-      btn.href = buildGmailUrl(toArr, ccArr, subj, msgVal);
-    });
-    const preview = document.getElementById('lf-msg-preview');
-    if (preview) preview.textContent = msgVal;
+  function getSubject() {
+    const subjEl = document.getElementById('submit-deal-subject');
+    return subjEl ? subjEl.value.trim() : 'NEW DEAL:';
   }
 
-  // Wire amount + position inputs
+  function buildGmailUrl(toList, ccList, subject, body) {
+    const base = 'https://mail.google.com/mail/?view=cm&fs=1';
+    const params = new URLSearchParams();
+    if (toList.length) params.set('to', toList.join(','));
+    if (ccList.length) params.set('cc', ccList.join(','));
+    if (subject) params.set('su', subject);
+    if (body) params.set('body', body);
+    return base + '&' + params.toString();
+  }
+
+  function getLenderEmails(L) {
+    let toList = [], ccList = [];
+    if (L.submission_emails && L.submission_emails.length) {
+      toList = L.submission_emails.filter(e => e.tag === 'to' && e.email).map(e => e.email);
+      ccList = L.submission_emails.filter(e => e.tag === 'cc' && e.email).map(e => e.email);
+    } else if (L.contact_email) {
+      toList = [L.contact_email];
+    }
+    return { toList, ccList };
+  }
+
+  function refreshAll() {
+    const msg  = buildMsg();
+    const subj = getSubject();
+    const preview = document.getElementById('lf-msg-preview');
+    if (preview) preview.textContent = msg;
+    // Sync lender blocks inside details
+    document.querySelectorAll('.submit-lender-block').forEach(block => {
+      block.dataset.msg = msg;
+      block.dataset.subject = subj;
+      block.querySelectorAll('.sl-subject-text').forEach(el => el.textContent = subj);
+      block.querySelectorAll('.sl-copy-btn[data-subject]').forEach(b => b.dataset.copy = subj);
+      block.querySelectorAll('.sl-msg-text').forEach(el => el.textContent = msg);
+      block.querySelectorAll('.sl-copy-btn[data-msg]').forEach(b => b.dataset.copy = msg);
+      const gmailBtn = block.querySelector('.sl-gmail-btn');
+      if (gmailBtn) {
+        const toArr = (block.dataset.to||'').split(',').filter(Boolean);
+        const ccArr = (block.dataset.cc||'').split(',').filter(Boolean);
+        gmailBtn.href = buildGmailUrl(toArr, ccArr, subj, msg);
+      }
+    });
+    updateOpenAllBtn();
+  }
+
+  function updateOpenAllBtn() {
+    const chips = [...document.querySelectorAll('.send-chip')];
+    const activeChips = chips.filter(c => c.classList.contains('active'));
+    const count = activeChips.length || selected.length;
+    const labelEl = document.getElementById('btn-open-all-label');
+    if (labelEl) labelEl.textContent = `Open ${count} Gmail Tab${count !== 1 ? 's' : ''} — Send All`;
+  }
+
+  // ── Wire deal name → subject ──────────────────────────────────────────────
+  const dealNameEl = document.getElementById('submit-deal-name');
+  const dealSubjEl = document.getElementById('submit-deal-subject');
+  if (dealNameEl && !dealNameEl._wired) {
+    dealNameEl._wired = true;
+    dealNameEl.addEventListener('input', () => {
+      const n = dealNameEl.value.trim();
+      if (dealSubjEl && (!dealSubjEl._manualEdit || !dealSubjEl.value.trim())) {
+        dealSubjEl.value = n ? `NEW DEAL: ${n}` : '';
+      }
+      refreshAll();
+    });
+  }
+  if (dealSubjEl && !dealSubjEl._wired) {
+    dealSubjEl._wired = true;
+    dealSubjEl.addEventListener('input', () => { dealSubjEl._manualEdit = true; refreshAll(); });
+  }
+
+  // ── Wire deal detail fields ───────────────────────────────────────────────
   ['lf-amount','lf-position','lf-purpose-text'].forEach(id => {
     const el = document.getElementById(id);
-    if (el && !el._wired) { el._wired = true; el.addEventListener('input', refreshMsg); }
+    if (el && !el._wired) { el._wired = true; el.addEventListener('input', refreshAll); }
   });
 
-  // Wire purpose chips
   document.querySelectorAll('.lf-preset-btn[data-purpose]').forEach(btn => {
     if (btn._wired) return;
     btn._wired = true;
@@ -9690,29 +9773,21 @@ function renderSubmitPage(){
       const tf = document.getElementById('lf-purpose-text');
       if (!tf) return;
       tf.value = tf.value === btn.dataset.purpose ? '' : btn.dataset.purpose;
-      document.querySelectorAll('.lf-preset-btn[data-purpose]').forEach(b => {
-        b.classList.toggle('active', b.dataset.purpose === tf.value);
-      });
-      refreshMsg();
+      document.querySelectorAll('.lf-preset-btn[data-purpose]').forEach(b => b.classList.toggle('active', b.dataset.purpose === tf.value));
+      refreshAll();
     });
   });
-
-  // Wire purpose text → sync chip active state
   const purposeEl = document.getElementById('lf-purpose-text');
   if (purposeEl && !purposeEl._chipSync) {
     purposeEl._chipSync = true;
     purposeEl.addEventListener('input', () => {
-      document.querySelectorAll('.lf-preset-btn[data-purpose]').forEach(b => {
-        b.classList.toggle('active', b.dataset.purpose === purposeEl.value);
-      });
+      document.querySelectorAll('.lf-preset-btn[data-purpose]').forEach(b => b.classList.toggle('active', b.dataset.purpose === purposeEl.value));
     });
   }
 
-  // Wire "+ Add position" button
   function addBalanceRow(lender='', init='', bal='') {
     const container = document.getElementById('lf-balance-rows');
     if (!container) return;
-    // Add headers if first row
     if (!container.querySelector('.lf-bal-headers')) {
       const hdr = document.createElement('div');
       hdr.className = 'lf-bal-headers';
@@ -9726,112 +9801,151 @@ function renderSubmitPage(){
       <input type="text" placeholder="$20,000" value="${init}" autocomplete="off">
       <input type="text" placeholder="$4,000" value="${bal}" autocomplete="off">
       <button class="lf-bal-remove" title="Remove">×</button>`;
-    row.querySelectorAll('input').forEach(i => i.addEventListener('input', refreshMsg));
+    row.querySelectorAll('input').forEach(i => i.addEventListener('input', refreshAll));
     row.querySelector('.lf-bal-remove').addEventListener('click', () => {
       row.remove();
-      // Remove header if no rows left
       const c = document.getElementById('lf-balance-rows');
       if (c && !c.querySelector('.lf-bal-row')) { const h = c.querySelector('.lf-bal-headers'); if(h) h.remove(); }
-      refreshMsg();
+      refreshAll();
     });
     container.appendChild(row);
-    refreshMsg();
+    refreshAll();
   }
 
   const addBalBtn = document.getElementById('lf-add-balance-row');
-  if (addBalBtn && !addBalBtn._wired) {
-    addBalBtn._wired = true;
-    addBalBtn.addEventListener('click', () => addBalanceRow());
+  if (addBalBtn && !addBalBtn._wired) { addBalBtn._wired = true; addBalBtn.addEventListener('click', () => addBalanceRow()); }
+
+  // ── Attachments ───────────────────────────────────────────────────────────
+  function renderAttachments() {
+    const listEl = document.getElementById('att-file-list');
+    if (!listEl) return;
+    listEl.innerHTML = '';
+    atts.forEach((att, i) => {
+      const item = document.createElement('div');
+      item.className = 'att-file-item';
+      const kb = att.size < 1024*1024 ? (att.size/1024).toFixed(1)+' KB' : (att.size/(1024*1024)).toFixed(1)+' MB';
+      item.innerHTML = `<span class="att-file-name" title="${esc(att.name)}">${esc(att.name)}</span><span class="att-file-size">${kb}</span><button class="att-file-rm" data-i="${i}" title="Remove">×</button>`;
+      listEl.appendChild(item);
+    });
+    listEl.querySelectorAll('.att-file-rm').forEach(btn => {
+      btn.addEventListener('click', () => { atts.splice(+btn.dataset.i, 1); renderAttachments(); });
+    });
   }
 
-  // Init preview
-  refreshMsg();
-
-  // Helper: build Gmail compose URL
-  function buildGmailUrl(toList, ccList, subject, body) {
-    const base = 'https://mail.google.com/mail/?view=cm&fs=1';
-    const params = new URLSearchParams();
-    if (toList.length) params.set('to', toList.join(','));
-    if (ccList.length) params.set('cc', ccList.join(','));
-    if (subject) params.set('su', subject);
-    if (body) params.set('body', body);
-    return base + '&' + params.toString();
+  function handleFiles(files) {
+    [...files].forEach(file => {
+      if (!atts.find(a => a.name === file.name && a.size === file.size)) {
+        atts.push({ name: file.name, size: file.size, type: file.type });
+      }
+    });
+    renderAttachments();
   }
 
-  // Wire "Open All in Gmail" button
+  const dropZone = document.getElementById('att-drop-zone');
+  const fileInput = document.getElementById('att-file-input');
+  if (dropZone && !dropZone._wired) {
+    dropZone._wired = true;
+    dropZone.addEventListener('click', () => fileInput && fileInput.click());
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
+  }
+  if (fileInput && !fileInput._wired) {
+    fileInput._wired = true;
+    fileInput.addEventListener('change', () => { handleFiles(fileInput.files); fileInput.value = ''; });
+  }
+  renderAttachments();
+
+  // ── Lender chips in Send step ─────────────────────────────────────────────
+  const chipsEl = document.getElementById('send-lender-chips');
+  if (chipsEl && !chipsEl._wired) {
+    chipsEl._wired = true;
+    // Build chips — one per selected lender, all active by default
+    if (!chipsEl._built) {
+      chipsEl._built = true;
+      selected.forEach(L => {
+        const chip = document.createElement('button');
+        chip.className = 'send-chip active';
+        chip.dataset.lender = L.name;
+        chip.innerHTML = `<span class="chip-check">✓</span> ${esc(L.name)}`;
+        chip.addEventListener('click', () => {
+          chip.classList.toggle('active');
+          updateOpenAllBtn();
+        });
+        chipsEl.appendChild(chip);
+      });
+    }
+  }
+
+  // ── Open All in Gmail button ──────────────────────────────────────────────
   const openAllBtn = document.getElementById('btn-open-all-gmail');
   if (openAllBtn && !openAllBtn._wired) {
     openAllBtn._wired = true;
     openAllBtn.addEventListener('click', () => {
-      const blocks = [...document.querySelectorAll('.submit-lender-block')];
-      if (!blocks.length) return;
+      const activeChips = [...document.querySelectorAll('.send-chip.active')];
+      const toSend = activeChips.length
+        ? selected.filter(L => activeChips.some(c => c.dataset.lender === L.name))
+        : selected;
+
+      const subj = getSubject();
+      const msg  = buildMsg();
       let delay = 0;
-      blocks.forEach(block => {
-        const toArr = (block.dataset.to || '').split(',').filter(Boolean);
-        const ccArr = (block.dataset.cc || '').split(',').filter(Boolean);
-        const subj = block.dataset.subject || '';
-        const msg  = block.dataset.msg || '';
-        if (!toArr.length) return;
-        setTimeout(() => {
-          window.open(buildGmailUrl(toArr, ccArr, subj, msg), '_blank');
-        }, delay);
-        delay += 600; // stagger 600ms so Chrome doesn't block popups
+      toSend.forEach(L => {
+        const { toList, ccList } = getLenderEmails(L);
+        if (!toList.length) return;
+        setTimeout(() => window.open(buildGmailUrl(toList, ccList, subj, msg), '_blank'), delay);
+        delay += 650;
       });
     });
   }
 
-  // Per-lender email blocks
-  const emailsEl = document.getElementById('submit-emails-display');
-  if (emailsEl) {
-    if (selected.length === 0) {
-      emailsEl.innerHTML = '<span class="placeholder">No lenders selected.</span>';
-    } else {
-      const copyIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="9" height="9" rx="1.5"/><path d="M11 4V3a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h1"/></svg>`;
-      const checkIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 8 6.5 12 13 4"/></svg>`;
-      const dealName = dealNameEl ? dealNameEl.value.trim() : '';
-      const subjectVal = dealName ? `NEW DEAL: ${dealName}` : 'NEW DEAL:';
-      const html = selected.map(L => {
-        let toList = [], ccList = [];
-        if (L.submission_emails && L.submission_emails.length) {
-          toList = L.submission_emails.filter(e => e.tag === 'to' && e.email).map(e => e.email);
-          ccList = L.submission_emails.filter(e => e.tag === 'cc' && e.email).map(e => e.email);
-        } else if (L.contact_email) {
-          toList = [L.contact_email];
-        }
-        const toVal = toList.join(', ');
-        const toRow = toList.length
-          ? `<div class="sl-row"><span class="sl-label">To</span><span class="sl-email-text">${esc(toVal)}</span><button class="sl-copy-btn" data-copy="${esc(toVal)}">${copyIcon} Copy To</button></div>`
-          : `<div class="sl-row"><span class="sl-label">To</span><span class="missing-email">⚠ no email on file</span></div>`;
-        const ccVal = ccList.join(', ');
-        const ccRow = ccList.length
-          ? `<div class="sl-row"><span class="sl-label">CC</span><span class="sl-email-text">${esc(ccVal)}</span><button class="sl-copy-btn" data-copy="${esc(ccVal)}">${copyIcon} Copy CC</button></div>`
-          : '';
-        const subjRow = `<div class="sl-row"><span class="sl-label">Subj</span><span class="sl-email-text sl-subject-text">${esc(subjectVal)}</span><button class="sl-copy-btn" data-copy="${esc(subjectVal)}" data-subject="1">${copyIcon} Copy Subj</button></div>`;
-        const msgVal = buildMsg();
-        const msgRow = `<div class="sl-row sl-msg-row"><span class="sl-label">Msg</span><span class="sl-email-text sl-msg-text">${esc(msgVal)}</span><button class="sl-copy-btn" data-copy="${esc(msgVal)}" data-msg="1">${copyIcon} Copy Msg</button></div>`;
-        // Build mailto URL for Gmail compose
-        const gmailUrl = buildGmailUrl(toList, ccList, subjectVal, msgVal);
-        const gmailBtn = toList.length
-          ? `<a class="sl-gmail-btn" href="${gmailUrl}" target="_blank" rel="noopener">
-              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><polyline points="2 5 10 11 18 5"/></svg>
-              Open in Gmail
-            </a>`
-          : '';
-        return `<div class="submit-lender-block" data-lender="${esc(L.name)}" data-to="${esc(toList.join(','))}" data-cc="${esc(ccList.join(','))}" data-subject="${esc(subjectVal)}" data-msg="${esc(msgVal)}">
-<div class="sl-header">
-  <span class="sl-name">${esc(L.name)}</span>
-  <div class="sl-header-actions">
-    ${gmailBtn}
-    <span class="sl-sent-badge">${checkIcon} Sent</span>
-    <button class="sl-mark-sent" data-lender="${esc(L.name)}">${checkIcon} Mark sent</button>
-  </div>
-</div>
-<div class="sl-email-rows">${toRow}${ccRow}${subjRow}${msgRow}</div>
-</div>`;
-      }).join('');
-      emailsEl.innerHTML = html;
-    }
+  // ── Per-lender details toggle ─────────────────────────────────────────────
+  const toggleBtn = document.getElementById('per-lender-toggle');
+  const detailsEl = document.getElementById('per-lender-details');
+  if (toggleBtn && !toggleBtn._wired) {
+    toggleBtn._wired = true;
+    toggleBtn.addEventListener('click', () => {
+      const open = detailsEl.style.display !== 'none';
+      detailsEl.style.display = open ? 'none' : '';
+      toggleBtn.textContent = open ? '▾ Show individual lender details' : '▴ Hide individual lender details';
+      if (!open) renderLenderDetails();
+    });
   }
+
+  function renderLenderDetails() {
+    const emailsEl = document.getElementById('submit-emails-display');
+    if (!emailsEl) return;
+    const copyIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="9" height="9" rx="1.5"/><path d="M11 4V3a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h1"/></svg>`;
+    const checkIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 8 6.5 12 13 4"/></svg>`;
+    const subj = getSubject();
+    const msg  = buildMsg();
+
+    const html = selected.map(L => {
+      const { toList, ccList } = getLenderEmails(L);
+      const toVal = toList.join(', ');
+      const ccVal = ccList.join(', ');
+      const toRow = toList.length
+        ? `<div class="sl-row"><span class="sl-label">To</span><span class="sl-email-text">${esc(toVal)}</span><button class="sl-copy-btn" data-copy="${esc(toVal)}">${copyIcon} Copy To</button></div>`
+        : `<div class="sl-row"><span class="sl-label">To</span><span class="missing-email">⚠ no email on file</span></div>`;
+      const ccRow = ccList.length
+        ? `<div class="sl-row"><span class="sl-label">CC</span><span class="sl-email-text">${esc(ccVal)}</span><button class="sl-copy-btn" data-copy="${esc(ccVal)}">${copyIcon} Copy CC</button></div>`
+        : '';
+      const subjRow = `<div class="sl-row"><span class="sl-label">Subj</span><span class="sl-email-text sl-subject-text">${esc(subj)}</span><button class="sl-copy-btn" data-copy="${esc(subj)}" data-subject="1">${copyIcon} Copy Subj</button></div>`;
+      const msgRow  = `<div class="sl-row sl-msg-row"><span class="sl-label">Msg</span><span class="sl-email-text sl-msg-text">${esc(msg)}</span><button class="sl-copy-btn" data-copy="${esc(msg)}" data-msg="1">${copyIcon} Copy Msg</button></div>`;
+      const gmailUrl = buildGmailUrl(toList, ccList, subj, msg);
+      const gmailBtn = toList.length
+        ? `<a class="sl-gmail-btn" href="${gmailUrl}" target="_blank" rel="noopener"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><polyline points="2 5 10 11 18 5"/></svg>Open in Gmail</a>`
+        : '';
+      return `<div class="submit-lender-block" data-lender="${esc(L.name)}" data-to="${esc(toList.join(','))}" data-cc="${esc(ccList.join(','))}" data-subject="${esc(subj)}" data-msg="${esc(msg)}">
+<div class="sl-header"><span class="sl-name">${esc(L.name)}</span>
+<div class="sl-header-actions">${gmailBtn}<span class="sl-sent-badge">${checkIcon} Sent</span><button class="sl-mark-sent" data-lender="${esc(L.name)}">${checkIcon} Mark sent</button></div></div>
+<div class="sl-email-rows">${toRow}${ccRow}${subjRow}${msgRow}</div></div>`;
+    }).join('');
+    emailsEl.innerHTML = html || '<span class="placeholder">No lenders selected.</span>';
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  refreshAll();
 }
 
 /* ============================================================
@@ -10491,6 +10605,7 @@ document.getElementById('btn-done-submit').addEventListener('click', () => {
 // Clear & back from submit page
 document.getElementById('btn-clear-and-back').addEventListener('click', () => {
   selectedLenders.clear();
+  if (renderSubmitPage._atts) renderSubmitPage._atts = [];
   nav('match');
   renderMatches();
   updateTopbarStats();
