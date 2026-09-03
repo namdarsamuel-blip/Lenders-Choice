@@ -2728,6 +2728,62 @@ button.strip-section-head:hover {
   opacity: 0.45;
   border-color: var(--green-bd);
 }
+.sl-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sl-gmail-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 5px 11px;
+  cursor: pointer;
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  transition: background 0.12s, opacity 0.12s;
+}
+.sl-gmail-btn:hover { background: #1557b0; }
+.sl-gmail-btn svg { width: 13px; height: 13px; }
+
+.open-all-gmail-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.btn-open-all-gmail {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 18px;
+  cursor: pointer;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+  transition: background 0.12s;
+}
+.btn-open-all-gmail:hover { background: #1557b0; }
+.btn-open-all-gmail svg { width: 16px; height: 16px; }
+.open-all-note {
+  font-size: 11.5px;
+  color: var(--text-3);
+  line-height: 1.4;
+}
+
 .sl-header {
   display: flex;
   align-items: center;
@@ -3615,6 +3671,13 @@ button.strip-section-head:hover {
         </button>
       </div>
       <div class="submit-emails" id="submit-emails-display"></div>
+      <div class="open-all-gmail-wrap">
+        <button class="btn-open-all-gmail" id="btn-open-all-gmail">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><polyline points="2 5 10 11 18 5"/></svg>
+          Open All in Gmail
+        </button>
+        <span class="open-all-note">Opens one Gmail compose tab per lender — just attach your files and hit Send on each</span>
+      </div>
     </div>
 
     <div class="submit-actions">
@@ -9598,6 +9661,17 @@ function renderSubmitPage(){
     const msgVal = buildMsg();
     document.querySelectorAll('.sl-msg-text').forEach(el => { el.textContent = msgVal; });
     document.querySelectorAll('.sl-copy-btn[data-msg]').forEach(btn => { btn.dataset.copy = msgVal; });
+    // Sync data-msg on blocks for Open All button
+    document.querySelectorAll('.submit-lender-block[data-msg]').forEach(el => { el.dataset.msg = msgVal; });
+    // Sync Gmail button hrefs
+    document.querySelectorAll('.submit-lender-block').forEach(block => {
+      const btn = block.querySelector('.sl-gmail-btn');
+      if (!btn) return;
+      const toArr = (block.dataset.to || '').split(',').filter(Boolean);
+      const ccArr = (block.dataset.cc || '').split(',').filter(Boolean);
+      const subj  = block.dataset.subject || '';
+      btn.href = buildGmailUrl(toArr, ccArr, subj, msgVal);
+    });
     const preview = document.getElementById('lf-msg-preview');
     if (preview) preview.textContent = msgVal;
   }
@@ -9673,6 +9747,39 @@ function renderSubmitPage(){
   // Init preview
   refreshMsg();
 
+  // Helper: build Gmail compose URL
+  function buildGmailUrl(toList, ccList, subject, body) {
+    const base = 'https://mail.google.com/mail/?view=cm&fs=1';
+    const params = new URLSearchParams();
+    if (toList.length) params.set('to', toList.join(','));
+    if (ccList.length) params.set('cc', ccList.join(','));
+    if (subject) params.set('su', subject);
+    if (body) params.set('body', body);
+    return base + '&' + params.toString();
+  }
+
+  // Wire "Open All in Gmail" button
+  const openAllBtn = document.getElementById('btn-open-all-gmail');
+  if (openAllBtn && !openAllBtn._wired) {
+    openAllBtn._wired = true;
+    openAllBtn.addEventListener('click', () => {
+      const blocks = [...document.querySelectorAll('.submit-lender-block')];
+      if (!blocks.length) return;
+      let delay = 0;
+      blocks.forEach(block => {
+        const toArr = (block.dataset.to || '').split(',').filter(Boolean);
+        const ccArr = (block.dataset.cc || '').split(',').filter(Boolean);
+        const subj = block.dataset.subject || '';
+        const msg  = block.dataset.msg || '';
+        if (!toArr.length) return;
+        setTimeout(() => {
+          window.open(buildGmailUrl(toArr, ccArr, subj, msg), '_blank');
+        }, delay);
+        delay += 600; // stagger 600ms so Chrome doesn't block popups
+      });
+    });
+  }
+
   // Per-lender email blocks
   const emailsEl = document.getElementById('submit-emails-display');
   if (emailsEl) {
@@ -9702,11 +9809,22 @@ function renderSubmitPage(){
         const subjRow = `<div class="sl-row"><span class="sl-label">Subj</span><span class="sl-email-text sl-subject-text">${esc(subjectVal)}</span><button class="sl-copy-btn" data-copy="${esc(subjectVal)}" data-subject="1">${copyIcon} Copy Subj</button></div>`;
         const msgVal = buildMsg();
         const msgRow = `<div class="sl-row sl-msg-row"><span class="sl-label">Msg</span><span class="sl-email-text sl-msg-text">${esc(msgVal)}</span><button class="sl-copy-btn" data-copy="${esc(msgVal)}" data-msg="1">${copyIcon} Copy Msg</button></div>`;
-        return `<div class="submit-lender-block" data-lender="${esc(L.name)}">
+        // Build mailto URL for Gmail compose
+        const gmailUrl = buildGmailUrl(toList, ccList, subjectVal, msgVal);
+        const gmailBtn = toList.length
+          ? `<a class="sl-gmail-btn" href="${gmailUrl}" target="_blank" rel="noopener">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><polyline points="2 5 10 11 18 5"/></svg>
+              Open in Gmail
+            </a>`
+          : '';
+        return `<div class="submit-lender-block" data-lender="${esc(L.name)}" data-to="${esc(toList.join(','))}" data-cc="${esc(ccList.join(','))}" data-subject="${esc(subjectVal)}" data-msg="${esc(msgVal)}">
 <div class="sl-header">
   <span class="sl-name">${esc(L.name)}</span>
-  <span class="sl-sent-badge">${checkIcon} Sent</span>
-  <button class="sl-mark-sent" data-lender="${esc(L.name)}">${checkIcon} Mark sent</button>
+  <div class="sl-header-actions">
+    ${gmailBtn}
+    <span class="sl-sent-badge">${checkIcon} Sent</span>
+    <button class="sl-mark-sent" data-lender="${esc(L.name)}">${checkIcon} Mark sent</button>
+  </div>
 </div>
 <div class="sl-email-rows">${toRow}${ccRow}${subjRow}${msgRow}</div>
 </div>`;
